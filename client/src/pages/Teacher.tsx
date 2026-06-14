@@ -40,12 +40,14 @@ const MOCK_LESSONS = {
 };
 
 const DICTATION_QUESTIONS = [
-  { word: "شَجَرَةٌ", type: "التَّاءُ الْمَرْبُوطَةُ", correct: "شَجَرَةٌ", opts: ["شجرة", "شَجَرَة", "شَجَرَةٌ"], img: "🌳", hint: "انْتِهَاءُ تَاءٍ مَرْبُوطَةٍ" },
-  { word: "مَدْرَسَةٌ", type: "التَّاءُ الْمَرْبُوطَةُ", correct: "مَدْرَسَةٌ", opts: ["مدرسة", "مَدْرَسَه", "مَدْرَسَةٌ"], img: "🏫", hint: "انْتِهَاءُ تَاءٍ مَرْبُوطَةٍ" },
-  { word: "قِرَاءَةٌ", type: "التَّاءُ الْمَرْبُوطَةُ", correct: "قِرَاءَةٌ", opts: ["قراءة", "قِرَاءَه", "قِرَاءَةٌ"], img: "📖", hint: "الْكَلِمَةُ تَنْتَهِي بِتَاءٍ مَرْبُوطَةٍ" },
-  { word: "كِتَابٌ", type: "التَّنْوِينُ", correct: "كِتَابٌ", opts: ["كتاب", "كِتَابُ", "كِتَابٌ"], img: "📚", hint: "الضَّمَّةُ الثَّنْوِيَّةُ عَلَى الْبَاءِ" },
-  { word: "مُعَلِّمَةٌ", type: "الشَّدَّةُ", correct: "مُعَلِّمَةٌ", opts: ["معلمة", "مُعَلِمَة", "مُعَلِّمَةٌ"], img: "👩‍🏫", hint: "الشَّدَّةُ عَلَى اللَّامِ وَتَاءٌ مَرْبُوطَةٌ" },
-  { word: "أَصْدِقَاءُ", type: "الْهَمْزَةُ", correct: "أَصْدِقَاءُ", opts: ["اصدقاء", "أَصدِقاء", "أَصْدِقَاءُ"], img: "👫", hint: "الْكَلِمَةُ تَبْدَأُ بِهَمْزَةٍ قَطْعٍ" },
+  { word: "شَجَرَةٌ", type: "التَّاءُ الْمَرْبُوطَةُ", correct: "شَجَرَةٌ", opts: ["شجرة", "شَجَرَة", "شَجَرَةٌ"], img: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=400&q=80", hint: "انْتِهَاءُ تَاءٍ مَرْبُوطَةٍ" },
+  { word: "مَدْرَسَةٌ", type: "التَّاءُ الْمَرْبُوطَةُ", correct: "مَدْرَسَةٌ", opts: ["مدرسة", "مَدْرَسَه", "مَدْرَسَةٌ"], img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=80", hint: "انْتِهَاءُ تَاءٍ مَرْبُوطَةٍ" },
+  { word: "قِرَاءَةٌ", type: "التَّاءُ الْمَرْبُوطَةُ", correct: "قِرَاءَةٌ", opts: ["قراءة", "قِرَاءَه", "قِرَاءَةٌ"], img: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&q=80", hint: "الْكَلِمَةُ تَنْتَهِي بِتَاءٍ مَرْبُوطَةٍ" },
+  { word: "كِتَابٌ", type: "التَّنْوِينُ", correct: "كِتَابٌ", opts: ["كتاب", "كِتَابُ", "كِتَابٌ"], img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80", hint: "الضَّمَّةُ الثَّنْوِيَّةُ عَلَى الْبَاءِ" },
+  { word: "مُعَلِّمَةٌ", type: "الشَّدَّةُ", correct: "مُعَلِّمَةٌ", opts: ["معلمة", "مُعَلِمَة", "مُعَلِّمَةٌ"], img: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&q=80", hint: "الشَّدَّةُ عَلَى اللَّامِ وَتَاءٌ مَرْبُوطَةٌ" },
+  { word: "أَصْدِقَاءُ", type: "الْهَمْزَةُ", correct: "أَصْدِقَاءُ", opts: ["اصدقاء", "أَصدِقاء", "أَصْدِقَاءُ"], img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=80", hint: "الْكَلِمَةُ تَبْدَأُ بِهَمْزَةٍ قَطْعٍ" },
+  { word: "قَلَمٌ", type: "التَّنْوِينُ", correct: "قَلَمٌ", opts: ["قلم", "قَلَمُ", "قَلَمٌ"], img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=80", hint: "انْتِهَاءُ نَكِرَةٍ مَرْفُوعَةٍ بِالضَّمَّةِ التَّنْوِيِنِيَّةِ" },
+  { word: "يَكْتُبُ", type: "الْمُثَبَّطُ", correct: "يَكْتُبُ", opts: ["يكتب", "يَكتُب", "يَكْتُبُ"], img: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&q=80", hint: "فِعْلٌ مُضَارِعٌ مَرْفُوعٌ بِالضَّمَّةِ" },
 ];
 
 /* ── Sub-components ── */
@@ -437,8 +439,8 @@ export default function Teacher() {
               {DICTATION_QUESTIONS.map((q, i) => (
                 <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer group">
                   {/* Visual area */}
-                  <div className="h-28 flex items-center justify-center text-6xl bg-gradient-to-b from-gray-50 to-white">
-                    {q.img}
+                  <div className="h-32 overflow-hidden">
+                    <img src={q.img} alt={q.word} className="w-full h-full object-cover" />
                   </div>
                   {/* Info */}
                   <div className="p-3 text-right">
