@@ -98,11 +98,15 @@ export default function Dashboard() {
         <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm text-right border border-gray-100">
           <div>
             <p className="text-xs font-bold" style={{ color: "#1a5c2a" }}>مَرْحَباً بِكَ</p>
-            <p className="font-bold text-sm">الطَّالِبُ الْمُبْدِعُ</p>
-            <p className="text-xs text-gray-400">{student.grade} أَوَّلٌ</p>
+            <p className="font-bold text-sm">{student.name}</p>
+            <p className="text-xs text-gray-400">{student.grade}</p>
           </div>
-          <span className="text-2xl">{student.avatar}</span>
-          <img src="/assets/omani-boy.png" alt="" className="w-8 h-8 object-contain" />
+          <img
+            src={`/assets/${student.avatar === "boy1" || student.avatar === "boy2" ? "omani-boy" : student.avatar === "girl1" ? "omani-girl" : "omani-girl2"}.png`}
+            alt=""
+            className="w-12 h-12 object-contain rounded-full border-2"
+            style={{ borderColor: "#1a5c2a" }}
+          />
         </div>
       </div>
 
