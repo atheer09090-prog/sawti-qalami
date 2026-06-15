@@ -30,7 +30,10 @@ export default function Assessments() {
       <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="bg-white rounded-2xl p-5 shadow mb-4 text-right">
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-4xl">{student.avatar}</span>
+            <img
+              src={`/assets/${student.avatar === "boy1" || student.avatar === "boy2" ? "omani-boy" : student.avatar === "girl1" ? "omani-girl" : "omani-girl2"}.png`}
+              alt="" className="w-14 h-14 object-contain rounded-full border-2" style={{ borderColor: "#1a5c2a" }}
+            />
             <div>
               <h2 className="font-bold text-xl">{student.name || "الطَّالِبُ"}</h2>
               <p className="text-gray-500 text-sm">{student.grade}</p>

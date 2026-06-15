@@ -11,6 +11,7 @@ import Writing from "./pages/Writing";
 import SelfLearning from "./pages/SelfLearning";
 import Assessments from "./pages/Assessments";
 import Teacher from "./pages/Teacher";
+import ClassSelection from "./pages/ClassSelection";
 import NotFound from "./pages/NotFound";
 
 function Router() {
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/skills/self-learning" component={SelfLearning} />
       <Route path="/assessments" component={Assessments} />
       <Route path="/teacher" component={Teacher} />
+      <Route path="/class-selection" component={ClassSelection} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -149,6 +149,7 @@ export default function Dashboard() {
             <button
               className="p-4 rounded-2xl text-right shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
               style={{ background: "#ede9f5", border: "2px solid #c4b5fd" }}
+              onClick={() => setLocation("/class-selection")}
             >
               <div className="flex justify-between items-center">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
