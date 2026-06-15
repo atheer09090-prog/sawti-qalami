@@ -3,7 +3,12 @@ import { useLocation } from "wouter";
 import { setState } from "@/lib/store";
 import { playSound, stopSound } from "@/lib/audio";
 
-const AVATARS = ["👦", "👧", "🧒", "👶"];
+const AVATARS = [
+  { id: "boy1",  src: "/assets/omani-boy.png",   label: "طالب ١" },
+  { id: "boy2",  src: "/assets/omani-boy.png",   label: "طالب ٢" },
+  { id: "girl1", src: "/assets/omani-girl.png",  label: "طالبة ١" },
+  { id: "girl2", src: "/assets/omani-girl2.png", label: "طالبة ٢" },
+];
 const GRADES = [
   "الصف الرابع", "الصف الخامس", "الصف السادس",
   "الصف السابع", "الصف الثامن", "الصف التاسع",
@@ -13,7 +18,7 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const [name, setName] = useState("");
   const [grade, setGrade] = useState("الصف السادس");
-  const [avatar, setAvatar] = useState("👦");
+  const [avatar, setAvatar] = useState("boy1");
 
   
   useEffect(() => {
@@ -84,17 +89,17 @@ export default function Login() {
             <div className="flex justify-center gap-3">
               {AVATARS.map((av) => (
                 <button
-                  key={av}
-                  onClick={() => setAvatar(av)}
-                  className="w-14 h-14 text-3xl rounded-full border-2 transition-all"
+                  key={av.id}
+                  onClick={() => setAvatar(av.id)}
+                  className="w-16 h-16 rounded-full border-2 transition-all overflow-hidden"
                   style={{
-                    borderColor: avatar === av ? "#1a5c2a" : "#e5e7eb",
-                    background: avatar === av ? "#dcf5e7" : "#f9fafb",
-                    transform: avatar === av ? "scale(1.15)" : "scale(1)",
-                    boxShadow: avatar === av ? "0 0 0 3px #a7f3c0" : "none",
+                    borderColor: avatar === av.id ? "#1a5c2a" : "#e5e7eb",
+                    background: avatar === av.id ? "#dcf5e7" : "#f9fafb",
+                    transform: avatar === av.id ? "scale(1.15)" : "scale(1)",
+                    boxShadow: avatar === av.id ? "0 0 0 3px #a7f3c0" : "none",
                   }}
                 >
-                  {av}
+                  <img src={av.src} alt={av.label} className="w-full h-full object-contain p-1" />
                 </button>
               ))}
             </div>
