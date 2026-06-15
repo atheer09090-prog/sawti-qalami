@@ -4,6 +4,47 @@ import { getState, clearState, StudentData } from "@/lib/store";
 import { playSound, stopSound } from "@/lib/audio";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 
+/* ── Welcome Popup ── */
+function WelcomePopup({ name, onClose }: { name: string; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.35)", backdropFilter: "blur(3px)" }}
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-3xl p-8 text-center shadow-2xl mx-4"
+        style={{ maxWidth: 340, animation: "popIn 0.35s cubic-bezier(0.34,1.56,0.64,1)" }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="text-6xl mb-4">👋</div>
+        <h2
+          style={{ fontFamily: "'Amiri', serif", color: "#1a5c2a", fontSize: "1.6rem", fontWeight: 700, lineHeight: 1.3 }}
+          dir="rtl"
+        >
+          مَرْحَباً يَا بَطَلَ اللُّغَةِ الْعَرَبِيَّةِ!
+        </h2>
+        <p className="text-gray-500 mt-2 mb-1" style={{ fontFamily: "'Cairo', sans-serif" }} dir="rtl">
+          هَيَّا نَتَعَلَّمُ وَنُبْدِعُ مَعًا ✨
+        </p>
+        <p
+          className="text-amber-600 text-sm cursor-pointer mt-4 font-bold"
+          style={{ fontFamily: "'Cairo', sans-serif" }}
+          onClick={onClose}
+        >
+          انْقُرْ لِلْمُتَابَعَةِ
+        </p>
+      </div>
+      <style>{`
+        @keyframes popIn {
+          from { transform: scale(0.7); opacity: 0; }
+          to   { transform: scale(1);   opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 function getLabel(v: number) {
   if (v >= 80) return "مُمْتَازٌ ⭐";
   if (v >= 60) return "جَيِّدٌ جِدًّا ⭐";
@@ -14,13 +55,15 @@ function getLabel(v: number) {
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [student, setStudent] = useState<StudentData>(getState());
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     const s = getState();
     if (!s.name) { setLocation("/"); return; }
     setStudent(s);
     playSound("/assets/welcome.wav", 0.3);
-    return () => stopSound();
+    const t = setTimeout(() => setShowPopup(true), 400);
+    return () => { stopSound(); clearTimeout(t); };
   }, []);
 
   const chartData = [
@@ -34,6 +77,7 @@ export default function Dashboard() {
       dir="rtl"
       style={{ fontFamily: "'Cairo', sans-serif", minHeight: "100vh" }}
     >
+      {showPopup && <WelcomePopup name={student.name} onClose={() => setShowPopup(false)} />}
       {/* Full-page background */}
       <div
         style={{
