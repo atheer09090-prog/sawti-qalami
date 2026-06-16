@@ -62,8 +62,16 @@ export default function Dashboard() {
     if (!s.name) { setLocation("/"); return; }
     setStudent(s);
     playSound("/assets/welcome.wav", 0.3);
-    const t = setTimeout(() => setShowPopup(true), 400);
-    return () => { stopSound(); clearTimeout(t); };
+    // Show popup only once per session
+    const alreadyShown = sessionStorage.getItem("welcomeShown");
+    if (!alreadyShown) {
+      const t = setTimeout(() => {
+        setShowPopup(true);
+        sessionStorage.setItem("welcomeShown", "1");
+      }, 400);
+      return () => { stopSound(); clearTimeout(t); };
+    }
+    return () => stopSound();
   }, []);
 
   const chartData = [
