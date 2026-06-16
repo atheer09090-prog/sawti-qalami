@@ -198,36 +198,71 @@ export default function Speaking() {
           )}
 
           {result && !loading && (
-            <div className="bg-green-50 rounded-xl p-4 text-right border border-green-100">
+            <div className="text-right">
+              {/* Transcript */}
               {result.transcript && (
-                <div className="bg-white rounded-lg p-3 mb-3 border border-green-200">
+                <div className="bg-white rounded-xl p-3 mb-3 border border-green-200">
                   <p className="text-xs text-gray-400 mb-1">📝 مَا قُلْتَهُ:</p>
-                  <p className="text-gray-700 leading-relaxed">{result.transcript}</p>
+                  <p className="text-gray-700 leading-relaxed text-sm">{result.transcript}</p>
                 </div>
               )}
-              <p className="font-bold text-green-800 mb-3">✨ {result.feedback}</p>
-              <div className="flex gap-1 mb-3 items-center">
-                {[1,2,3,4].map(i => (
-                  <span key={i} className={i <= Math.ceil((result.overall || 0) / 25) ? "text-yellow-400 text-xl" : "text-gray-300 text-xl"}>⭐</span>
-                ))}
-                <span className="mr-2 font-bold text-green-700 text-lg">{result.overall}%</span>
+              {/* Overall score */}
+              <div className="rounded-xl p-4 mb-3" style={{ background: (result.overall||0)>=70 ? "linear-gradient(135deg,#dcf5e7,#f0fdf4)" : "linear-gradient(135deg,#fef3e2,#fffbeb)" }}>
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex gap-1">
+                    {[1,2,3,4,5].map(i=>(
+                      <span key={i} style={{color: i<=Math.ceil((result.overall||0)/20)?"#f5c842":"#d1d5db",fontSize:"18px"}}>★</span>
+                    ))}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500">النَّتِيجَةُ الْكُلِّيَّةُ</p>
+                    <p className="text-3xl font-bold" style={{color:(result.overall||0)>=70?"#1a5c2a":"#b45309"}}>{result.overall}%</p>
+                  </div>
+                </div>
+                <p className="text-gray-700 text-sm">{result.feedback}</p>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-sm">
+              {/* Skill breakdown */}
+              <div className="grid grid-cols-2 gap-2 mb-3">
                 {[
-                  { label: "النُّطْقُ", value: result.pronunciation },
-                  { label: "بِنَاءُ الْجُمَلِ", value: result.sentence_structure },
-                  { label: "التَّشْكِيلُ", value: result.diacritics },
-                  { label: "الإِعْرَابُ", value: result.grammar },
-                ].map(({ label, value }) => (
-                  <div key={label} className="bg-white rounded-lg p-2 text-center border border-green-100">
-                    <p className="text-gray-500 text-xs">{label}</p>
-                    <p className="font-bold text-green-700 text-lg">{value}%</p>
-                    <div className="w-full h-1.5 bg-gray-200 rounded-full mt-1">
-                      <div className="h-1.5 rounded-full bg-green-500" style={{ width: `${value}%` }} />
+                  { label: "النُّطْقُ",       value: result.pronunciation,       color: "#1a5c2a", bg: "#dcf5e7" },
+                  { label: "بِنَاءُ الْجُمَلِ",value: result.sentence_structure,  color: "#7c3aed", bg: "#ede9f5" },
+                  { label: "التَّشْكِيلُ",    value: result.diacritics,           color: "#b45309", bg: "#fef3e2" },
+                  { label: "الإِعْرَابُ",     value: result.grammar,              color: "#1d4ed8", bg: "#dbeafe" },
+                ].map(({label,value,color,bg})=>(
+                  <div key={label} className="rounded-xl p-3 text-center" style={{background:bg}}>
+                    <p className="text-xs text-gray-500 mb-1">{label}</p>
+                    <p className="text-xl font-bold" style={{color}}>{value}%</p>
+                    <div className="w-full h-1.5 bg-white rounded-full mt-1 overflow-hidden">
+                      <div className="h-1.5 rounded-full" style={{width:`${value}%`,background:color}}/>
                     </div>
                   </div>
                 ))}
               </div>
+              {/* Errors */}
+              {result.errors?.length > 0 && (
+                <div className="bg-white rounded-xl p-3 mb-3 border border-red-100">
+                  <p className="font-bold text-red-700 text-sm mb-2">❌ أَخْطَاءٌ مُكْتَشَفَةٌ:</p>
+                  {result.errors.map((e:any,i:number)=>(
+                    <div key={i} className="flex justify-between items-center bg-red-50 rounded-lg px-3 py-2 mb-1 border border-red-100">
+                      <p className="text-xs text-gray-500">{e.explanation}</p>
+                      <div className="flex items-center gap-2 text-sm font-bold">
+                        <span className="text-green-600">{e.correct}</span>
+                        <span className="text-gray-400">←</span>
+                        <span className="text-red-500 line-through">{e.wrong}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* Suggestions */}
+              {result.suggestions?.length > 0 && (
+                <div className="bg-amber-50 rounded-xl p-3 border border-amber-100">
+                  <p className="font-bold text-amber-700 text-sm mb-2">💡 اقْتِرَاحَاتٌ:</p>
+                  {result.suggestions.map((s:string,i:number)=>(
+                    <p key={i} className="text-sm text-gray-700">• {s}</p>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

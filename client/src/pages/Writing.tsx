@@ -335,6 +335,154 @@ function DictationGame({ onBack }: { onBack: () => void }) {
   return null;
 }
 
+
+/* ── Explainable Writing Result Component ── */
+function WritingResult({ result, originalText }: { result: any; originalText: string }) {
+  function renderAnnotatedText() {
+    const errors: Array<{ wrong: string; correct: string; type?: string; explanation: string }> =
+      result.errors || [];
+    if (errors.length === 0) {
+      return <span className="text-gray-700 leading-relaxed">{originalText}</span>;
+    }
+    const words = originalText.split(/(\s+)/);
+    return (
+      <span className="leading-loose text-base" style={{ fontFamily: "'Cairo', sans-serif" }}>
+        {words.map((word, i) => {
+          const cleanWord = word.replace(/[.,،؛:!؟]/g, "");
+          const error = errors.find(e => e.wrong === cleanWord || e.wrong === word || cleanWord.includes(e.wrong));
+          if (error && word.trim()) {
+            return (
+              <span key={i} className="relative inline-block group">
+                <span className="underline decoration-wavy decoration-red-500 cursor-pointer px-0.5 rounded"
+                  style={{ background: "#fee2e2", color: "#dc2626" }}>{word}</span>
+                <span className="absolute bottom-full right-0 mb-1 hidden group-hover:block z-10 w-52 bg-gray-800 text-white text-xs rounded-lg p-2 text-right shadow-lg">
+                  <span className="block font-bold text-red-300 mb-1">❌ {error.wrong}</span>
+                  <span className="block font-bold text-green-300 mb-1">✅ {error.correct}</span>
+                  <span className="block text-gray-300">{error.explanation}</span>
+                </span>
+              </span>
+            );
+          }
+          return <span key={i}>{word}</span>;
+        })}
+      </span>
+    );
+  }
+
+  const overall  = result.overall_score  ?? result.overall  ?? 0;
+  const spelling = result.spelling_score ?? result.spelling ?? 0;
+  const structure= result.structure_score?? result.structure?? 0;
+  const contentS = result.content_score  ?? result.content  ?? structure;
+  const errors: any[] = result.errors || [];
+
+  return (
+    <div className="bg-white rounded-2xl shadow mt-4 overflow-hidden text-right">
+      {/* Score header */}
+      <div className="p-5" style={{ background: overall >= 70 ? "linear-gradient(135deg,#dcf5e7,#f0fdf4)" : "linear-gradient(135deg,#fef3e2,#fffbeb)" }}>
+        <div className="flex justify-between items-center mb-3">
+          <div className="flex gap-1">
+            {[1,2,3,4,5].map(i => (
+              <span key={i} style={{ color: i <= Math.ceil(overall/20) ? "#f5c842" : "#d1d5db", fontSize: "20px" }}>★</span>
+            ))}
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-500">📊 نَتِيجَةُ التَّقْيِيمِ</p>
+            <p className="text-4xl font-bold" style={{ color: overall >= 70 ? "#1a5c2a" : "#b45309" }}>{overall}%</p>
+          </div>
+        </div>
+        <p className="text-gray-700 text-sm">{result.feedback || result.general_feedback}</p>
+      </div>
+
+      {/* Score breakdown */}
+      <div className="p-4 border-b border-gray-100">
+        <p className="font-bold text-gray-700 mb-3">📈 تَفْصِيلُ الدَّرَجَاتِ:</p>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: "الإِمْلَاءُ",   value: spelling,  color: "#b45309", bg: "#fef3e2" },
+            { label: "التَّرْكِيبُ",  value: structure, color: "#7c3aed", bg: "#ede9f5" },
+            { label: "الْمُحْتَوَى", value: contentS,  color: "#1d4ed8", bg: "#dbeafe" },
+          ].map(({ label, value, color, bg }) => (
+            <div key={label} className="rounded-xl p-3 text-center" style={{ background: bg }}>
+              <p className="text-xs text-gray-500 mb-1">{label}</p>
+              <p className="text-2xl font-bold" style={{ color }}>{value}%</p>
+              <div className="w-full h-1.5 bg-white rounded-full mt-1.5 overflow-hidden">
+                <div className="h-1.5 rounded-full" style={{ width: `${value}%`, background: color }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Annotated text */}
+      <div className="p-4 border-b border-gray-100">
+        <p className="font-bold text-gray-700 mb-2">
+          🔍 نَصُّكَ مَعَ تَمْيِيزِ الأَخْطَاءِ:
+          {errors.length > 0 && (
+            <span className="mr-2 text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">
+              {errors.length} خَطَأٌ
+            </span>
+          )}
+        </p>
+        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 leading-relaxed" dir="rtl">
+          {renderAnnotatedText()}
+        </div>
+        {errors.length > 0 && (
+          <p className="text-xs text-gray-400 mt-1 text-center">💡 مَرِّرْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِرُؤْيَةِ التَّصْحِيحِ</p>
+        )}
+      </div>
+
+      {/* Errors list */}
+      {errors.length > 0 && (
+        <div className="p-4 border-b border-gray-100">
+          <p className="font-bold text-red-700 mb-3">❌ الأَخْطَاءُ الإِمْلَائِيَّةُ الْمُكْتَشَفَةُ:</p>
+          <div className="space-y-2">
+            {errors.map((err: any, i: number) => (
+              <div key={i} className="flex items-center justify-between bg-red-50 rounded-lg px-3 py-2 border border-red-100">
+                <p className="text-xs text-gray-500">{err.explanation}</p>
+                <div className="flex items-center gap-2 text-sm font-bold">
+                  <span className="text-green-600">{err.correct}</span>
+                  <span className="text-gray-400">←</span>
+                  <span className="text-red-500 line-through">{err.wrong}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Strengths & improvements */}
+      <div className="p-4">
+        {result.strengths?.length > 0 && (
+          <div className="mb-3">
+            <p className="font-bold text-green-700 text-sm mb-2">✅ نِقَاطُ الْقُوَّةِ:</p>
+            <div className="space-y-1">
+              {result.strengths.map((s: string, i: number) => (
+                <div key={i} className="flex items-start gap-2 bg-green-50 rounded-lg px-3 py-2">
+                  <span className="text-green-500">•</span>
+                  <p className="text-sm text-gray-700">{s}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {result.improvements?.length > 0 && (
+          <div>
+            <p className="font-bold text-amber-700 text-sm mb-2">💡 اقْتِرَاحَاتُ التَّحْسِينِ:</p>
+            <div className="space-y-1">
+              {result.improvements.map((s: string, i: number) => (
+                <div key={i} className="flex items-start gap-2 bg-amber-50 rounded-lg px-3 py-2">
+                  <span className="text-amber-500">•</span>
+                  <p className="text-sm text-gray-700">{s}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── Main Writing Page ── */
 export default function Writing() {
   const [, setLocation] = useLocation();
@@ -406,19 +554,7 @@ export default function Writing() {
             {loading ? "⏳ جَارٍ التَّقْيِيمُ..." : "🏛️ تَقْيِيمُ الْكِتَابَةِ"}
           </button>
         </div>
-        {result && !loading && (
-          <div className="bg-white rounded-2xl p-5 shadow mt-4 text-right">
-            <h3 className="font-bold text-lg text-amber-800 mb-3">📊 نَتِيجَةُ التَّقْيِيمِ</h3>
-            <p className="text-gray-600 mb-3">{result.feedback}</p>
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="bg-amber-50 rounded-xl p-3 text-center"><p className="text-xs text-gray-500">الإِمْلَاءُ</p><p className="text-2xl font-bold text-amber-700">{result.spelling_score}%</p></div>
-              <div className="bg-amber-50 rounded-xl p-3 text-center"><p className="text-xs text-gray-500">التَّرْكِيبُ</p><p className="text-2xl font-bold text-amber-700">{result.structure_score}%</p></div>
-              <div className="bg-green-50 rounded-xl p-3 text-center"><p className="text-xs text-gray-500">الْمَجْمُوعُ</p><p className="text-2xl font-bold text-green-700">{result.overall_score}%</p></div>
-            </div>
-            {result.strengths?.length > 0 && <div className="mb-2"><p className="font-bold text-green-700 text-sm">✅ نِقَاطُ الْقُوَّةِ:</p>{result.strengths.map((s: string) => <p key={s} className="text-sm text-gray-600">• {s}</p>)}</div>}
-            {result.improvements?.length > 0 && <div><p className="font-bold text-amber-700 text-sm">💡 اقْتِرَاحَاتُ التَّحْسِينِ:</p>{result.improvements.map((s: string) => <p key={s} className="text-sm text-gray-600">• {s}</p>)}</div>}
-          </div>
-        )}
+        {result && !loading && <WritingResult result={result} originalText={text} />}
       </div>
     </div>
   );
