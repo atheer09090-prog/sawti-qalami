@@ -41,8 +41,14 @@ export default function Speaking() {
     return () => stopSound();
   }, [selectedLesson?.id]);
 
+  // Stop intro sound the moment recording starts
+  useEffect(() => {
+    if (recording) stopSound();
+  }, [recording]);
+
   async function startRecording() {
     setError(""); setResult(null);
+    stopSound(); // Stop intro audio BEFORE recording
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mr = new MediaRecorder(stream, { mimeType: "audio/webm" });
@@ -162,31 +168,41 @@ export default function Speaking() {
             </div>
           )}
 
-          <p className="text-center text-gray-500 text-sm mb-3">
-            اضْغَطْ عَلَى الْمِيكْرُوفُونِ وَتَحَدَّثْ لِمُدَّةِ دَقِيقَتَيْنِ
-            {selectedTopic && <strong> عَنْ {selectedTopic}</strong>}
-          </p>
+          {/* Show mic only after topic selected OR if lesson has no topics */}
+          {(selectedTopic || selectedLesson.topics.length === 0) ? (
+            <>
+              <p className="text-center text-gray-500 text-sm mb-3">
+                اضْغَطْ عَلَى الْمِيكْرُوفُونِ وَتَحَدَّثْ لِمُدَّةِ دَقِيقَتَيْنِ
+                {selectedTopic && <strong> عَنْ {selectedTopic}</strong>}
+              </p>
 
-          {recording && (
-            <p className="text-center text-2xl font-mono font-bold text-green-700 mb-2 animate-pulse">
-              🔴 {fmt(timer)} / 2:00
-            </p>
+              {recording && (
+                <p className="text-center text-2xl font-mono font-bold text-green-700 mb-2 animate-pulse">
+                  🔴 {fmt(timer)} / 2:00
+                </p>
+              )}
+
+              <div className="text-center mb-4">
+                <button
+                  onClick={recording ? stopRecording : startRecording}
+                  className="w-20 h-20 rounded-full text-3xl text-white shadow-lg transition-all hover:scale-105"
+                  style={recording
+                    ? { background: "#dc2626" }
+                    : { background: "linear-gradient(135deg, #1a5c2a, #2d7a3e)" }}
+                >
+                  {recording ? "⏹️" : "🎙️"}
+                </button>
+                <p className="text-gray-500 text-sm mt-2">
+                  {recording ? "جَارٍ التَّسْجِيلُ... اضْغَطْ لِلإِيقَافِ" : "اضْغَطْ لِبَدْءِ التَّسْجِيلِ"}
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-4 bg-green-50 rounded-xl border border-green-200 mb-4">
+              <p className="text-green-700 font-bold text-sm">👆 اخْتَرْ مَجَالَ التَّحَدُّثِ أَوَّلاً</p>
+              <p className="text-gray-400 text-xs mt-1">سَيَظْهَرُ الْمِيكْرُوفُونُ بَعْدَ الِاخْتِيَارِ</p>
+            </div>
           )}
-
-          <div className="text-center mb-4">
-            <button
-              onClick={recording ? stopRecording : startRecording}
-              className="w-20 h-20 rounded-full text-3xl text-white shadow-lg transition-all"
-              style={recording
-                ? { background: "#dc2626" }
-                : { background: "linear-gradient(135deg, #1a5c2a, #2d7a3e)", transform: "scale(1)" }}
-            >
-              {recording ? "⏹️" : "🎙️"}
-            </button>
-            <p className="text-gray-500 text-sm mt-2">
-              {recording ? "جَارٍ التَّسْجِيلُ... اضْغَطْ لِلإِيقَافِ" : "اضْغَطْ لِبَدْءِ التَّسْجِيلِ"}
-            </p>
-          </div>
 
           {error && <p className="text-center text-red-500 text-sm mb-3">⚠️ {error}</p>}
 

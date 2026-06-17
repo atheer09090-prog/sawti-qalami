@@ -339,8 +339,39 @@ function DictationGame({ onBack }: { onBack: () => void }) {
 /* ── Explainable Writing Result Component ── */
 function WritingResult({ result, originalText }: { result: any; originalText: string }) {
   function renderAnnotatedText() {
-    const errors: Array<{ wrong: string; correct: string; type?: string; explanation: string }> =
+    // Build errors from backend errors array OR extract from text locally
+    let errors: Array<{ wrong: string; correct: string; explanation: string }> =
       result.errors || [];
+
+    // If backend didn't return errors array, try to detect common Arabic spelling mistakes locally
+    if (errors.length === 0) {
+      const commonFixes: Array<{ wrong: string; correct: string; explanation: string }> = [
+        { wrong: "علي",    correct: "على",     explanation: "حرف الجر يُكتب بألف مقصورة" },
+        { wrong: "اليهم", correct: "إليهم",   explanation: "همزة القطع في أوّل الكلمة" },
+        { wrong: "الي",   correct: "إلى",     explanation: "همزة القطع وألف مقصورة" },
+        { wrong: "هاذا",  correct: "هذا",     explanation: "اسم الإشارة لا يحتوي ألفاً" },
+        { wrong: "هاذه",  correct: "هذه",     explanation: "اسم الإشارة لا يحتوي ألفاً" },
+        { wrong: "لاكن",  correct: "لكن",     explanation: "حرف العطف بدون ألف" },
+        { wrong: "لأكن",  correct: "لكن",     explanation: "حرف العطف بدون ألف" },
+        { wrong: "ذالك",  correct: "ذلك",     explanation: "اسم الإشارة بدون ألف" },
+        { wrong: "ايضا",  correct: "أيضاً",   explanation: "همزة قطع وتنوين في الآخر" },
+        { wrong: "ايضاً", correct: "أيضاً",   explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "دائما", correct: "دائماً",  explanation: "تنوين في آخر الكلمة" },
+        { wrong: "احيانا",correct: "أحياناً", explanation: "همزة قطع وتنوين" },
+        { wrong: "فقط",   correct: "فقط",     explanation: "" },
+        { wrong: "عي",    correct: "في",      explanation: "حرف الجر المناسب هو في" },
+        { wrong: "اكثر",  correct: "أكثر",    explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "اجمل",  correct: "أجمل",    explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "امام",  correct: "أمام",    explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "اسرتي", correct: "أسرتي",   explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "وايضا", correct: "وأيضاً",  explanation: "همزة قطع وتنوين" },
+      ];
+      const words = originalText.split(/\s+/);
+      errors = commonFixes.filter(fix =>
+        fix.explanation && words.some(w => w.replace(/[.,،؛:!؟]/g,"") === fix.wrong)
+      );
+    }
+
     if (errors.length === 0) {
       return <span className="text-gray-700 leading-relaxed">{originalText}</span>;
     }
