@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { getState, clearState, StudentData } from "@/lib/store";
-import { playSound, stopSound } from "@/lib/audio";
+import { playSound, stopSound, speak, setGender, TTS } from "@/lib/audio";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 
 /* ── Welcome Popup ── */
