@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { getState, clearState, StudentData } from "@/lib/store";
-import { playSound, stopSound, speak, setGender, TTS } from "@/lib/audio";
+import { playSound, stopSound, speak, setGender, TTS , stopAll } from "@/lib/audio";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 
 /* ── Welcome Popup ── */
@@ -69,9 +69,9 @@ export default function Dashboard() {
         setShowPopup(true);
         sessionStorage.setItem("welcomeShown", "1");
       }, 400);
-      return () => { stopSound(); clearTimeout(t); };
+      return () => { stopAll(); clearTimeout(t); };
     }
-    return () => stopSound();
+    return () => stopAll();
   }, []);
 
   const chartData = [
