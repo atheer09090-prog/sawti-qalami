@@ -63,11 +63,11 @@ export default function Dashboard() {
     setStudent(s);
     playSound("/assets/welcome.wav", 0.3);
     // Show popup only once per session
-    const alreadyShown = sessionStorage.getItem("welcomeShown");
+    const alreadyShown = localStorage.getItem(`welcome_${s.name}`);
     if (!alreadyShown) {
       const t = setTimeout(() => {
         setShowPopup(true);
-        sessionStorage.setItem("welcomeShown", "1");
+        localStorage.setItem(`welcome_${s.name}`, "1");
       }, 400);
       return () => { stopAll(); clearTimeout(t); };
     }
