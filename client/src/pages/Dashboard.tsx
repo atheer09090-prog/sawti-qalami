@@ -70,8 +70,7 @@ export default function Dashboard() {
     const alreadyShown = localStorage.getItem(`welcome_${s.name}`);
     if (!alreadyShown) {
       localStorage.setItem(`welcome_${s.name}`, "1");
-      // TTS only — no WAV overlap
-      setTimeout(() => speak(TTS.welcome(s.name)), 300);
+      playSound("/assets/welcome.wav", 0.5);
       const t = setTimeout(() => setShowPopup(true), 500);
       return () => { stopAll(); clearTimeout(t); };
     }
