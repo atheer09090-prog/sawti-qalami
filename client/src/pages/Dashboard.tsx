@@ -66,15 +66,16 @@ export default function Dashboard() {
     const av = s.avatar || "boy1";
     setGender(av === "girl1" || av === "girl2" ? "female" : "male");
 
-    // Play welcome ONLY on very first entry ever
-    const alreadyShown = localStorage.getItem(`welcome_${s.name}`);
+    // Play welcome ONCE per browser session (not once ever)
+    const sessionKey = `welcome_session_${s.name}`;
+    const alreadyShown = sessionStorage.getItem(sessionKey);
     if (!alreadyShown) {
-      localStorage.setItem(`welcome_${s.name}`, "1");
+      sessionStorage.setItem(sessionKey, "1");
       playSound("/assets/welcome.wav", 0.5);
       const t = setTimeout(() => setShowPopup(true), 500);
-      return () => { clearTimeout(t); }; // don't stop sound on unmount
+      return () => { clearTimeout(t); };
     }
-    // Already visited — no sound, no popup
+    // Already shown this session — no sound, no popup
   }, []);
 
   const chartData = [
