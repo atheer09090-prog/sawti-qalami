@@ -72,10 +72,9 @@ export default function Dashboard() {
       localStorage.setItem(`welcome_${s.name}`, "1");
       playSound("/assets/welcome.wav", 0.5);
       const t = setTimeout(() => setShowPopup(true), 500);
-      return () => { stopAll(); clearTimeout(t); };
+      return () => { clearTimeout(t); }; // don't stop sound on unmount
     }
     // Already visited — no sound, no popup
-    return () => stopAll();
   }, []);
 
   const chartData = [
