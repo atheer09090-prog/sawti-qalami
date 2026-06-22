@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { getState, clearState, StudentData } from "@/lib/store";
-import { playSound, stopSound, setGender, stopAll } from "@/lib/audio";
+import { playSound, stopSound, setGender, stopAll, audioFile } from "@/lib/audio";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 
 /* ── Welcome Popup ── */
@@ -71,7 +71,7 @@ export default function Dashboard() {
     const alreadyShown = sessionStorage.getItem(sessionKey);
     if (!alreadyShown) {
       sessionStorage.setItem(sessionKey, "1");
-      playSound("/assets/welcome.mp3", 0.5);
+      playSound(audioFile("/assets/welcome.mp3"), 0.5);
       const t = setTimeout(() => setShowPopup(true), 500);
       return () => { clearTimeout(t); };
     }
