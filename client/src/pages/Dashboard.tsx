@@ -71,7 +71,7 @@ export default function Dashboard() {
     const alreadyShown = sessionStorage.getItem(sessionKey);
     if (!alreadyShown) {
       sessionStorage.setItem(sessionKey, "1");
-      playSound("/assets/welcome.wav", 0.5);
+      playSound("/assets/welcome.mp3", 0.5);
       const t = setTimeout(() => setShowPopup(true), 500);
       return () => { clearTimeout(t); };
     }
