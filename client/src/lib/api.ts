@@ -3,7 +3,7 @@ const API_BASE = import.meta.env.VITE_API_URL || "https://sawti-0k3n.onrender.co
 export async function diacritizeText(text: string): Promise<string> {
   if (!text) return text;
   try {
-    const res = await fetch("/api/diacritize", {
+    const res = await fetch(`${API_BASE}/eval/diacritize`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),
