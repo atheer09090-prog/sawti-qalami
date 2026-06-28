@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { evaluateWriting } from "@/lib/api";
-import { playSound, stopSound, playEffect } from "@/lib/audio";
+import { playSound, stopSound, playEffect, stopAll, audioFile } from "@/lib/audio";
 import { setState } from "@/lib/store";
+import { DICTATION_QUESTIONS } from "@/lib/dictation-data";
 
 /* ── Writing topics ── */
 const TOPICS = [
@@ -11,17 +12,6 @@ const TOPICS = [
   { id: "mosque", title: "وَصْفُ الْمَسْجِدِ", icon: "🕌", hints: ["الشَّكْلُ الْمَعْمَارِيُّ", "الأَجْوَاءُ الرُّوحَانِيَّةُ", "الْخَدَمَاتُ", "الأَهَمِّيَّةُ"] },
 ];
 
-/* ── Dictation questions ── */
-const DICTATION_QUESTIONS = [
-  { word: "شَجَرَةٌ", type: "التَّاءُ الْمَرْبُوطَةُ", correct: "شَجَرَةٌ", opts: ["شجرة", "شَجَرَه", "شَجَرَةٌ", "شَجَرَةً"], img: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=80", hint: "انْتِهَاءُ تَاءٍ مَرْبُوطَةٍ" },
-  { word: "مَدْرَسَةٌ", type: "التَّاءُ الْمَرْبُوطَةُ", correct: "مَدْرَسَةٌ", opts: ["مدرسة", "مَدْرَسَه", "مَدْرَسَةٌ", "مَدْرَسَةً"], img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80", hint: "انْتِهَاءُ تَاءٍ مَرْبُوطَةٍ" },
-  { word: "قِرَاءَةٌ", type: "التَّاءُ الْمَرْبُوطَةُ", correct: "قِرَاءَةٌ", opts: ["قراءة", "قِرَاءَه", "قِرَاءَةٌ", "قِرَاءَةً"], img: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&q=80", hint: "الْكَلِمَةُ تَنْتَهِي بِتَاءٍ مَرْبُوطَةٍ" },
-  { word: "كِتَابٌ", type: "التَّنْوِينُ", correct: "كِتَابٌ", opts: ["كتاب", "كِتَابُ", "كِتَابٌ", "كِتَابًا"], img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&q=80", hint: "الضَّمَّةُ التَّنْوِينِيَّةُ عَلَى الْبَاءِ" },
-  { word: "مُعَلِّمَةٌ", type: "الشَّدَّةُ", correct: "مُعَلِّمَةٌ", opts: ["معلمة", "مُعَلِمَة", "مُعَلِّمَةٌ", "مُعَلِّمَةً"], img: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=80", hint: "الشَّدَّةُ عَلَى اللَّامِ وَتَاءٌ مَرْبُوطَةٌ" },
-  { word: "أَصْدِقَاءُ", type: "الْهَمْزَةُ", correct: "أَصْدِقَاءُ", opts: ["اصدقاء", "أَصدِقاء", "أَصْدِقَاءُ", "أَصْدِقَاءً"], img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=80", hint: "الْكَلِمَةُ تَبْدَأُ بِهَمْزَةٍ قَطْعٍ" },
-  { word: "قَلَمٌ", type: "التَّنْوِينُ", correct: "قَلَمٌ", opts: ["قلم", "قَلَمُ", "قَلَمٌ", "قَلَمًا"], img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&q=80", hint: "انْتِهَاءُ نَكِرَةٍ مَرْفُوعَةٍ بِالضَّمَّةِ التَّنْوِينِيَّةِ" },
-  { word: "يَكْتُبُ", type: "الْمُثَبَّطُ", correct: "يَكْتُبُ", opts: ["يكتب", "يَكتُب", "يَكْتُبُ", "يَكْتُبَ"], img: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=600&q=80", hint: "فِعْلٌ مُضَارِعٌ مَرْفُوعٌ بِالضَّمَّةِ" },
-];
 
 const TYPE_COLORS: Record<string, string> = {
   "التَّاءُ الْمَرْبُوطَةُ": "#7c3aed",
@@ -145,8 +135,17 @@ function DictationGame({ onBack }: { onBack: () => void }) {
   const [total, setTotal] = useState(0);
 
   function handleWheelSelect(idx: number) {
-    setCurrentQ(DICTATION_QUESTIONS[idx]);
-    setCurrentIdx(idx);
+    // If already answered, auto-spin again to find an unanswered question
+    if (answered[idx]) {
+      const unanswered = DICTATION_QUESTIONS.map((_, i) => i).filter(i => !answered[i]);
+      if (unanswered.length === 0) { setPhase("done" as any); return; }
+      const next = unanswered[Math.floor(Math.random() * unanswered.length)];
+      setCurrentQ(DICTATION_QUESTIONS[next]);
+      setCurrentIdx(next);
+    } else {
+      setCurrentQ(DICTATION_QUESTIONS[idx]);
+      setCurrentIdx(idx);
+    }
     setSelected(null);
     setPhase("question");
   }
@@ -161,9 +160,9 @@ function DictationGame({ onBack }: { onBack: () => void }) {
     setTotal(t => t + 1);
     if (isCorrect) {
       setCorrect(c => c + 1);
-      playEffect("/assets/correct.wav", 0.7);
+      playEffect(audioFile("/assets/correct.mp3"), 0.7);
     } else {
-      playEffect("/assets/tryagain.wav", 0.6);
+      playEffect(audioFile("/assets/tryagain.mp3"), 0.6);
     }
   }
 
@@ -282,10 +281,7 @@ function DictationGame({ onBack }: { onBack: () => void }) {
           </div>
           {/* Image */}
           <div className="relative">
-            <img src={currentQ.img} alt={currentQ.word} className="w-full h-52 object-cover" />
-            <div className="absolute bottom-3 left-3 bg-white/90 rounded-lg px-3 py-1">
-              <p className="font-bold text-amber-800" style={{ fontFamily: "'Amiri', serif", fontSize: "1.1rem" }}>{currentQ.word}</p>
-            </div>
+            <img src={currentQ.img} alt="" className="w-full h-52 object-cover" />
           </div>
           {/* Question */}
           <div className="p-4">
@@ -321,9 +317,15 @@ function DictationGame({ onBack }: { onBack: () => void }) {
             )}
             {selected && (
               <button onClick={() => setPhase("wheel")}
-                className="w-full py-3 rounded-xl text-white font-bold"
+                className="w-full py-3 rounded-xl text-white font-bold mb-2"
                 style={{ background: "linear-gradient(135deg, #b45309, #d97706)" }}>
                 🎡 الْعَوْدَةُ إِلَى الْعَجَلَةِ
+              </button>
+            )}
+            {!selected && (
+              <button onClick={() => { setSelected(null); setPhase("wheel"); }}
+                className="w-full py-2 rounded-xl text-amber-700 font-bold text-sm border-2 border-amber-200 bg-amber-50 hover:bg-amber-100 transition-all">
+                ↩️ تَخَطَّ هَذَا السُّؤَالَ وَعُدْ لِلْعَجَلَةِ
               </button>
             )}
           </div>
@@ -338,34 +340,52 @@ function DictationGame({ onBack }: { onBack: () => void }) {
 
 /* ── Explainable Writing Result Component ── */
 function WritingResult({ result, originalText }: { result: any; originalText: string }) {
+  const [activeError, setActiveError] = useState<number | null>(null);
+
   function renderAnnotatedText() {
     // Build errors from backend errors array OR extract from text locally
     let errors: Array<{ wrong: string; correct: string; explanation: string }> =
-      result.errors || [];
+      (result.errors && result.errors.length > 0) ? result.errors : [];
 
-    // If backend didn't return errors array, try to detect common Arabic spelling mistakes locally
-    if (errors.length === 0) {
+    // Always run local detection to catch what backend misses
+    {
+      const stripDiacritics = (s: string) => s.replace(/[\u064B-\u065F\u0670]/g, "");
+
       const commonFixes: Array<{ wrong: string; correct: string; explanation: string }> = [
-        { wrong: "علي",    correct: "على",     explanation: "حرف الجر يُكتب بألف مقصورة" },
-        { wrong: "اليهم", correct: "إليهم",   explanation: "همزة القطع في أوّل الكلمة" },
-        { wrong: "الي",   correct: "إلى",     explanation: "همزة القطع وألف مقصورة" },
-        { wrong: "هاذا",  correct: "هذا",     explanation: "اسم الإشارة لا يحتوي ألفاً" },
-        { wrong: "هاذه",  correct: "هذه",     explanation: "اسم الإشارة لا يحتوي ألفاً" },
-        { wrong: "لاكن",  correct: "لكن",     explanation: "حرف العطف بدون ألف" },
-        { wrong: "لأكن",  correct: "لكن",     explanation: "حرف العطف بدون ألف" },
-        { wrong: "ذالك",  correct: "ذلك",     explanation: "اسم الإشارة بدون ألف" },
-        { wrong: "ايضا",  correct: "أيضاً",   explanation: "همزة قطع وتنوين في الآخر" },
-        { wrong: "ايضاً", correct: "أيضاً",   explanation: "همزة قطع في أوّل الكلمة" },
-        { wrong: "دائما", correct: "دائماً",  explanation: "تنوين في آخر الكلمة" },
-        { wrong: "احيانا",correct: "أحياناً", explanation: "همزة قطع وتنوين" },
-        { wrong: "فقط",   correct: "فقط",     explanation: "" },
-        { wrong: "عي",    correct: "في",      explanation: "حرف الجر المناسب هو في" },
-        { wrong: "اكثر",  correct: "أكثر",    explanation: "همزة قطع في أوّل الكلمة" },
-        { wrong: "اجمل",  correct: "أجمل",    explanation: "همزة قطع في أوّل الكلمة" },
-        { wrong: "امام",  correct: "أمام",    explanation: "همزة قطع في أوّل الكلمة" },
-        { wrong: "اسرتي", correct: "أسرتي",   explanation: "همزة قطع في أوّل الكلمة" },
-        { wrong: "وايضا", correct: "وأيضاً",  explanation: "همزة قطع وتنوين" },
-        // التاء المربوطة في نهاية الصفات والأسماء
+        // همزة القطع في أول الكلمة
+        { wrong: "ايضا",    correct: "أيضاً",   explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "ايضاً",   correct: "أيضاً",   explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "اشجار",   correct: "أشجار",   explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "العاب",   correct: "ألعاب",   explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "اطفال",   correct: "أطفال",   explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "اكثر",    correct: "أكثر",    explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "اجمل",    correct: "أجمل",    explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "امام",    correct: "أمام",    explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "اسرتي",   correct: "أسرتي",   explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "احيانا",  correct: "أحياناً", explanation: "همزة قطع وتنوين" },
+        { wrong: "اولا",    correct: "أولاً",   explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "اخيرا",   correct: "أخيراً",  explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "اصدقاء",  correct: "أصدقاء",  explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "ابي",     correct: "أبي",     explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "امي",     correct: "أمي",     explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "وايضا",   correct: "وأيضاً",  explanation: "همزة قطع وتنوين" },
+        { wrong: "والعاب",  correct: "وألعاب",  explanation: "همزة قطع في أوّل الكلمة" },
+        { wrong: "واشجار",  correct: "وأشجار",  explanation: "همزة قطع في أوّل الكلمة" },
+        // حرف الجر
+        { wrong: "علي",     correct: "على",     explanation: "حرف الجر يُكتب بألف مقصورة" },
+        { wrong: "الي",     correct: "إلى",     explanation: "همزة قطع وألف مقصورة" },
+        { wrong: "اليهم",   correct: "إليهم",   explanation: "همزة القطع في أوّل الكلمة" },
+        // اسم الإشارة
+        { wrong: "هاذا",    correct: "هذا",     explanation: "اسم الإشارة لا يحتوي ألفاً" },
+        { wrong: "هاذه",    correct: "هذه",     explanation: "اسم الإشارة لا يحتوي ألفاً" },
+        { wrong: "ذالك",    correct: "ذلك",     explanation: "اسم الإشارة بدون ألف" },
+        // حروف عطف وأدوات
+        { wrong: "لاكن",    correct: "لكن",     explanation: "حرف العطف بدون ألف" },
+        { wrong: "لأكن",    correct: "لكن",     explanation: "حرف العطف بدون ألف" },
+        { wrong: "دائما",   correct: "دائماً",  explanation: "تنوين في آخر الكلمة" },
+        // التاء المربوطة — الأسماء والصفات
+        { wrong: "ولايه",   correct: "ولاية",   explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
+        { wrong: "حديقه",   correct: "حديقة",   explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
         { wrong: "جميله",   correct: "جميلة",   explanation: "الصفة تنتهي بتاء مربوطة لا هاء" },
         { wrong: "كبيره",   correct: "كبيرة",   explanation: "الصفة تنتهي بتاء مربوطة لا هاء" },
         { wrong: "صغيره",   correct: "صغيرة",   explanation: "الصفة تنتهي بتاء مربوطة لا هاء" },
@@ -374,7 +394,7 @@ function WritingResult({ result, originalText }: { result: any; originalText: st
         { wrong: "قصيره",   correct: "قصيرة",   explanation: "الصفة تنتهي بتاء مربوطة لا هاء" },
         { wrong: "كثيره",   correct: "كثيرة",   explanation: "الصفة تنتهي بتاء مربوطة لا هاء" },
         { wrong: "قليله",   correct: "قليلة",   explanation: "الصفة تنتهي بتاء مربوطة لا هاء" },
-        { wrong: "حديقه",   correct: "حديقة",   explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
+        { wrong: "متنوعه",  correct: "متنوعة",  explanation: "الصفة تنتهي بتاء مربوطة لا هاء" },
         { wrong: "مدرسه",   correct: "مدرسة",   explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
         { wrong: "غرفه",    correct: "غرفة",    explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
         { wrong: "شجره",    correct: "شجرة",    explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
@@ -383,10 +403,13 @@ function WritingResult({ result, originalText }: { result: any; originalText: st
         { wrong: "نافذه",   correct: "نافذة",   explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
         { wrong: "طاوله",   correct: "طاولة",   explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
         { wrong: "سياره",   correct: "سيارة",   explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
-        { wrong: "سياراتي", correct: "سياراتي", explanation: "" },
         { wrong: "عائله",   correct: "عائلة",   explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
         { wrong: "مكتبه",   correct: "مكتبة",   explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
         { wrong: "صاله",    correct: "صالة",    explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
+        { wrong: "طيبه",    correct: "طيبة",    explanation: "الصفة تنتهي بتاء مربوطة لا هاء" },
+        { wrong: "عظيمه",   correct: "عظيمة",   explanation: "الصفة تنتهي بتاء مربوطة لا هاء" },
+        { wrong: "كثيره",   correct: "كثيرة",   explanation: "الصفة تنتهي بتاء مربوطة لا هاء" },
+        { wrong: "شجره",    correct: "شجرة",    explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
         { wrong: "نخله",    correct: "نخلة",    explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
         { wrong: "فرصه",    correct: "فرصة",    explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
         { wrong: "رياضه",   correct: "رياضة",   explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
@@ -394,16 +417,25 @@ function WritingResult({ result, originalText }: { result: any; originalText: st
         { wrong: "لعبه",    correct: "لعبة",    explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
         { wrong: "رحله",    correct: "رحلة",    explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
         { wrong: "جزيره",   correct: "جزيرة",   explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
-        { wrong: "وجميله",  correct: "وجميلة",  explanation: "الصفة تنتهي بتاء مربوطة لا هاء" },
-        { wrong: "وواسعه",  correct: "وواسعة",  explanation: "الصفة تنتهي بتاء مربوطة لا هاء" },
-        { wrong: "وكبيره",  correct: "وكبيرة",  explanation: "الصفة تنتهي بتاء مربوطة لا هاء" },
-        { wrong: "وصغيره",  correct: "وصغيرة",  explanation: "الصفة تنتهي بتاء مربوطة لا هاء" },
-        { wrong: "وجميلة",  correct: "وجميلة",  explanation: "" },
+        { wrong: "مزرعه",   correct: "مزرعة",   explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
+        { wrong: "منطقه",   correct: "منطقة",   explanation: "الاسم ينتهي بتاء مربوطة لا هاء" },
       ];
+
       const words = originalText.split(/\s+/);
-      errors = commonFixes.filter(fix =>
-        fix.explanation && words.some(w => w.replace(/[.,،؛:!؟]/g,"") === fix.wrong)
+      const localErrors = commonFixes.filter(fix =>
+        fix.explanation && words.some(w => {
+          const clean = stripDiacritics(w.replace(/[.,،؛:!؟٣٢١٠0-9]/g, ""));
+          // Match exact or with common prefixes وفلب
+          return clean === fix.wrong ||
+            clean === "و" + fix.wrong ||
+            clean === "ف" + fix.wrong ||
+            clean === "ل" + fix.wrong ||
+            clean === "ب" + fix.wrong;
+        })
       );
+      // Merge with backend errors, avoid duplicates
+      const backendWrongs = new Set(errors.map(e => e.wrong));
+      errors = [...errors, ...localErrors.filter(e => !backendWrongs.has(e.wrong))];
     }
 
     if (errors.length === 0) {
@@ -413,18 +445,36 @@ function WritingResult({ result, originalText }: { result: any; originalText: st
     return (
       <span className="leading-loose text-base" style={{ fontFamily: "'Cairo', sans-serif" }}>
         {words.map((word, i) => {
-          const cleanWord = word.replace(/[.,،؛:!؟]/g, "");
-          const error = errors.find(e => e.wrong === cleanWord || e.wrong === word || cleanWord.includes(e.wrong));
+          const stripD = (s: string) => s.replace(/[\u064B-\u065F\u0670]/g, "");
+          const cleanWord = stripD(word.replace(/[.,،؛:!؟٣٢١٠0-9]/g, ""));
+          const error = errors.find(e => e.wrong === cleanWord || stripD(e.wrong) === cleanWord);
           if (error && word.trim()) {
+            const isOpen = activeError === i;
             return (
-              <span key={i} className="relative inline-block group">
-                <span className="underline decoration-wavy decoration-red-500 cursor-pointer px-0.5 rounded"
-                  style={{ background: "#fee2e2", color: "#dc2626" }}>{word}</span>
-                <span className="absolute bottom-full right-0 mb-1 hidden group-hover:block z-10 w-52 bg-gray-800 text-white text-xs rounded-lg p-2 text-right shadow-lg">
-                  <span className="block font-bold text-red-300 mb-1">❌ {error.wrong}</span>
-                  <span className="block font-bold text-green-300 mb-1">✅ {error.correct}</span>
-                  <span className="block text-gray-300">{error.explanation}</span>
-                </span>
+              <span key={i} className="relative inline-block">
+                <span
+                  className="underline decoration-wavy decoration-red-500 cursor-pointer px-0.5 rounded"
+                  style={{ background: "#fee2e2", color: "#dc2626" }}
+                  onClick={() => setActiveError(isOpen ? null : i)}
+                >{word}</span>
+                {isOpen && (
+                  <span className="absolute bottom-full right-0 mb-1 z-10 bg-gray-900 text-white text-xs rounded-xl p-3 text-right shadow-2xl"
+                    style={{ minWidth: "220px", maxWidth: "260px" }}>
+                    {/* الخطأ والصحيح */}
+                    <span className="flex items-center gap-2 mb-2">
+                      <span className="line-through text-red-400 font-bold text-sm">{error.wrong}</span>
+                      <span className="text-gray-400">←</span>
+                      <span className="text-green-400 font-bold text-sm">{error.correct}</span>
+                    </span>
+                    {/* الشرح */}
+                    <span className="block text-yellow-200 text-xs mb-2 leading-relaxed">📌 {error.explanation}</span>
+                    {/* طريقة الكتابة */}
+                    <span className="block bg-gray-800 rounded-lg p-2 text-xs leading-relaxed text-gray-300">
+                      ✍️ اكتب: <span className="text-green-300 font-bold">{error.correct}</span>
+                    </span>
+                    <span className="block text-gray-500 text-xs mt-2 cursor-pointer text-center" onClick={(e) => { e.stopPropagation(); setActiveError(null); }}>✕ إغلاق</span>
+                  </span>
+                )}
               </span>
             );
           }
@@ -435,10 +485,32 @@ function WritingResult({ result, originalText }: { result: any; originalText: st
   }
 
   const overall  = result.overall_score  ?? result.overall  ?? 0;
-  const spelling = result.spelling_score ?? result.spelling ?? 0;
   const structure= result.structure_score?? result.structure?? 0;
   const contentS = result.content_score  ?? result.content  ?? structure;
   const errors: any[] = result.errors || [];
+
+  // حساب درجة الإملاء الفعلية بناءً على الأخطاء المكتشفة
+  function calcSpellingScore() {
+    const apiScore = result.spelling_score ?? result.spelling ?? 0;
+    // نحسب الأخطاء الإملائية المكتشفة محلياً
+    const stripDiacritics = (s: string) => s.replace(/[\u064B-\u065F\u0670]/g, "");
+    const words = originalText.split(/\s+/).filter(Boolean);
+    const totalWords = words.length || 1;
+    // نعد كم خطأ إملائي موجود في النص
+    const spellingErrorCount = errors.filter(e =>
+      e.explanation?.includes("همزة") ||
+      e.explanation?.includes("تاء مربوطة") ||
+      e.explanation?.includes("ألف") ||
+      e.explanation?.includes("إملاء") ||
+      e.explanation?.includes("تنوين")
+    ).length;
+    if (spellingErrorCount === 0) return apiScore;
+    // كل خطأ يخصم نسبة من الدرجة بحسب حجم النص
+    const penalty = Math.min(spellingErrorCount * Math.max(8, Math.round(60 / totalWords)), 60);
+    return Math.max(apiScore - penalty, apiScore * 0.4);
+  }
+
+  const spelling = Math.round(calcSpellingScore());
 
   return (
     <div className="bg-white rounded-2xl shadow mt-4 overflow-hidden text-right">
@@ -492,7 +564,7 @@ function WritingResult({ result, originalText }: { result: any; originalText: st
           {renderAnnotatedText()}
         </div>
         {errors.length > 0 && (
-          <p className="text-xs text-gray-400 mt-1 text-center">💡 مَرِّرْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِرُؤْيَةِ التَّصْحِيحِ</p>
+          <p className="text-xs text-gray-400 mt-1 text-center">💡 اضْغَطْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِرُؤْيَةِ التَّصْحِيحِ</p>
         )}
       </div>
 
@@ -534,12 +606,34 @@ function WritingResult({ result, originalText }: { result: any; originalText: st
           <div>
             <p className="font-bold text-amber-700 text-sm mb-2">💡 اقْتِرَاحَاتُ التَّحْسِينِ:</p>
             <div className="space-y-1">
-              {result.improvements.map((s: string, i: number) => (
-                <div key={i} className="flex items-start gap-2 bg-amber-50 rounded-lg px-3 py-2">
-                  <span className="text-amber-500">•</span>
-                  <p className="text-sm text-gray-700">{s}</p>
+              {result.improvements.map((s: string, i: number) => {
+                // Convert generic "صحح N خطأ" messages to friendlier Arabic
+                const friendly = s
+                  .replace(/صحح\s*(\d+)\s*خط[أا]\s*إملائي/g, (_, n) =>
+                    n === "1" ? "لَدَيْكَ خَطَأٌ إِمْلَائِيٌّ وَاحِدٌ — اضْغَطْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِمَعْرِفَتِهِ" :
+                    `لَدَيْكَ ${n} أَخْطَاءٍ إِمْلَائِيَّةٍ — اضْغَطْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِمَعْرِفَتِهَا`)
+                  .replace(/أضف\s*(\d+)\s*كلمة/g, (_, n) => `أَضِفْ ${n} كَلِمَاتٍ عَلَى الْأَقَلِّ لِإِثْرَاءِ النَّصِّ`)
+                  .replace(/أضف\s*أدوات\s*ربط/g, "أَضِفْ أَدَوَاتِ رَبْطٍ مِثْلَ: (لِأَنَّ، لَذَلِكَ، بَيْنَمَا، وَمَعَ ذَلِكَ)")
+                  .replace(/استخدم\s*علامات\s*الترقيم/g, "اسْتَخْدِمْ عَلَامَاتِ التَّرْقِيمِ بِشَكْلٍ صَحِيحٍ (. ، ؟ !)")
+                  .replace(/وسّع\s*المفردات/gi, "حَاوِلْ اسْتِخْدَامَ كَلِمَاتٍ أَكْثَرَ تَنَوُّعاً وَثَرَاءً");
+                return (
+                  <div key={i} className="flex items-start gap-2 bg-amber-50 rounded-lg px-3 py-2">
+                    <span className="text-amber-500">•</span>
+                    <p className="text-sm text-gray-700">{friendly}</p>
+                  </div>
+                );
+              })}
+              {/* Show detected errors list if any */}
+              {(result.errors?.length > 0) && (
+                <div className="bg-red-50 rounded-lg px-3 py-2 mt-1">
+                  <p className="text-xs font-bold text-red-600 mb-1">🔴 الْأَخْطَاءُ الْمُكْتَشَفَةُ:</p>
+                  {result.errors.map((e: any, i: number) => (
+                    <p key={i} className="text-xs text-gray-700 mb-0.5">
+                      • <span className="line-through text-red-500">{e.wrong}</span> ← <span className="text-green-600 font-bold">{e.correct}</span> <span className="text-gray-400">({e.explanation})</span>
+                    </p>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           </div>
         )}
@@ -559,8 +653,8 @@ export default function Writing() {
 
   useEffect(() => {
     if (!selectedTopic) return;
-    playSound("/assets/lesson-writing-intro.wav", 0.5);
-    return () => stopSound();
+    playSound(audioFile("/assets/lesson-writing-intro.mp3"), 0.5);
+    // No cleanup on unmount — sound persists when navigating
   }, [selectedTopic?.id]);
 
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
@@ -572,8 +666,15 @@ export default function Writing() {
     try {
       const res = await evaluateWriting(text, 20, 0, selectedTopic?.id || "");
       setResult(res);
-      setState((prev) => ({ ...prev, writingProgress: Math.max(prev.writingProgress, res.overall_score || 0) }));
-      if ((res.overall_score || 0) >= 70) playEffect("/assets/achievement.wav", 0.7);
+      const score = res.overall_score || 0;
+      const newStars = score >= 90 ? 5 : score >= 70 ? 4 : score >= 50 ? 3 : score >= 30 ? 2 : 1;
+      setState((prev) => ({
+        ...prev,
+        writingProgress: Math.max(prev.writingProgress, score),
+        stars: Math.max(prev.stars, newStars),
+        points: prev.points + Math.round(score / 10),
+      }));
+      if (score >= 70) playEffect(audioFile("/assets/achievement.mp3"), 0.7);
     } catch {
       setResult({ overall_score: 75, spelling_score: 80, structure_score: 70, feedback: "جَيِّدٌ! كِتَابَتُكَ وَاضِحَةٌ.", strengths: ["إِمْلَاءٌ جَيِّدٌ"], improvements: ["أَضِفْ أَدَوَاتِ رَبْطٍ"] });
     }
@@ -587,7 +688,7 @@ export default function Writing() {
   if (view === "writing" && selectedTopic) return (
     <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
       <div className="p-4" style={{ background: "linear-gradient(135deg, #b45309 0%, #d97706 100%)" }}>
-        <button onClick={() => { setView("topics"); setResult(null); setText(""); stopSound(); }} className="text-amber-100 text-sm mb-1">← اخْتَرْ مَوْضُوعًا آخَرَ</button>
+        <button onClick={() => { setView("topics"); setResult(null); setText(""); stopAll(); }} className="text-amber-100 text-sm mb-1">← اخْتَرْ مَوْضُوعًا آخَرَ</button>
         <p className="text-white text-sm text-right font-bold">✏️ دَرْسُ الْكِتَابَةِ</p>
       </div>
       <div className="max-w-2xl mx-auto px-4 py-4">
@@ -646,6 +747,20 @@ export default function Writing() {
           <img src="/assets/omani-boy.png" alt="" className="w-10 h-10 object-contain" />
           <p className="font-bold text-sm text-right">اخْتَرْ نَشَاطَ الْكِتَابَةِ وَابْدَأْ إِبْدَاعَكَ! ✏️</p>
         </div>
+
+        {/* Writing Games card */}
+        <button onClick={() => setLocation("/writing-games")}
+          className="w-full p-5 rounded-2xl text-right shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all mb-3 flex justify-between items-center"
+          style={{ background: "linear-gradient(135deg, #ede9f5, #ddd6fe)", border: "2px solid #c4b5fd" }}>
+          <div className="flex items-center gap-2">
+            <span className="text-xs bg-purple-700 text-white px-2 py-1 rounded-full font-bold">أَلْعَابٌ تَفَاعُلِيَّةٌ</span>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-purple-800">🎮 أَلْعَابُ الْهَمْزَةِ</h2>
+            <p className="text-purple-600 text-sm">هَمْزَةٌ مُتَوَسِّطَةٌ • هَمْزَةٌ مُتَطَرِّفَةٌ • تَحَدِّي سَرِيعٌ</p>
+          </div>
+          <span className="text-4xl">🎮</span>
+        </button>
 
         {/* Dictation Journey card */}
         <button onClick={() => setView("dictation")}
