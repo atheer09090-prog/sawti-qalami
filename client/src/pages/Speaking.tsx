@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { evaluateSpeech } from "@/lib/api";
-import { playSound, stopSound, playEffect } from "@/lib/audio";
+import { evaluateSpeech, diacritizeText } from "@/lib/api";
+import { playSound, stopSound, playEffect, stopAll, audioFile } from "@/lib/audio";
 import { setState, getState } from "@/lib/store";
 
 const LESSONS = [
@@ -17,6 +17,7 @@ const TOPIC_ICONS: Record<string, string> = {
 
 export default function Speaking() {
   const [, setLocation] = useLocation();
+  const [enhancedTranscript, setEnhancedTranscript] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<typeof LESSONS[0] | null>(null);
   const [selectedTopic, setSelectedTopic] = useState("");
   const [recording, setRecording] = useState(false);
@@ -34,16 +35,17 @@ export default function Speaking() {
       stopSound();
       return;
     }
-    const audioFile = selectedLesson.id === "earth"
-      ? "/assets/lesson-earth-hour.wav"
-      : "/assets/lesson-speaking-intro.wav";
-    playSound(audioFile, 0.55);
-    return () => stopSound();
+    // Play intro sound — gender aware
+    const src = selectedLesson.id === "earth"
+      ? "/assets/lesson-earth-hour.mp3"
+      : "/assets/lesson-speaking-intro.mp3";
+    playSound(audioFile(src), 0.5);
+    // No cleanup on unmount — sound persists when navigating
   }, [selectedLesson?.id]);
 
   // Stop intro sound the moment recording starts
   useEffect(() => {
-    if (recording) stopSound();
+    if (recording) stopAll();
   }, [recording]);
 
   async function startRecording() {
@@ -61,12 +63,26 @@ export default function Speaking() {
         try {
           const res = await evaluateSpeech(blob, selectedTopic, 0, selectedLesson?.id || "");
           setResult(res);
-          setState((prev) => ({ ...prev, speakingProgress: Math.max(prev.speakingProgress, res.overall || 0) }));
+          if (res.transcript) {
+            // Show raw transcript immediately, then enhance with diacritics
+            setEnhancedTranscript(res.transcript);
+            diacritizeText(res.transcript).then((diacritized) => {
+              setEnhancedTranscript(diacritized);
+            });
+          }
+          const score = res.overall || 0;
+          const newStars = score >= 90 ? 5 : score >= 70 ? 4 : score >= 50 ? 3 : score >= 30 ? 2 : 1;
+          setState((prev) => ({
+            ...prev,
+            speakingProgress: Math.max(prev.speakingProgress, score),
+            stars: Math.max(prev.stars, newStars),
+            points: prev.points + Math.round(score / 10),
+          }));
           // Play achievement sound if score >= 70
           if ((res.overall || 0) >= 70) {
-            playEffect("/assets/achievement.wav", 0.7);
+            playEffect(audioFile("/assets/achievement.mp3"), 0.7);
           } else {
-            playEffect("/assets/tryagain.wav", 0.6);
+            playEffect(audioFile("/assets/tryagain.mp3"), 0.6);
           }
         } catch {
           setError("تَعَذَّرَ الِاتِّصَالُ بِالْخَادِمِ. تَأَكَّدْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ.");
@@ -100,27 +116,26 @@ export default function Speaking() {
           <button onClick={() => setLocation("/skills")} className="text-green-200 text-sm">← الْمَهَارَاتُ</button>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-3xl p-2 bg-green-700 rounded-xl">🎙️</span>
           <div className="text-right">
             <h1 className="text-2xl font-bold text-white">مَهَارَةُ التَّحَدُّثِ</h1>
             <p className="text-green-200 text-sm">تَعَلَّمِ التَّعْبِيرَ الشَّفَهِيَّ وَالتَّحَدُّثَ بِثِقَةٍ</p>
           </div>
+          <span className="text-3xl p-2 bg-green-700 rounded-xl">🎙️</span>
         </div>
       </div>
       <div className="max-w-2xl mx-auto px-4 py-4">
         <div className="bg-white rounded-xl p-3 mb-4 flex items-center gap-3 shadow">
-          <img src="/assets/omani-boy.png" alt="" className="w-10 h-10 object-contain" />
-          <div className="text-right">
+          <div className="text-right flex-1">
             <p className="font-bold text-sm">مَرْحَباً يَا بَطَلَ اللُّغَةِ الْعَرَبِيَّةِ! 🌟</p>
             <p className="text-gray-500 text-xs">هُنَا نَتَعَلَّمُ وَنُبْدِعُ مَعًا</p>
           </div>
+          <img src="/assets/omani-boy.png" alt="" className="w-10 h-10 object-contain" />
         </div>
         <h2 className="text-right font-bold text-lg mb-3" style={{ color: "#1a5c2a" }}>📚 دُرُوسُ التَّحَدُّثِ</h2>
         <div className="flex flex-col gap-3">
           {LESSONS.map((l) => (
             <button key={l.id} onClick={() => setSelectedLesson(l)}
               className="p-4 bg-white rounded-xl shadow text-right hover:shadow-md hover:-translate-y-0.5 transition-all flex justify-between items-center">
-              <span className="text-3xl">{l.icon}</span>
               <div>
                 <div className="flex gap-2 justify-end mb-1">
                   <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">{l.level}</span>
@@ -128,6 +143,7 @@ export default function Speaking() {
                 </div>
                 <p className="text-gray-500 text-sm">{l.desc}</p>
               </div>
+              <span className="text-3xl">{l.icon}</span>
             </button>
           ))}
         </div>
@@ -218,8 +234,10 @@ export default function Speaking() {
               {/* Transcript */}
               {result.transcript && (
                 <div className="bg-white rounded-xl p-3 mb-3 border border-green-200">
-                  <p className="text-xs text-gray-400 mb-1">📝 مَا قُلْتَهُ:</p>
-                  <p className="text-gray-700 leading-relaxed text-sm">{result.transcript}</p>
+                  <p className="text-xs text-gray-400 mb-2 text-left">📝 مَا قُلْتَهُ:</p>
+                  <p className="text-gray-800 leading-loose text-base font-medium text-right" style={{ fontFamily: "'Cairo', sans-serif", lineHeight: "2.2" }}>
+                    {enhancedTranscript || result.transcript}
+                  </p>
                 </div>
               )}
               {/* Overall score */}
@@ -240,17 +258,18 @@ export default function Speaking() {
               {/* Skill breakdown */}
               <div className="grid grid-cols-2 gap-2 mb-3">
                 {[
-                  { label: "النُّطْقُ",       value: result.pronunciation,       color: "#1a5c2a", bg: "#dcf5e7" },
-                  { label: "بِنَاءُ الْجُمَلِ",value: result.sentence_structure,  color: "#7c3aed", bg: "#ede9f5" },
-                  { label: "التَّشْكِيلُ",    value: result.diacritics,           color: "#b45309", bg: "#fef3e2" },
-                  { label: "الإِعْرَابُ",     value: result.grammar,              color: "#1d4ed8", bg: "#dbeafe" },
-                ].map(({label,value,color,bg})=>(
+                  { label: "🗣️ وُضُوحُ النُّطْقِ",   value: result.pronunciation,                              color: "#1a5c2a", bg: "#dcf5e7",  tip: "مدى وضوح نطق الكلمات" },
+                  { label: "📝 بِنَاءُ الْجُمَلِ",    value: result.sentence_structure,                         color: "#7c3aed", bg: "#ede9f5",  tip: "ترتيب الكلمات وتكوين الجمل" },
+                  { label: "💡 ثَرَاءُ الْمُفْرَدَاتِ", value: result.vocabulary ?? result.grammar ?? 0,          color: "#0c7490", bg: "#e0f7fa",  tip: "تنوع الكلمات المستخدمة" },
+                  { label: "🔗 تَرَابُطُ الْأَفْكَارِ", value: result.coherence ?? result.sentence_structure ?? 0, color: "#b45309", bg: "#fef3e2",  tip: "ترتيب الأفكار وتسلسلها" },
+                ].map(({label,value,color,bg,tip})=>(
                   <div key={label} className="rounded-xl p-3 text-center" style={{background:bg}}>
                     <p className="text-xs text-gray-500 mb-1">{label}</p>
-                    <p className="text-xl font-bold" style={{color}}>{value}%</p>
+                    <p className="text-xl font-bold" style={{color}}>{value ?? 0}%</p>
                     <div className="w-full h-1.5 bg-white rounded-full mt-1 overflow-hidden">
-                      <div className="h-1.5 rounded-full" style={{width:`${value}%`,background:color}}/>
+                      <div className="h-1.5 rounded-full" style={{width:`${value ?? 0}%`,background:color}}/>
                     </div>
+                    <p className="text-gray-400 text-xs mt-1">{tip}</p>
                   </div>
                 ))}
               </div>
