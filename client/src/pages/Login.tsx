@@ -33,7 +33,7 @@ export default function Login() {
     const g = avatar === "girl1" || avatar === "girl2" ? "female" : "male";
     setGender(g);
     setState(() => ({
-      name, grade: `${grade} - شعبة ${section}`, avatar, points: 0, stars: 0,
+      name, grade: section.trim() ? `${grade.replace(/ \d+$/, "")} ${section.trim()}` : grade, avatar, points: 0, stars: 0,
       speakingProgress: 0, writingProgress: 0, selfLearningProgress: 0,
       completedLessons: [], badges: [], teacherComment: "",
     }));
@@ -157,7 +157,7 @@ export default function Login() {
               type="text"
               value={section}
               onChange={(e) => setSection(e.target.value)}
-              placeholder="مثال: أ أو ب أو ١..."
+              placeholder="اكتب شعبتك (اختياري)..."
               className="w-full px-4 py-3 rounded-xl border-2 text-right focus:outline-none text-base"
               style={{ borderColor: "#e5e7eb", fontFamily: "'Cairo', sans-serif" }}
             />
