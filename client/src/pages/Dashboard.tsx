@@ -157,22 +157,6 @@ export default function Dashboard() {
               <p className="text-green-600 text-sm mt-2 font-semibold">دُخُولٌ ←</p>
             </button>
 
-            {/* Grade change */}
-            <button
-              className="p-4 rounded-2xl text-right shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
-              style={{ background: "#ede9f5", border: "2px solid #c4b5fd" }}
-              onClick={() => setLocation("/class-selection")}
-            >
-              <div className="flex justify-between items-center">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                  style={{ background: "#7c3aed" }}>🎓</div>
-                <div>
-                  <h3 className="font-bold text-lg text-purple-700">تَحْدِيدُ الصَّفِّ</h3>
-                  <p className="text-sm text-gray-500">اخْتَرْ صَفَّكَ الدِّرَاسِيَّ</p>
-                </div>
-              </div>
-              <p className="text-purple-600 text-sm mt-2 font-semibold">دُخُولٌ ←</p>
-            </button>
 
             {/* Assessments */}
             <button

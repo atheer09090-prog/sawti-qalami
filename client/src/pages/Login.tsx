@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { setState } from "@/lib/store";
-import { playSound, stopSound } from "@/lib/audio";
+import { stopSound, setGender } from "@/lib/audio";
 
 const AVATARS = [
   { id: "boy1",  src: "/assets/omani-boy.png",   label: "طالب ١" },
@@ -9,28 +9,31 @@ const AVATARS = [
   { id: "girl1", src: "/assets/omani-girl.png",  label: "طالبة ١" },
   { id: "girl2", src: "/assets/omani-girl2.png", label: "طالبة ٢" },
 ];
+
 const GRADES = [
-  "الصف الرابع", "الصف الخامس", "الصف السادس",
-  "الصف السابع", "الصف الثامن", "الصف التاسع",
+  "السادس ١", "السادس ٢", "السادس ٣", "السادس ٤",
 ];
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const [name, setName] = useState("");
-  const [grade, setGrade] = useState("الصف السادس");
+  const [grade, setGrade] = useState("السادس ١");
+  const [section, setSection] = useState("");
   const [avatar, setAvatar] = useState("boy1");
 
   
   useEffect(() => {
-    playSound("/assets/welcome.wav", 0.45);
+    // No sound on login page - sound plays in Dashboard on first entry
     return () => stopSound();
   }, []);
 
   function handleStart() {
     if (!name.trim()) return alert("الرجاء إدخال اسمك");
     stopSound();
+    const g = avatar === "girl1" || avatar === "girl2" ? "female" : "male";
+    setGender(g);
     setState(() => ({
-      name, grade, avatar, points: 0, stars: 0,
+      name, grade: `${grade} - شعبة ${section}`, avatar, points: 0, stars: 0,
       speakingProgress: 0, writingProgress: 0, selfLearningProgress: 0,
       completedLessons: [], badges: [], teacherComment: "",
     }));
@@ -90,7 +93,11 @@ export default function Login() {
               {AVATARS.map((av) => (
                 <button
                   key={av.id}
-                  onClick={() => setAvatar(av.id)}
+                  onClick={() => {
+                    setAvatar(av.id);
+                    const g = av.id === "girl1" || av.id === "girl2" ? "female" : "male";
+                    setGender(g);
+                  }}
                   className="w-16 h-16 rounded-full border-2 transition-all overflow-hidden"
                   style={{
                     borderColor: avatar === av.id ? "#1a5c2a" : "#e5e7eb",
@@ -129,7 +136,7 @@ export default function Login() {
           {/* Grade */}
           <div className="mb-5">
             <label className="block text-right text-gray-600 mb-1.5 font-semibold text-sm">
-              صَفُّكَ الدِّرَاسِيُّ:
+              فَصْلُكَ الدِّرَاسِيُّ:
             </label>
             <select
               value={grade}
@@ -139,6 +146,21 @@ export default function Login() {
             >
               {GRADES.map((g) => <option key={g} value={g}>{g}</option>)}
             </select>
+          </div>
+
+          {/* Section */}
+          <div className="mb-5">
+            <label className="block text-right text-gray-600 mb-1.5 font-semibold text-sm">
+              شُعْبَتُكَ:
+            </label>
+            <input
+              type="text"
+              value={section}
+              onChange={(e) => setSection(e.target.value)}
+              placeholder="مثال: أ أو ب أو ١..."
+              className="w-full px-4 py-3 rounded-xl border-2 text-right focus:outline-none text-base"
+              style={{ borderColor: "#e5e7eb", fontFamily: "'Cairo', sans-serif" }}
+            />
           </div>
 
           {/* Start */}
