@@ -236,7 +236,23 @@ export default function Speaking() {
                 <div className="bg-white rounded-xl p-3 mb-3 border border-green-200">
                   <p className="text-xs text-gray-400 mb-2 text-left">📝 مَا قُلْتَهُ:</p>
                   <p className="text-gray-800 leading-loose text-base font-medium text-right" style={{ fontFamily: "'Cairo', sans-serif", lineHeight: "2.2" }}>
-                    {enhancedTranscript || result.transcript}
+                    {(() => {
+                      const text = enhancedTranscript || result.transcript;
+                      const errors: any[] = result.errors || [];
+                      if (!errors.length) return text;
+                      // split into words and highlight wrong ones
+                      const stripDia = (s: string) => s.replace(/[ً-ٰٟ]/g, "");
+                      const wrongSet = new Set(errors.map((e: any) => stripDia(e.wrong || "")));
+                      const words = text.split(/(\s+)/);
+                      return words.map((w: string, i: number) => {
+                        if (/^\s+$/.test(w)) return w;
+                        const clean = stripDia(w.replace(/[.,،؟!؛:]/g, ""));
+                        const isWrong = wrongSet.has(clean);
+                        return isWrong
+                          ? <span key={i} style={{ background: "#fee2e2", color: "#dc2626", borderRadius: 4, padding: "0 2px", textDecoration: "underline wavy #dc2626" }}>{w}</span>
+                          : <span key={i}>{w}</span>;
+                      });
+                    })()}
                   </p>
                 </div>
               )}
