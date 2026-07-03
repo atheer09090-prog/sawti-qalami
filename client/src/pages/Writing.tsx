@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { evaluateWriting } from "@/lib/api";
+import { evaluateWriting, evaluateContext } from "@/lib/api";
 import { playSound, stopSound, playEffect, stopAll, audioFile } from "@/lib/audio";
 import { setState } from "@/lib/store";
 import { DICTATION_QUESTIONS } from "@/lib/dictation-data";
@@ -339,7 +339,7 @@ function DictationGame({ onBack }: { onBack: () => void }) {
 
 
 /* ── Explainable Writing Result Component ── */
-function WritingResult({ result, originalText }: { result: any; originalText: string }) {
+function WritingResult({ result, originalText, contextSuggestions }: { result: any; originalText: string; contextSuggestions: Array<{original: string; suggested: string; rule: string}> }) {
   const [activeError, setActiveError] = useState<number | null>(null);
 
   function renderAnnotatedText() {
@@ -686,6 +686,27 @@ function WritingResult({ result, originalText }: { result: any; originalText: st
             </div>
           </div>
         )}
+
+        {/* اقتراحات السياق */}
+        {contextSuggestions.length > 0 && (
+          <div className="px-4 pb-4">
+            <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+              <p className="font-bold text-blue-700 text-sm mb-3">🔵 اقْتِرَاحَاتٌ أُسْلُوبِيَّةٌ:</p>
+              <div className="space-y-3">
+                {contextSuggestions.map((s, i) => (
+                  <div key={i} className="bg-white rounded-lg p-3 border border-blue-100 text-right">
+                    <div className="flex items-center gap-2 mb-1 flex-row-reverse">
+                      <span className="text-red-400 text-sm line-through">{s.original}</span>
+                      <span className="text-gray-400">←</span>
+                      <span className="text-green-600 font-bold text-sm">{s.suggested}</span>
+                    </div>
+                    <p className="text-xs text-blue-600">📌 {s.rule}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -698,6 +719,7 @@ export default function Writing() {
   const [selectedTopic, setSelectedTopic] = useState<typeof TOPICS[0] | null>(null);
   const [text, setText] = useState("");
   const [result, setResult] = useState<any>(null);
+  const [contextSuggestions, setContextSuggestions] = useState<Array<{original: string; suggested: string; rule: string}>>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -769,7 +791,7 @@ export default function Writing() {
             {loading ? "⏳ جَارٍ التَّقْيِيمُ..." : "🏛️ تَقْيِيمُ الْكِتَابَةِ"}
           </button>
         </div>
-        {result && !loading && <WritingResult result={result} originalText={text} />}
+        {result && !loading && <WritingResult result={result} originalText={text} contextSuggestions={contextSuggestions} />}
       </div>
     </div>
   );
