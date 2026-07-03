@@ -442,12 +442,61 @@ function WritingResult({ result, originalText }: { result: any; originalText: st
       return <span className="text-gray-700 leading-relaxed">{originalText}</span>;
     }
     const words = originalText.split(/(\s+)/);
+    // بناء قائمة الكلمات التي تنتمي لخطأ متعدد الكلمات
+    const multiWordErrorRanges = new Set<number>();
+    const multiWordErrorMap = new Map<number, {wrong:string,correct:string,explanation:string}>();
+    errors.filter(e => e.wrong && e.wrong.includes(" ")).forEach(e => {
+      const idx = originalText.indexOf(e.wrong);
+      if (idx === -1) return;
+      // نحسب index الكلمة في مصفوفة words
+      let pos = 0, start = -1;
+      for (let wi = 0; wi < words.length; wi++) {
+        if (pos === idx) start = wi;
+        if (start !== -1) {
+          multiWordErrorRanges.add(wi);
+          if (!multiWordErrorMap.has(start)) multiWordErrorMap.set(start, e);
+        }
+        pos += words[wi].length;
+        if (start !== -1 && pos >= idx + e.wrong.length) break;
+      }
+    });
     return (
       <span className="leading-loose text-base" style={{ fontFamily: "'Cairo', sans-serif" }}>
         {words.map((word, i) => {
           const stripD = (s: string) => s.replace(/[\u064B-\u065F\u0670]/g, "");
           const cleanWord = stripD(word.replace(/[.,،؛:!؟٣٢١٠0-9]/g, ""));
-          const error = errors.find(e => e.wrong === cleanWord || stripD(e.wrong) === cleanWord);
+          // خطأ متعدد الكلمات
+          const multiError = multiWordErrorMap.get(i);
+          const inMulti = multiWordErrorRanges.has(i) && !multiWordErrorMap.has(i);
+          if (inMulti) return <span key={i} className="underline decoration-wavy decoration-red-500 px-0.5 rounded" style={{ background: "#fee2e2", color: "#dc2626" }}>{word}</span>;
+          if (multiError && word.trim()) {
+            const isOpen = activeError === i;
+            return (
+              <span key={i} className="relative inline-block">
+                <span
+                  className="underline decoration-wavy decoration-red-500 cursor-pointer px-0.5 rounded"
+                  style={{ background: "#fee2e2", color: "#dc2626" }}
+                  onClick={() => setActiveError(isOpen ? null : i)}
+                >{word}</span>
+                {isOpen && (
+                  <span className="absolute bottom-full right-0 mb-1 z-10 bg-gray-900 text-white text-xs rounded-xl p-3 text-right shadow-2xl"
+                    style={{ minWidth: "220px", maxWidth: "260px" }}>
+                    <span className="flex items-center gap-2 mb-2">
+                      <span className="line-through text-red-400 font-bold text-sm">{multiError.wrong}</span>
+                      <span className="text-gray-400">←</span>
+                      <span className="text-green-400 font-bold text-sm">{multiError.correct}</span>
+                    </span>
+                    <span className="block text-yellow-200 text-xs mb-2 leading-relaxed">📌 {multiError.explanation}</span>
+                    <span className="block bg-gray-800 rounded-lg p-2 text-xs leading-relaxed text-gray-300">
+                      ✍️ اكتب: <span className="text-green-300 font-bold">{multiError.correct}</span>
+                    </span>
+                    <span className="block text-gray-500 text-xs mt-2 cursor-pointer text-center" onClick={(e) => { e.stopPropagation(); setActiveError(null); }}>✕ إغلاق</span>
+                  </span>
+                )}
+              </span>
+            );
+          }
+          const error = multiError || errors.find(e => !e.wrong?.includes(" ") && (e.wrong === cleanWord || stripD(e.wrong) === cleanWord));
           if (error && word.trim()) {
             const isOpen = activeError === i;
             return (
@@ -613,7 +662,7 @@ function WritingResult({ result, originalText }: { result: any; originalText: st
                     n === "1" ? "لَدَيْكَ خَطَأٌ إِمْلَائِيٌّ وَاحِدٌ — اضْغَطْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِمَعْرِفَتِهِ" :
                     `لَدَيْكَ ${n} أَخْطَاءٍ إِمْلَائِيَّةٍ — اضْغَطْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِمَعْرِفَتِهَا`)
                   .replace(/أضف\s*(\d+)\s*كلمة/g, (_, n) => `أَضِفْ ${n} كَلِمَاتٍ عَلَى الْأَقَلِّ لِإِثْرَاءِ النَّصِّ`)
-                  .replace(/أضف\s*أدوات\s*ربط/g, "أَضِفْ أَدَوَاتِ رَبْطٍ مِثْلَ: (لِأَنَّ، لَذَلِكَ، بَيْنَمَا، وَمَعَ ذَلِكَ)")
+                  .replace(/أضف\s*أدوات\s*ربط/g, "أَضِفْ أَدَوَاتِ رَبْطٍ بَيْنَ الْجُمَلِ")
                   .replace(/استخدم\s*علامات\s*الترقيم/g, "اسْتَخْدِمْ عَلَامَاتِ التَّرْقِيمِ بِشَكْلٍ صَحِيحٍ (. ، ؟ !)")
                   .replace(/وسّع\s*المفردات/gi, "حَاوِلْ اسْتِخْدَامَ كَلِمَاتٍ أَكْثَرَ تَنَوُّعاً وَثَرَاءً");
                 return (
