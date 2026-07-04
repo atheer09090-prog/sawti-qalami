@@ -3,6 +3,10 @@ import { useLocation } from "wouter";
 import { getState } from "@/lib/store";
 import { DICTATION_QUESTIONS } from "@/lib/dictation-data";
 import {
+  getSpeakingLessons, addSpeakingLesson, updateSpeakingLesson, deleteSpeakingLesson,
+  getWritingTopics, addWritingTopic, updateWritingTopic, deleteWritingTopic,
+} from "@/lib/api";
+import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, Cell,
 } from "recharts";
@@ -80,6 +84,58 @@ function TopStudents({ students }: { students: typeof MOCK_STUDENTS }) {
 export default function Teacher() {
   const [, setLocation] = useLocation();
   const [tab, setTab] = useState<"overview"|"students"|"reviews"|"lessons"|"dictation">("overview");
+  const [speakingLessons, setSpeakingLessons] = useState<any[]>([]);
+  const [writingTopics, setWritingTopics] = useState<any[]>([]);
+  const [lessonModal, setLessonModal] = useState<{type:"speaking"|"writing"; item:any|null} | null>(null);
+  const [lessonForm, setLessonForm] = useState<any>({});
+
+  useEffect(() => {
+    getSpeakingLessons().then(d => { if (d) setSpeakingLessons(d); });
+    getWritingTopics().then(d => { if (d) setWritingTopics(d); });
+  }, []);
+
+  async function saveSpeakingLesson() {
+    const f = lessonForm;
+    if (!f.title?.trim()) return alert("أدخل عنوان الدرس");
+    const lesson = {
+      id: f.id || f.title.replace(/\s+/g, "-").substring(0, 20) + "-" + Date.now(),
+      title: f.title, level: f.level || "سَهْلٌ",
+      icon: f.icon || "📖", desc: f.desc || "",
+      topics: f.topics ? f.topics.split("،").map((t:string) => t.trim()).filter(Boolean) : [],
+    };
+    if (f.id) { await updateSpeakingLesson(f.id, lesson); }
+    else { await addSpeakingLesson(lesson); }
+    const data = await getSpeakingLessons();
+    if (data) setSpeakingLessons(data);
+    setLessonModal(null);
+  }
+
+  async function saveWritingTopic() {
+    const f = lessonForm;
+    if (!f.title?.trim()) return alert("أدخل عنوان الموضوع");
+    const topic = {
+      id: f.id || f.title.replace(/\s+/g, "-").substring(0, 20) + "-" + Date.now(),
+      title: f.title, icon: f.icon || "✏️",
+      hints: f.hints ? f.hints.split("،").map((h:string) => h.trim()).filter(Boolean) : [],
+    };
+    if (f.id) { await updateWritingTopic(f.id, topic); }
+    else { await addWritingTopic(topic); }
+    const data = await getWritingTopics();
+    if (data) setWritingTopics(data);
+    setLessonModal(null);
+  }
+
+  async function handleDeleteSpeaking(id: string) {
+    if (!confirm("هل تريد حذف هذا الدرس؟")) return;
+    await deleteSpeakingLesson(id);
+    setSpeakingLessons(p => p.filter(l => l.id !== id));
+  }
+
+  async function handleDeleteWriting(id: string) {
+    if (!confirm("هل تريد حذف هذا الموضوع؟")) return;
+    await deleteWritingTopic(id);
+    setWritingTopics(p => p.filter(t => t.id !== id));
+  }
   const [teacherName] = useState("aa");
   const [searchQ, setSearchQ] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<typeof MOCK_STUDENTS[0] | null>(null);
@@ -338,77 +394,126 @@ export default function Teacher() {
 
         {/* ── LESSONS ── */}
         {tab === "lessons" && (
-          <div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Self Learning */}
-              <div className="rounded-2xl p-4" style={{ background: "#dbeafe", border: "1px solid #93c5fd" }}>
-                <h3 className="font-bold text-center text-blue-800 mb-3">📚 لِلتَّعَلُّمِ الذَّاتِيِّ</h3>
-                <div className="space-y-2">
-                  {MOCK_LESSONS.selfLearning.map((l, i) => (
-                    <div key={i} className="bg-white rounded-xl p-3 flex justify-between items-center">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${l.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                        {l.status === "active" ? "مُفَعَّلٌ" : "قَرِيبًا"}
-                      </span>
-                      <div className="text-right">
-                        <p className="font-bold text-sm text-blue-800">{l.title}</p>
-                        {l.students > 0 && <p className="text-xs text-gray-400">👥 {l.students} طُلَّابٌ أَكْمَلُوهُ</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <button className="w-full mt-3 py-2 border-2 border-dashed border-blue-300 rounded-xl text-blue-600 text-sm font-bold hover:bg-blue-50 transition-all">
-                  + إِضَافَةُ دَرْسٍ جَدِيدٍ
+          <div className="space-y-5">
+            {/* Speaking Lessons */}
+            <div className="rounded-2xl p-4" style={{ background: "#dcf5e7", border: "1px solid #86efac" }}>
+              <div className="flex justify-between items-center mb-3">
+                <button onClick={() => { setLessonModal({type:"speaking", item:null}); setLessonForm({}); }}
+                  className="text-xs px-3 py-1.5 rounded-lg text-white font-bold" style={{ background: "#1a5c2a" }}>
+                  + دَرْسٌ جَدِيدٌ
                 </button>
+                <h3 className="font-bold text-lg" style={{ color: "#1a5c2a" }}>🎙️ مَهَارَةُ التَّحَدُّثِ</h3>
               </div>
-
-              {/* Writing */}
-              <div className="rounded-2xl p-4" style={{ background: "#fef3e2", border: "1px solid #fcd34d" }}>
-                <h3 className="font-bold text-center text-amber-800 mb-3">✏️ مَهَارَةُ الْكِتَابَةِ</h3>
-                <div className="space-y-2">
-                  {MOCK_LESSONS.writing.map((l, i) => (
-                    <div key={i} className="bg-white rounded-xl p-3 flex justify-between items-center">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${l.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                        {l.status === "active" ? "مُفَعَّلٌ" : "قَرِيبًا"}
-                      </span>
-                      <div className="text-right">
-                        <p className="font-bold text-sm text-amber-800">{l.title}</p>
-                        {l.students > 0 && <p className="text-xs text-gray-400">👥 {l.students} طُلَّابٌ أَكْمَلُوهُ</p>}
-                      </div>
+              <div className="space-y-2">
+                {speakingLessons.map((l: any) => (
+                  <div key={l.id} className="bg-white rounded-xl p-3 flex justify-between items-center">
+                    <div className="flex gap-2">
+                      <button onClick={() => handleDeleteSpeaking(l.id)}
+                        className="text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg hover:bg-red-100">🗑️</button>
+                      <button onClick={() => { setLessonModal({type:"speaking", item:l}); setLessonForm({...l, topics: l.topics?.join("، ")}); }}
+                        className="text-xs px-2 py-1 bg-green-50 rounded-lg hover:bg-green-100" style={{ color: "#1a5c2a" }}>✏️ تَعْدِيلٌ</button>
                     </div>
-                  ))}
-                </div>
-                <button className="w-full mt-3 py-2 border-2 border-dashed border-amber-300 rounded-xl text-amber-600 text-sm font-bold hover:bg-amber-50 transition-all">
-                  + إِضَافَةُ دَرْسٍ جَدِيدٍ
-                </button>
-              </div>
-
-              {/* Speaking */}
-              <div className="rounded-2xl p-4" style={{ background: "#dcf5e7", border: "1px solid #86efac" }}>
-                <h3 className="font-bold text-center mb-3" style={{ color: "#1a5c2a" }}>🎙️ مَهَارَةُ التَّحَدُّثِ</h3>
-                <div className="space-y-2">
-                  {MOCK_LESSONS.speaking.map((l, i) => (
-                    <div key={i} className="bg-white rounded-xl p-3 flex justify-between items-center">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${l.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                        {l.status === "active" ? "مُفَعَّلٌ" : "قَرِيبًا"}
-                      </span>
-                      <div className="text-right">
-                        <p className="font-bold text-sm" style={{ color: "#1a5c2a" }}>{l.title}</p>
-                        {l.students > 0 && <p className="text-xs text-gray-400">👥 {l.students} طُلَّابٌ أَكْمَلُوهُ</p>}
-                      </div>
+                    <div className="text-right">
+                      <p className="font-bold text-sm" style={{ color: "#1a5c2a" }}>{l.icon} {l.title}</p>
+                      <p className="text-xs text-gray-400">{l.level} • {l.topics?.length || 0} مَوَاضِيعُ</p>
                     </div>
-                  ))}
-                </div>
-                <button className="w-full mt-3 py-2 border-2 border-dashed rounded-xl text-sm font-bold hover:bg-green-50 transition-all"
-                  style={{ borderColor: "#86efac", color: "#1a5c2a" }}>
-                  + إِضَافَةُ دَرْسٍ جَدِيدٍ
-                </button>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="mt-4 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-center">
-              <p className="text-sm text-amber-700">
-                💡 يُمْكِنُكَ إِضَافَةُ دُرُوسٍ جَدِيدَةٍ وَتَعْدِيلُ الدُّرُوسِ الْحَالِيَّةِ. سَيَتِمُّ تَفْعِيلُ خَاصِّيَّةِ التَّعْدِيلِ الْكَامِلِ فِي الإِصْدَارِ الْقَادِمِ.
-              </p>
+
+            {/* Writing Topics */}
+            <div className="rounded-2xl p-4" style={{ background: "#fef3e2", border: "1px solid #fcd34d" }}>
+              <div className="flex justify-between items-center mb-3">
+                <button onClick={() => { setLessonModal({type:"writing", item:null}); setLessonForm({}); }}
+                  className="text-xs px-3 py-1.5 rounded-lg text-white font-bold bg-amber-600">
+                  + مَوْضُوعٌ جَدِيدٌ
+                </button>
+                <h3 className="font-bold text-lg text-amber-800">✏️ مَهَارَةُ الْكِتَابَةِ</h3>
+              </div>
+              <div className="space-y-2">
+                {writingTopics.map((t: any) => (
+                  <div key={t.id} className="bg-white rounded-xl p-3 flex justify-between items-center">
+                    <div className="flex gap-2">
+                      <button onClick={() => handleDeleteWriting(t.id)}
+                        className="text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg hover:bg-red-100">🗑️</button>
+                      <button onClick={() => { setLessonModal({type:"writing", item:t}); setLessonForm({...t, hints: t.hints?.join("، ")}); }}
+                        className="text-xs px-2 py-1 bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100">✏️ تَعْدِيلٌ</button>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-sm text-amber-800">{t.icon} {t.title}</p>
+                      <p className="text-xs text-gray-400">{t.hints?.length || 0} تَلْمِيحَاتٌ</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {/* Modal */}
+            {lessonModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}
+                onClick={() => setLessonModal(null)}>
+                <div className="bg-white rounded-2xl p-6 w-full mx-4 shadow-2xl" style={{ maxWidth: 480 }}
+                  onClick={e => e.stopPropagation()} dir="rtl">
+                  <h3 className="font-bold text-lg mb-4 text-right" style={{ color: "#1a5c2a" }}>
+                    {lessonModal.item ? "✏️ تَعْدِيلٌ" : "➕ إِضَافَةٌ جَدِيدَةٌ"} —{" "}
+                    {lessonModal.type === "speaking" ? "دَرْسُ التَّحَدُّثِ" : "مَوْضُوعُ الْكِتَابَةِ"}
+                  </h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm text-gray-600 block mb-1">الْعُنْوَانُ *</label>
+                      <input value={lessonForm.title || ""} onChange={e => setLessonForm((p:any) => ({...p, title: e.target.value}))}
+                        className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-green-400"
+                        placeholder="عنوان الدرس..." style={{ fontFamily: "'Cairo', sans-serif" }} />
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <label className="text-sm text-gray-600 block mb-1">الأَيْقُونَةُ</label>
+                        <input value={lessonForm.icon || ""} onChange={e => setLessonForm((p:any) => ({...p, icon: e.target.value}))}
+                          className="w-full px-3 py-2 border-2 rounded-xl text-center focus:outline-none focus:border-green-400"
+                          placeholder="🎙️" />
+                      </div>
+                      {lessonModal.type === "speaking" && (
+                        <div className="flex-1">
+                          <label className="text-sm text-gray-600 block mb-1">الْمُسْتَوَى</label>
+                          <select value={lessonForm.level || "سَهْلٌ"} onChange={e => setLessonForm((p:any) => ({...p, level: e.target.value}))}
+                            className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-green-400">
+                            <option value="سَهْلٌ">سَهْلٌ</option>
+                            <option value="مُتَوَسِّطٌ">مُتَوَسِّطٌ</option>
+                            <option value="مُتَقَدِّمٌ">مُتَقَدِّمٌ</option>
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                    {lessonModal.type === "speaking" && (
+                      <div>
+                        <label className="text-sm text-gray-600 block mb-1">الْوَصْفُ</label>
+                        <input value={lessonForm.desc || ""} onChange={e => setLessonForm((p:any) => ({...p, desc: e.target.value}))}
+                          className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-green-400"
+                          placeholder="وصف الدرس..." style={{ fontFamily: "'Cairo', sans-serif" }} />
+                      </div>
+                    )}
+                    <div>
+                      <label className="text-sm text-gray-600 block mb-1">
+                        {lessonModal.type === "speaking" ? "الْمَوَاضِيعُ (افصل بـ ،)" : "التَّلْمِيحَاتُ (افصل بـ ،)"}
+                      </label>
+                      <textarea value={lessonModal.type === "speaking" ? (lessonForm.topics || "") : (lessonForm.hints || "")}
+                        onChange={e => setLessonForm((p:any) => ({...p, [lessonModal.type === "speaking" ? "topics" : "hints"]: e.target.value}))}
+                        className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-green-400 resize-none"
+                        rows={2} placeholder="موضوع ١، موضوع ٢، ..." style={{ fontFamily: "'Cairo', sans-serif" }} />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-5">
+                    <button onClick={() => setLessonModal(null)}
+                      className="flex-1 py-2 border-2 border-gray-200 rounded-xl text-gray-500 font-bold hover:bg-gray-50">إِلْغَاءٌ</button>
+                    <button onClick={lessonModal.type === "speaking" ? saveSpeakingLesson : saveWritingTopic}
+                      className="flex-1 py-2 rounded-xl text-white font-bold" style={{ background: "#1a5c2a" }}>
+                      💾 حِفْظٌ
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

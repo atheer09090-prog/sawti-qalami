@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { evaluateSpeech, diacritizeText } from "@/lib/api";
+import { evaluateSpeech, diacritizeText, getSpeakingLessons } from "@/lib/api";
 import { playSound, stopSound, playEffect, stopAll, audioFile } from "@/lib/audio";
 import { setState, getState } from "@/lib/store";
 
-const LESSONS = [
+const DEFAULT_LESSONS = [
   { id: "summer", title: "وَصْفُ رِحْلَةٍ صَيْفِيَّةٍ", level: "سَهْلٌ", icon: "🏖️", desc: "تَحَدَّثْ عَنْ عُطْلَتِكَ الصَّيْفِيَّةِ", topics: ["رِحْلَةٌ بَحْرِيَّةٌ", "رِحْلَةٌ جَبَلِيَّةٌ", "صُورَةٌ دَالَّةٌ عَلَى تَعَلُّمٍ", "رِحْلَةٌ جَوِّيَّةٌ"] },
   { id: "earth", title: "قِرَاءَةُ مَنْشُورٍ تَوْعَوِيٍّ — سَاعَةُ الأَرْضِ", level: "مُتَوَسِّطٌ", icon: "🌍", desc: "اقْرَأِ الْمَنْشُورَ وَأَجِبْ عَنِ الأَسْئِلَةِ", topics: [] },
   { id: "opinion", title: "التَّعْبِيرُ عَنِ الرَّأْيِ", level: "مُتَقَدِّمٌ", icon: "💬", desc: "عَبِّرْ عَنْ رَأْيِكَ بِأُسْلُوبٍ لُغَوِيٍّ سَلِيمٍ", topics: [] },
@@ -18,7 +18,12 @@ const TOPIC_ICONS: Record<string, string> = {
 export default function Speaking() {
   const [, setLocation] = useLocation();
   const [enhancedTranscript, setEnhancedTranscript] = useState<string | null>(null);
-  const [selectedLesson, setSelectedLesson] = useState<typeof LESSONS[0] | null>(null);
+  const [lessons, setLessons] = useState(DEFAULT_LESSONS);
+  const [selectedLesson, setSelectedLesson] = useState<typeof DEFAULT_LESSONS[0] | null>(null);
+
+  useEffect(() => {
+    getSpeakingLessons().then(data => { if (data) setLessons(data); });
+  }, []);
   const [selectedTopic, setSelectedTopic] = useState("");
   const [recording, setRecording] = useState(false);
   const [timer, setTimer] = useState(0);
@@ -133,7 +138,7 @@ export default function Speaking() {
         </div>
         <h2 className="text-right font-bold text-lg mb-3" style={{ color: "#1a5c2a" }}>📚 دُرُوسُ التَّحَدُّثِ</h2>
         <div className="flex flex-col gap-3">
-          {LESSONS.map((l) => (
+          {lessons.map((l) => (
             <button key={l.id} onClick={() => setSelectedLesson(l)}
               className="p-4 bg-white rounded-xl shadow text-right hover:shadow-md hover:-translate-y-0.5 transition-all flex justify-between items-center">
               <div>

@@ -67,3 +67,60 @@ export async function evaluateContext(text: string): Promise<Array<{original: st
     return [];
   }
 }
+
+// ── Lessons API ──
+const LESSONS_BASE = `${API_BASE.replace("/api", "")}/api/lessons`;
+
+export async function getSpeakingLessons() {
+  try {
+    const res = await fetch(`${LESSONS_BASE}/speaking`);
+    return res.ok ? res.json() : null;
+  } catch { return null; }
+}
+
+export async function getWritingTopics() {
+  try {
+    const res = await fetch(`${LESSONS_BASE}/writing`);
+    return res.ok ? res.json() : null;
+  } catch { return null; }
+}
+
+export async function addSpeakingLesson(lesson: object) {
+  const res = await fetch(`${LESSONS_BASE}/speaking`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(lesson),
+  });
+  return res.json();
+}
+
+export async function addWritingTopic(topic: object) {
+  const res = await fetch(`${LESSONS_BASE}/writing`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(topic),
+  });
+  return res.json();
+}
+
+export async function updateSpeakingLesson(id: string, lesson: object) {
+  const res = await fetch(`${LESSONS_BASE}/speaking/${id}`, {
+    method: "PUT", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(lesson),
+  });
+  return res.json();
+}
+
+export async function updateWritingTopic(id: string, topic: object) {
+  const res = await fetch(`${LESSONS_BASE}/writing/${id}`, {
+    method: "PUT", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(topic),
+  });
+  return res.json();
+}
+
+export async function deleteSpeakingLesson(id: string) {
+  await fetch(`${LESSONS_BASE}/speaking/${id}`, { method: "DELETE" });
+}
+
+export async function deleteWritingTopic(id: string) {
+  await fetch(`${LESSONS_BASE}/writing/${id}`, { method: "DELETE" });
+}

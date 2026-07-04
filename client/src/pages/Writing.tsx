@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { evaluateWriting, evaluateContext } from "@/lib/api";
+import { evaluateWriting, evaluateContext, getWritingTopics } from "@/lib/api";
 import { playSound, stopSound, playEffect, stopAll, audioFile } from "@/lib/audio";
 import { setState } from "@/lib/store";
 import { DICTATION_QUESTIONS } from "@/lib/dictation-data";
 
 /* ── Writing topics ── */
-const TOPICS = [
+const DEFAULT_TOPICS = [
   { id: "home", title: "وَصْفُ الْمَنْزِلِ", icon: "🏠", hints: ["الْمَوْقِعُ وَالْحَيُّ", "الشَّكْلُ الْخَارِجِيُّ", "الْغُرَفُ", "مَا يُمَيِّزُهُ"] },
   { id: "neighborhood", title: "وَصْفُ النَّخْلَةِ", icon: "🌴", hints: ["مَوْقِعُ النَّخْلَةِ", "شَكْلُهَا", "فَوَائِدُهَا", "أَهَمِّيَّتُهَا"] },
   { id: "mosque", title: "وَصْفُ الْمَسْجِدِ", icon: "🕌", hints: ["الشَّكْلُ الْمَعْمَارِيُّ", "الأَجْوَاءُ الرُّوحَانِيَّةُ", "الْخَدَمَاتُ", "الأَهَمِّيَّةُ"] },
@@ -672,17 +672,7 @@ function WritingResult({ result, originalText, contextSuggestions }: { result: a
                   </div>
                 );
               })}
-              {/* Show detected errors list if any */}
-              {(result.errors?.length > 0) && (
-                <div className="bg-red-50 rounded-lg px-3 py-2 mt-1">
-                  <p className="text-xs font-bold text-red-600 mb-1">🔴 الْأَخْطَاءُ الْمُكْتَشَفَةُ:</p>
-                  {result.errors.map((e: any, i: number) => (
-                    <p key={i} className="text-xs text-gray-700 mb-0.5">
-                      • <span className="line-through text-red-500">{e.wrong}</span> ← <span className="text-green-600 font-bold">{e.correct}</span> <span className="text-gray-400">({e.explanation})</span>
-                    </p>
-                  ))}
-                </div>
-              )}
+
             </div>
           </div>
         )}
@@ -716,7 +706,12 @@ function WritingResult({ result, originalText, contextSuggestions }: { result: a
 export default function Writing() {
   const [, setLocation] = useLocation();
   const [view, setView] = useState<"topics"|"dictation"|"writing">("topics");
-  const [selectedTopic, setSelectedTopic] = useState<typeof TOPICS[0] | null>(null);
+  const [topics, setTopics] = useState(DEFAULT_TOPICS);
+  const [selectedTopic, setSelectedTopic] = useState<typeof DEFAULT_TOPICS[0] | null>(null);
+
+  useEffect(() => {
+    getWritingTopics().then(data => { if (data) setTopics(data); });
+  }, []);
   const [text, setText] = useState("");
   const [result, setResult] = useState<any>(null);
   const [contextSuggestions, setContextSuggestions] = useState<Array<{original: string; suggested: string; rule: string}>>([]);
@@ -851,7 +846,7 @@ export default function Writing() {
         {/* Writing topics */}
         <h2 className="text-right font-bold text-lg mb-3 text-amber-800">✏️ مَوَاضِيعُ الْكِتَابَةِ</h2>
         <div className="flex flex-col gap-3">
-          {TOPICS.map((t) => (
+          {topics.map((t) => (
             <button key={t.id} onClick={() => { setSelectedTopic(t); setView("writing"); }}
               className="p-5 bg-white rounded-2xl shadow text-right hover:shadow-md hover:-translate-y-0.5 transition-all flex justify-between items-center">
               <div>
