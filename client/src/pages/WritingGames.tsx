@@ -53,6 +53,105 @@ const DEFAULT_QUICK_QUIZ = [
   { q: "أيّ كتابة صحيحة؟", opts: ["سئل","سأل","سؤل","سءل"], correct: "سئل", explain: "الهمزة المتوسطة على نبرة لأن ما قبلها كسرة مقدرة", emoji: "🗣️" },
 ];
 
+
+/* ══════════════════════════════════════════════════════
+   TREASURE HUNT DATA — رحلة الكنز
+   ══════════════════════════════════════════════════════ */
+
+// الدرس الأول: الهمزة على نبرة — فرز البوابة
+const GATE_SORT_WORDS = [
+  { word: "بِئْرٌ",     correct: true,  reason: "ما قبلها كسرة" },
+  { word: "ذِئْبٌ",     correct: true,  reason: "ما قبلها كسرة" },
+  { word: "سُئِلَ",     correct: true,  reason: "ما بعدها كسرة" },
+  { word: "فِئَةٌ",     correct: true,  reason: "ما قبلها كسرة" },
+  { word: "مُطمَئِنٌّ", correct: true,  reason: "ما بعدها كسرة" },
+  { word: "مِئذَنَةٌ",  correct: true,  reason: "ما بعدها كسرة" },
+  { word: "سَأَلَ",     correct: false, reason: "ما قبلها فتحة → على ألف" },
+  { word: "يَسْأَلُ",   correct: false, reason: "ساكن قبلها → على ألف" },
+  { word: "رَأْسٌ",     correct: false, reason: "ما قبلها فتحة → على ألف" },
+  { word: "مَسَاءٌ",    correct: false, reason: "ما قبلها ألف مد → على السطر" },
+];
+
+// الدرس الثاني: الهمزة على السطر — عبور النهر
+const RIVER_WORDS = [
+  { word: "قِرَاءَةٌ", correct: true,  reason: "بعد ألف مد" },
+  { word: "مُرُوءَةٌ", correct: true,  reason: "بعد واو مد" },
+  { word: "عَبَاءَةٌ", correct: true,  reason: "بعد ألف مد" },
+  { word: "تَسَاءَلَ", correct: true,  reason: "بعد ألف مد" },
+  { word: "هُدُوءٌ",   correct: true,  reason: "بعد واو مد" },
+  { word: "مَسَاءٌ",   correct: true,  reason: "بعد ألف مد" },
+  { word: "جُزْءٌ",    correct: true,  reason: "بعد ساكن" },
+  { word: "سَأَلَ",    correct: false, reason: "على ألف لأن ما قبلها فتحة" },
+  { word: "بِئْرٌ",    correct: false, reason: "على نبرة لأن ما قبلها كسرة" },
+  { word: "يَسْأَلُ",  correct: false, reason: "على ألف لأن ساكن قبلها" },
+];
+
+// الدرس الثالث: الهمزة المتطرفة — تسلق الجبل
+const MOUNTAIN_WORDS = [
+  { word: "مَلجَأَ",   chair: "أ",  reason: "ما قبلها مفتوح (جَ)" },
+  { word: "قَرَأَ",    chair: "أ",  reason: "ما قبلها مفتوح (رَ)" },
+  { word: "يَجرُؤُ",   chair: "ؤ",  reason: "ما قبلها مضموم (رُ)" },
+  { word: "لُؤلُؤٌ",   chair: "ؤ",  reason: "ما قبلها مضموم (لُ)" },
+  { word: "شاطِئٌ",    chair: "ئ",  reason: "ما قبلها مكسور (طِ)" },
+  { word: "مَنَاهِئُ", chair: "ئ",  reason: "ما قبلها مكسور (هِ)" },
+  { word: "شَيءٌ",     chair: "ء",  reason: "ما قبلها ياء ساكنة" },
+  { word: "هُدُوءٌ",   chair: "ء",  reason: "ما قبلها واو مد" },
+  { word: "دِفءٌ",     chair: "ء",  reason: "ما قبلها ساكن" },
+  { word: "مَسَاءٌ",   chair: "ء",  reason: "ما قبلها ألف مد" },
+];
+
+// الكلمات المتقاطعة — الدرس الأول (على نبرة)
+const CROSSWORD_1 = [
+  { num: 1, dir: "أفقي",  clue: "مصدر الماء تحت الأرض في الصحراء",         answer: "بئر" },
+  { num: 2, dir: "أفقي",  clue: "مجموعة من الناس أو جماعة",                answer: "فئة" },
+  { num: 3, dir: "أفقي",  clue: "طُرح عليه سؤال (ماضٍ للمجهول)",           answer: "سئل" },
+  { num: 4, dir: "أفقي",  clue: "حيوان مفترس من الكلبيات يعيش بالبراري",  answer: "ذئب" },
+  { num: 5, dir: "عمودي", clue: "حالة النفس حين تهدأ وتطمئن",              answer: "مطمئن" },
+  { num: 6, dir: "عمودي", clue: "البرج الذي يُؤذَّن منه في المسجد",        answer: "مئذنة" },
+];
+
+// الكلمات المتقاطعة — الدرس الثاني (على السطر)
+const CROSSWORD_2 = [
+  { num: 1, dir: "أفقي",  clue: "آخر النهار وعكسه الصباح",                answer: "مساء" },
+  { num: 2, dir: "أفقي",  clue: "ثوب المرأة الواسع التقليدي",              answer: "عباءة" },
+  { num: 3, dir: "أفقي",  clue: "صفة الكريم النبيل",                       answer: "مروءة" },
+  { num: 4, dir: "أفقي",  clue: "جزء من الشيء ونصيب منه",                 answer: "جزء" },
+  { num: 5, dir: "عمودي", clue: "فعل النظر في الكتاب وتصفّحه",            answer: "قراءة" },
+  { num: 6, dir: "عمودي", clue: "الهدوء والسكينة والراحة",                 answer: "هدوء" },
+  { num: 7, dir: "عمودي", clue: "فعل التساؤل والاستفهام",                  answer: "تساءل" },
+];
+
+// الكلمات المتقاطعة — الدرس الثالث (المتطرفة)
+const CROSSWORD_3 = [
+  { num: 1, dir: "أفقي",  clue: "حافة البحر حيث يلعب الناس",              answer: "شاطئ" },
+  { num: 2, dir: "أفقي",  clue: "الجوهرة البيضاء النادرة من البحر",       answer: "لؤلؤ" },
+  { num: 3, dir: "أفقي",  clue: "المكان الذي يلجأ إليه الإنسان أماناً",  answer: "ملجأ" },
+  { num: 4, dir: "أفقي",  clue: "الدفء وعكسه البرد",                      answer: "دفء" },
+  { num: 5, dir: "عمودي", clue: "يتجرأ ولا يخاف (فعل مضارع)",             answer: "يجرؤ" },
+  { num: 6, dir: "عمودي", clue: "فعل القراءة (ماضٍ)",                      answer: "قرأ" },
+  { num: 7, dir: "عمودي", clue: "الهدوء والسكون",                          answer: "هدوء" },
+  { num: 8, dir: "عمودي", clue: "الشيء الواحد من الأشياء",                 answer: "شيء" },
+];
+
+// صندوق الكنز — تصحيح الأخطاء
+const TREASURE_FIX = [
+  { wrong: "بِءْر",   correct: "بِئْر",    rule: "الهمزة على نبرة لأن ما قبلها كسرة" },
+  { wrong: "فِأَة",   correct: "فِئَة",    rule: "الهمزة على نبرة لأن ما قبلها كسرة" },
+  { wrong: "سُءِل",   correct: "سُئِل",   rule: "الهمزة على نبرة لأن ما بعدها كسرة" },
+  { wrong: "ذِءْب",   correct: "ذِئْب",   rule: "الهمزة على نبرة لأن ما قبلها كسرة" },
+  { wrong: "مُطمَءِن",correct: "مُطمَئِن",rule: "الهمزة على نبرة لأن ما بعدها كسرة" },
+];
+
+// صندوق الكنز — إملاء الهمزة المتطرفة
+const TREASURE_DICTATION = [
+  { sentence: "استمتعنا بالسباحة قرب __________ الجميل", answer: "شاطئ",  hint: "حافة البحر" },
+  { sentence: "وجد الغواص __________ نادراً في قاع البحر", answer: "لؤلؤ", hint: "جوهرة البحر" },
+  { sentence: "اختبأ الطفل في __________ آمن من المطر", answer: "ملجأ",  hint: "مكان الأمان" },
+  { sentence: "__________ الطالب الكتاب باهتمام شديد", answer: "قرأ",    hint: "فعل القراءة" },
+  { sentence: "الفراء يقينا __________ في الشتاء", answer: "الدفء",  hint: "عكس البرد" },
+  { sentence: "__________ الغرفة يساعد على التركيز", answer: "هدوء",   hint: "السكينة" },
+];
+
 function shuffleOpts<T extends { opts: string[] }>(q: T): T {
   return { ...q, opts: [...q.opts].sort(() => Math.random() - 0.5) };
 }
@@ -579,6 +678,414 @@ function QuickQuizGame({ onBack, data }: { onBack: () => void; data: typeof DEFA
 /* ══════════════════════════════════════════════════════
    MAIN PAGE — WritingGames (Menu)
    ══════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════
+   GAME 4 — رحلة الكنز ١: فرز البوابة (الهمزة على نبرة)
+   ══════════════════════════════════════════════════════ */
+function GateSortGame({ onBack }: { onBack: () => void }) {
+  const [words] = useState(() => [...GATE_SORT_WORDS].sort(() => Math.random() - 0.5));
+  const [idx, setIdx] = useState(0);
+  const [correct, setCorrect] = useState(0);
+  const [feedback, setFeedback] = useState<"correct"|"wrong"|null>(null);
+  const [done, setDone] = useState(false);
+  const [confettiTrig, setConfettiTrig] = useState(0);
+
+  function answer(isNabra: boolean) {
+    if (feedback) return;
+    const isRight = isNabra === words[idx].correct;
+    setFeedback(isRight ? "correct" : "wrong");
+    if (isRight) { setCorrect(c => c+1); setConfettiTrig(t => t+1); }
+    setTimeout(() => {
+      setFeedback(null);
+      if (idx < words.length - 1) setIdx(i => i+1);
+      else setDone(true);
+    }, 1200);
+  }
+
+  if (done) return (
+    <div className="bg-white/10 rounded-2xl p-6 text-center text-white">
+      <div className="text-5xl mb-3">{correct >= 7 ? "🔓" : "🔒"}</div>
+      <h2 className="text-2xl font-bold mb-2">{correct >= 7 ? "فُتِحَتِ الْبَوَّابَةُ!" : "حَاوِلْ مَرَّةً أُخْرَى"}</h2>
+      <p className="text-emerald-200 mb-4">أَصَبْتَ {correct} مِنْ {words.length}</p>
+      <div className="flex gap-3 justify-center">
+        <button onClick={() => { setIdx(0); setCorrect(0); setDone(false); }}
+          className="px-5 py-2 bg-emerald-500 text-white rounded-xl font-bold">إِعَادَةٌ</button>
+        <button onClick={onBack}
+          className="px-5 py-2 bg-white/20 text-white rounded-xl font-bold">الْقَائِمَةُ</button>
+      </div>
+    </div>
+  );
+
+  const w = words[idx];
+  return (
+    <div>
+      <Confetti trigger={confettiTrig} />
+      {/* Progress */}
+      <div className="w-full h-2 bg-white/20 rounded-full mb-4">
+        <div className="h-2 rounded-full bg-emerald-400 transition-all" style={{ width: `${(idx/words.length)*100}%` }} />
+      </div>
+      <p className="text-emerald-200 text-sm text-center mb-4">{idx+1} / {words.length}</p>
+
+      {/* Card */}
+      <div className="bg-white/10 rounded-2xl p-6 text-center mb-6">
+        <p className="text-emerald-300 text-sm mb-3">هَلِ الْهَمْزَةُ مَكْتُوبَةٌ عَلَى نَبْرَةٍ صَحِيحَةً؟</p>
+        <p className="text-4xl font-bold text-white mb-2" style={{ fontFamily: "'Amiri', serif" }}>{w.word}</p>
+        {feedback && (
+          <div className={`mt-3 text-sm font-bold rounded-xl px-4 py-2 ${feedback === "correct" ? "bg-green-500/30 text-green-200" : "bg-red-500/30 text-red-200"}`}>
+            {feedback === "correct" ? "✅ صَحِيحٌ!" : `❌ ${w.reason}`}
+          </div>
+        )}
+      </div>
+
+      {/* Buttons */}
+      <div className="flex gap-4">
+        <button onClick={() => answer(false)}
+          className="flex-1 py-4 rounded-2xl text-white font-bold text-lg transition-all active:scale-95"
+          style={{ background: "linear-gradient(135deg,#dc2626,#b91c1c)" }}>
+          ❌ لَا
+        </button>
+        <button onClick={() => answer(true)}
+          className="flex-1 py-4 rounded-2xl text-white font-bold text-lg transition-all active:scale-95"
+          style={{ background: "linear-gradient(135deg,#059669,#047857)" }}>
+          ✅ نَعَمْ
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════
+   GAME 5 — رحلة الكنز ٢: عبور النهر (الهمزة على السطر)
+   ══════════════════════════════════════════════════════ */
+function RiverCrossGame({ onBack }: { onBack: () => void }) {
+  const [words] = useState(() => [...RIVER_WORDS].sort(() => Math.random() - 0.5));
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [checked, setChecked] = useState(false);
+  const [confettiTrig, setConfettiTrig] = useState(0);
+
+  const correctIdxs = words.map((w,i) => w.correct ? i : -1).filter(i => i !== -1);
+
+  function check() {
+    setChecked(true);
+    const allRight = correctIdxs.every(i => selected.has(i)) && selected.size === correctIdxs.length;
+    if (allRight) setConfettiTrig(t => t+1);
+  }
+
+  function toggle(i: number) {
+    if (checked) return;
+    setSelected(prev => { const s = new Set(prev); s.has(i) ? s.delete(i) : s.add(i); return s; });
+  }
+
+  const allRight = checked && correctIdxs.every(i => selected.has(i)) && selected.size === correctIdxs.length;
+
+  return (
+    <div>
+      <Confetti trigger={confettiTrig} />
+      <div className="bg-white/10 rounded-2xl p-4 mb-4 text-center text-white">
+        <p className="text-blue-200 text-sm">اخْتَرِ الْكَلِمَاتِ الَّتِي هَمْزَتُهَا عَلَى السَّطْرِ لِتَبْنِيَ الْجِسْرَ وَتَعْبُرَ النَّهَرَ! 🌊</p>
+      </div>
+
+      {/* River visual */}
+      <div className="relative mb-4">
+        <div className="absolute inset-0 rounded-2xl opacity-30" style={{ background: "linear-gradient(180deg, #1d4ed8, #1e40af)" }} />
+        <div className="relative grid grid-cols-2 gap-2 p-3">
+          {words.map((w, i) => {
+            const isSel = selected.has(i);
+            const isRight = checked ? w.correct : null;
+            return (
+              <button key={i} onClick={() => toggle(i)}
+                className="py-3 px-4 rounded-xl text-right font-bold transition-all"
+                style={{
+                  fontFamily: "'Amiri', serif", fontSize: "1rem",
+                  background: checked
+                    ? (w.correct ? (isSel ? "#059669" : "#dc2626") : (isSel ? "#dc2626" : "rgba(255,255,255,0.1)"))
+                    : (isSel ? "#1d4ed8" : "rgba(255,255,255,0.15)"),
+                  color: "white",
+                  border: isSel ? "2px solid white" : "2px solid transparent",
+                }}>
+                {w.word}
+                {checked && <span className="text-xs mr-1">{w.correct ? (isSel ? " ✅" : " ❌") : (isSel ? " ❌" : "")}</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {checked && (
+        <div className={`rounded-xl p-3 text-center mb-4 text-sm font-bold ${allRight ? "bg-green-500/30 text-green-200" : "bg-amber-500/30 text-amber-200"}`}>
+          {allRight ? "🏆 عَبَرْتَ النَّهَرَ بِأَمَانٍ!" : "💡 راجع الكلمات الحمراء وتذكر: الهمزة على السطر بعد حروف المد الساكنة"}
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        {!checked
+          ? <button onClick={check} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">تَحَقَّقْ ✓</button>
+          : <button onClick={() => { setSelected(new Set()); setChecked(false); }} className="flex-1 py-3 bg-white/20 text-white rounded-xl font-bold">إِعَادَةٌ</button>
+        }
+        <button onClick={onBack} className="px-4 py-3 bg-white/10 text-white rounded-xl font-bold">←</button>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════
+   GAME 6 — رحلة الكنز ٣: تسلق الجبل (الهمزة المتطرفة)
+   ══════════════════════════════════════════════════════ */
+function MountainClimbGame({ onBack }: { onBack: () => void }) {
+  const CHAIRS = [
+    { id: "أ",  label: "على ألف",    color: "#059669", bg: "#dcf5e7", rule: "ما قبلها مفتوح" },
+    { id: "ؤ",  label: "على واو",    color: "#1d4ed8", bg: "#dbeafe", rule: "ما قبلها مضموم" },
+    { id: "ئ",  label: "على ياء",    color: "#7c3aed", bg: "#f3e8ff", rule: "ما قبلها مكسور" },
+    { id: "ء",  label: "على السطر",  color: "#b45309", bg: "#fef3e2", rule: "ما قبلها ساكن" },
+  ];
+
+  const [words] = useState(() => [...MOUNTAIN_WORDS].sort(() => Math.random() - 0.5));
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [checked, setChecked] = useState(false);
+  const [confettiTrig, setConfettiTrig] = useState(0);
+
+  function pick(wordIdx: number, chair: string) {
+    if (checked) return;
+    setAnswers(prev => ({ ...prev, [wordIdx]: chair }));
+  }
+
+  function check() {
+    setChecked(true);
+    const correct = words.every((w, i) => answers[i] === w.chair);
+    if (correct) setConfettiTrig(t => t+1);
+  }
+
+  const score = words.filter((w, i) => answers[i] === w.chair).length;
+
+  return (
+    <div>
+      <Confetti trigger={confettiTrig} />
+      <div className="bg-white/10 rounded-2xl p-4 mb-4 text-center text-white">
+        <p className="text-amber-200 text-sm">اخْتَرِ الْكُرْسِيَّ الصَّحِيحَ لِكُلِّ هَمْزَةٍ مُتَطَرِّفَةٍ 🏔️</p>
+      </div>
+
+      {/* Chairs legend */}
+      <div className="grid grid-cols-4 gap-1 mb-4">
+        {CHAIRS.map(c => (
+          <div key={c.id} className="text-center p-2 rounded-xl text-xs font-bold" style={{ background: c.bg, color: c.color }}>
+            <div className="text-lg">{c.id}</div>
+            <div>{c.label}</div>
+            <div className="text-gray-500 text-xs">{c.rule}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Words */}
+      <div className="space-y-2 mb-4">
+        {words.map((w, i) => {
+          const picked = answers[i];
+          const isRight = checked ? picked === w.chair : null;
+          return (
+            <div key={i} className="bg-white/10 rounded-xl p-3">
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex gap-1">
+                  {CHAIRS.map(c => (
+                    <button key={c.id} onClick={() => pick(i, c.id)}
+                      className="w-9 h-9 rounded-lg text-sm font-bold transition-all"
+                      style={{
+                        background: picked === c.id ? c.color : "rgba(255,255,255,0.15)",
+                        color: "white",
+                        border: picked === c.id ? "2px solid white" : "2px solid transparent",
+                      }}>{c.id}</button>
+                  ))}
+                </div>
+                <p className="text-white font-bold text-base" style={{ fontFamily: "'Amiri', serif" }}>{w.word}</p>
+              </div>
+              {checked && (
+                <p className={`text-xs text-right ${isRight ? "text-green-300" : "text-red-300"}`}>
+                  {isRight ? `✅ صَحِيحٌ — ${w.reason}` : `❌ الصَّوَابُ: ${w.chair} — ${w.reason}`}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {checked && (
+        <div className={`rounded-xl p-3 text-center mb-4 font-bold ${score === words.length ? "bg-green-500/30 text-green-200" : "bg-amber-500/30 text-amber-200"}`}>
+          {score === words.length ? "🏆 وَصَلْتَ الْقِمَّةَ!" : `أَصَبْتَ ${score} مِنْ ${words.length} — حَاوِلْ مَرَّةً أُخْرَى!`}
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        {!checked
+          ? <button onClick={check} disabled={Object.keys(answers).length < words.length}
+              className="flex-1 py-3 text-white rounded-xl font-bold disabled:opacity-50"
+              style={{ background: "#b45309" }}>تَحَقَّقْ ✓</button>
+          : <button onClick={() => { setAnswers({}); setChecked(false); }} className="flex-1 py-3 bg-white/20 text-white rounded-xl font-bold">إِعَادَةٌ</button>
+        }
+        <button onClick={onBack} className="px-4 py-3 bg-white/10 text-white rounded-xl font-bold">←</button>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════
+   GAME 7 — الكلمات المتقاطعة
+   ══════════════════════════════════════════════════════ */
+function CrosswordGame({ onBack, questions, title, color }: {
+  onBack: () => void;
+  questions: typeof CROSSWORD_1;
+  title: string;
+  color: string;
+}) {
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [checked, setChecked] = useState(false);
+  const [confettiTrig, setConfettiTrig] = useState(0);
+
+  function check() {
+    setChecked(true);
+    const allRight = questions.every((q, i) =>
+      (answers[i] || "").trim().replace(/\s/g, "") === q.answer.replace(/\s/g, "")
+    );
+    if (allRight) setConfettiTrig(t => t+1);
+  }
+
+  const score = questions.filter((q, i) =>
+    (answers[i] || "").trim().replace(/\s/g, "") === q.answer.replace(/\s/g, "")
+  ).length;
+
+  return (
+    <div>
+      <Confetti trigger={confettiTrig} />
+      <div className="bg-white/10 rounded-2xl p-4 mb-4 text-right text-white">
+        <h3 className="font-bold text-lg mb-1">🔤 {title}</h3>
+        <p className="text-sm text-white/70">أَكْمِلِ الْكَلِمَاتِ بِنَاءً عَلَى التَّلْمِيحَاتِ</p>
+      </div>
+
+      <div className="space-y-3 mb-4">
+        {questions.map((q, i) => {
+          const ans = answers[i] || "";
+          const isRight = checked ? ans.trim() === q.answer : null;
+          return (
+            <div key={i} className="bg-white/10 rounded-xl p-3 text-right">
+              <div className="flex gap-2 items-center mb-2">
+                <span className="text-xs px-2 py-0.5 rounded-full text-white font-bold" style={{ background: color }}>{q.dir}</span>
+                <span className="text-white/70 text-xs">{q.num}</span>
+              </div>
+              <p className="text-white text-sm mb-2">{q.clue}</p>
+              <div className="flex gap-2 items-center">
+                {checked && <span>{isRight ? "✅" : `❌ ${q.answer}`}</span>}
+                <input
+                  value={ans}
+                  onChange={e => setAnswers(prev => ({ ...prev, [i]: e.target.value }))}
+                  readOnly={checked}
+                  className="flex-1 px-3 py-2 rounded-xl text-right text-white font-bold focus:outline-none"
+                  style={{ background: checked ? (isRight ? "#059669" : "#dc2626") : "rgba(255,255,255,0.2)", fontFamily: "'Amiri', serif", fontSize: "1.1rem" }}
+                  placeholder="اكتب هنا..."
+                  dir="rtl"
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {checked && (
+        <div className={`rounded-xl p-3 text-center mb-4 font-bold ${score === questions.length ? "bg-green-500/30 text-green-200" : "bg-amber-500/30 text-amber-200"}`}>
+          {score === questions.length ? "🏆 أَحْسَنْتَ! كَلِمَاتٌ مُتَقَاطِعَةٌ مُكْتَمِلَةٌ!" : `أَصَبْتَ ${score} مِنْ ${questions.length}`}
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        {!checked
+          ? <button onClick={check} className="flex-1 py-3 text-white rounded-xl font-bold" style={{ background: color }}>تَحَقَّقْ ✓</button>
+          : <button onClick={() => { setAnswers({}); setChecked(false); }} className="flex-1 py-3 bg-white/20 text-white rounded-xl font-bold">إِعَادَةٌ</button>
+        }
+        <button onClick={onBack} className="px-4 py-3 bg-white/10 text-white rounded-xl font-bold">←</button>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════
+   GAME 8 — صندوق الكنز: التصحيح والإملاء
+   ══════════════════════════════════════════════════════ */
+function TreasureBoxGame({ onBack, mode }: { onBack: () => void; mode: "fix"|"dictation" }) {
+  const items = mode === "fix" ? TREASURE_FIX : TREASURE_DICTATION;
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [checked, setChecked] = useState(false);
+  const [confettiTrig, setConfettiTrig] = useState(0);
+
+  function check() {
+    setChecked(true);
+    const allRight = items.every((item: any, i: number) =>
+      (answers[i] || "").trim() === item.correct || (answers[i] || "").trim() === item.answer
+    );
+    if (allRight) setConfettiTrig(t => t+1);
+  }
+
+  const score = items.filter((item: any, i: number) =>
+    (answers[i] || "").trim() === (item.correct || item.answer)
+  ).length;
+
+  return (
+    <div>
+      <Confetti trigger={confettiTrig} />
+      <div className="bg-white/10 rounded-2xl p-4 mb-4 text-right text-white">
+        <h3 className="font-bold text-lg mb-1">🏆 {mode === "fix" ? "صَنْدُوقُ الْكَنْزِ — صَحِّحِ الأَخْطَاءَ" : "صَنْدُوقُ الْكَنْزِ — أَكْمِلِ الإِمْلَاءَ"}</h3>
+        <p className="text-sm text-white/70">{mode === "fix" ? "صَحِّحِ الْكَلِمَاتِ الْخَاطِئَةَ لِفَتْحِ الْكَنْزِ" : "أَكْمِلِ الْجُمَلَ بِالْكَلِمَةِ الصَّحِيحَةِ"}</p>
+      </div>
+
+      <div className="space-y-3 mb-4">
+        {(items as any[]).map((item, i) => {
+          const ans = answers[i] || "";
+          const rightAnswer = item.correct || item.answer;
+          const isRight = checked ? ans.trim() === rightAnswer : null;
+          return (
+            <div key={i} className="bg-white/10 rounded-xl p-3 text-right">
+              {mode === "fix"
+                ? <p className="text-red-300 font-bold line-through text-sm mb-1" style={{ fontFamily: "'Amiri', serif" }}>{item.wrong}</p>
+                : <p className="text-white text-sm mb-2">{item.sentence}</p>
+              }
+              {mode === "fix" && item.rule && (
+                <p className="text-amber-300 text-xs mb-2">💡 {item.rule}</p>
+              )}
+              {mode === "dictation" && item.hint && (
+                <p className="text-blue-300 text-xs mb-2">💡 {item.hint}</p>
+              )}
+              <div className="flex gap-2 items-center">
+                {checked && <span>{isRight ? "✅" : `❌ ${rightAnswer}`}</span>}
+                <input
+                  value={ans}
+                  onChange={e => setAnswers(prev => ({ ...prev, [i]: e.target.value }))}
+                  readOnly={checked}
+                  className="flex-1 px-3 py-2 rounded-xl text-right text-white font-bold focus:outline-none"
+                  style={{ background: checked ? (isRight ? "#059669" : "#dc2626") : "rgba(255,255,255,0.2)", fontFamily: "'Amiri', serif", fontSize: "1.1rem" }}
+                  placeholder={mode === "fix" ? "الكلمة الصحيحة..." : "أكمل الفراغ..."}
+                  dir="rtl"
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {checked && (
+        <div className={`rounded-xl p-4 text-center mb-4 ${score === items.length ? "bg-yellow-500/30 text-yellow-200" : "bg-amber-500/30 text-amber-200"}`}>
+          {score === items.length
+            ? <><div className="text-3xl mb-2">🏆</div><p className="font-bold">فَتَحْتَ صَنْدُوقَ الْكَنْزِ! أَنْتَ الْمُسْتَكْشِفُ اللُّغَوِيُّ الْكَبِيرُ!</p></>
+            : <p className="font-bold">أَصَبْتَ {score} مِنْ {items.length} — رَاجِعِ الْإِجَابَاتِ الْحَمْرَاءَ</p>
+          }
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        {!checked
+          ? <button onClick={check} className="flex-1 py-3 text-white rounded-xl font-bold" style={{ background: "#b45309" }}>افْتَحِ الْكَنْزَ! 🗝️</button>
+          : <button onClick={() => { setAnswers({}); setChecked(false); }} className="flex-1 py-3 bg-white/20 text-white rounded-xl font-bold">إِعَادَةٌ</button>
+        }
+        <button onClick={onBack} className="px-4 py-3 bg-white/10 text-white rounded-xl font-bold">←</button>
+      </div>
+    </div>
+  );
+}
+
 export default function WritingGames() {
   const [middleHamza, setMiddleHamza] = useState(DEFAULT_MIDDLE_HAMZA);
   const [endHamza, setEndHamza] = useState(DEFAULT_END_HAMZA);
@@ -593,7 +1100,7 @@ export default function WritingGames() {
     });
   }, []);
   const [, setLocation] = useLocation();
-  const [activeGame, setActiveGame] = useState<"menu"|"middle"|"end"|"quiz">("menu");
+  const [activeGame, setActiveGame] = useState<"menu"|"middle"|"end"|"quiz"|"gate"|"river"|"mountain"|"cross1"|"cross2"|"cross3"|"treasure-fix"|"treasure-dict">("menu");
 
   // No cleanup on unmount — sounds should persist when navigating to next page/question
 
@@ -630,6 +1137,95 @@ export default function WritingGames() {
       <div className="max-w-xl mx-auto px-4 py-6">
         <QuickQuizGame onBack={() => setActiveGame("menu")} data={quickQuiz} />
       </div>
+    </div>
+  );
+
+  if (activeGame === "gate") return (
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "linear-gradient(180deg,#0a1628,#064e3b)", minHeight: "100vh" }}>
+      <div className="p-4" style={{ background: "linear-gradient(135deg,#064e3b,#065f46)" }}>
+        <button onClick={() => setActiveGame("menu")} className="text-emerald-300 text-sm mb-1">← عَالَمُ الْهَمْزَةِ</button>
+        <h1 className="text-xl font-bold text-white text-right">🔓 رِحْلَةُ الْكَنْزِ ١ — فَرْزُ الْبَوَّابَةِ</h1>
+        <p className="text-emerald-300 text-xs text-right mt-1">الْهَمْزَةُ الْمُتَوَسِّطَةُ عَلَى نَبْرَةٍ</p>
+      </div>
+      <div className="max-w-xl mx-auto px-4 py-6"><GateSortGame onBack={() => setActiveGame("menu")} /></div>
+    </div>
+  );
+
+  if (activeGame === "river") return (
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "linear-gradient(180deg,#0c1840,#1e3a8a)", minHeight: "100vh" }}>
+      <div className="p-4" style={{ background: "linear-gradient(135deg,#1e3a8a,#1d4ed8)" }}>
+        <button onClick={() => setActiveGame("menu")} className="text-blue-300 text-sm mb-1">← عَالَمُ الْهَمْزَةِ</button>
+        <h1 className="text-xl font-bold text-white text-right">🌊 رِحْلَةُ الْكَنْزِ ٢ — عُبُورُ النَّهَرِ</h1>
+        <p className="text-blue-300 text-xs text-right mt-1">الْهَمْزَةُ الْمُتَوَسِّطَةُ عَلَى السَّطْرِ</p>
+      </div>
+      <div className="max-w-xl mx-auto px-4 py-6"><RiverCrossGame onBack={() => setActiveGame("menu")} /></div>
+    </div>
+  );
+
+  if (activeGame === "mountain") return (
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "linear-gradient(180deg,#1c0a28,#78350f)", minHeight: "100vh" }}>
+      <div className="p-4" style={{ background: "linear-gradient(135deg,#78350f,#b45309)" }}>
+        <button onClick={() => setActiveGame("menu")} className="text-amber-300 text-sm mb-1">← عَالَمُ الْهَمْزَةِ</button>
+        <h1 className="text-xl font-bold text-white text-right">🏔️ رِحْلَةُ الْكَنْزِ ٣ — تَسَلُّقُ الْجَبَلِ</h1>
+        <p className="text-amber-300 text-xs text-right mt-1">الْهَمْزَةُ الْمُتَطَرِّفَةُ</p>
+      </div>
+      <div className="max-w-xl mx-auto px-4 py-6"><MountainClimbGame onBack={() => setActiveGame("menu")} /></div>
+    </div>
+  );
+
+  if (activeGame === "cross1") return (
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "linear-gradient(180deg,#0f172a,#064e3b)", minHeight: "100vh" }}>
+      <div className="p-4" style={{ background: "linear-gradient(135deg,#064e3b,#065f46)" }}>
+        <button onClick={() => setActiveGame("menu")} className="text-emerald-300 text-sm mb-1">← عَالَمُ الْهَمْزَةِ</button>
+        <h1 className="text-xl font-bold text-white text-right">🔤 الْكَلِمَاتُ الْمُتَقَاطِعَةُ — الْهَمْزَةُ عَلَى نَبْرَةٍ</h1>
+      </div>
+      <div className="max-w-xl mx-auto px-4 py-6">
+        <CrosswordGame onBack={() => setActiveGame("menu")} questions={CROSSWORD_1} title="الْهَمْزَةُ الْمُتَوَسِّطَةُ عَلَى نَبْرَةٍ" color="#059669" />
+      </div>
+    </div>
+  );
+
+  if (activeGame === "cross2") return (
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "linear-gradient(180deg,#0c1840,#1e3a8a)", minHeight: "100vh" }}>
+      <div className="p-4" style={{ background: "linear-gradient(135deg,#1e3a8a,#1d4ed8)" }}>
+        <button onClick={() => setActiveGame("menu")} className="text-blue-300 text-sm mb-1">← عَالَمُ الْهَمْزَةِ</button>
+        <h1 className="text-xl font-bold text-white text-right">🔤 الْكَلِمَاتُ الْمُتَقَاطِعَةُ — الْهَمْزَةُ عَلَى السَّطْرِ</h1>
+      </div>
+      <div className="max-w-xl mx-auto px-4 py-6">
+        <CrosswordGame onBack={() => setActiveGame("menu")} questions={CROSSWORD_2} title="الْهَمْزَةُ الْمُتَوَسِّطَةُ عَلَى السَّطْرِ" color="#1d4ed8" />
+      </div>
+    </div>
+  );
+
+  if (activeGame === "cross3") return (
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "linear-gradient(180deg,#1c0a28,#78350f)", minHeight: "100vh" }}>
+      <div className="p-4" style={{ background: "linear-gradient(135deg,#78350f,#b45309)" }}>
+        <button onClick={() => setActiveGame("menu")} className="text-amber-300 text-sm mb-1">← عَالَمُ الْهَمْزَةِ</button>
+        <h1 className="text-xl font-bold text-white text-right">🔤 الْكَلِمَاتُ الْمُتَقَاطِعَةُ — الْهَمْزَةُ الْمُتَطَرِّفَةُ</h1>
+      </div>
+      <div className="max-w-xl mx-auto px-4 py-6">
+        <CrosswordGame onBack={() => setActiveGame("menu")} questions={CROSSWORD_3} title="الْهَمْزَةُ الْمُتَطَرِّفَةُ" color="#b45309" />
+      </div>
+    </div>
+  );
+
+  if (activeGame === "treasure-fix") return (
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "linear-gradient(180deg,#1c1009,#92400e)", minHeight: "100vh" }}>
+      <div className="p-4" style={{ background: "linear-gradient(135deg,#92400e,#b45309)" }}>
+        <button onClick={() => setActiveGame("menu")} className="text-amber-300 text-sm mb-1">← عَالَمُ الْهَمْزَةِ</button>
+        <h1 className="text-xl font-bold text-white text-right">🏆 صَنْدُوقُ الْكَنْزِ — صَحِّحِ الأَخْطَاءَ</h1>
+      </div>
+      <div className="max-w-xl mx-auto px-4 py-6"><TreasureBoxGame onBack={() => setActiveGame("menu")} mode="fix" /></div>
+    </div>
+  );
+
+  if (activeGame === "treasure-dict") return (
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "linear-gradient(180deg,#13001f,#3b0764)", minHeight: "100vh" }}>
+      <div className="p-4" style={{ background: "linear-gradient(135deg,#3b0764,#6b21a8)" }}>
+        <button onClick={() => setActiveGame("menu")} className="text-purple-300 text-sm mb-1">← عَالَمُ الْهَمْزَةِ</button>
+        <h1 className="text-xl font-bold text-white text-right">🏆 صَنْدُوقُ الْكَنْزِ — تَحَدِّي الإِمْلَاءِ</h1>
+      </div>
+      <div className="max-w-xl mx-auto px-4 py-6"><TreasureBoxGame onBack={() => setActiveGame("menu")} mode="dictation" /></div>
     </div>
   );
 
@@ -726,6 +1322,83 @@ export default function WritingGames() {
           <div className="flex flex-col items-center my-2">
             <div className="w-px h-5 bg-gradient-to-b from-amber-500 to-purple-500"/>
             <div className="w-2 h-2 rounded-full bg-purple-400"/>
+          </div>
+        </div>
+
+        {/* Separator */}
+        <div className="my-6 flex items-center gap-3">
+          <div className="flex-1 h-px bg-white/20"/>
+          <span className="text-white/50 text-xs">رِحْلَةُ الْكَنْزِ</span>
+          <div className="flex-1 h-px bg-white/20"/>
+        </div>
+
+        {/* Treasure Hunt Section */}
+        <div className="bg-white/5 rounded-3xl p-4 mb-4" style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
+          <div className="text-center mb-4">
+            <span className="text-3xl">🗺️</span>
+            <h2 className="text-white font-bold text-lg mt-1">رِحْلَةُ الْكَنْزِ</h2>
+            <p className="text-white/50 text-xs">ثَلَاثُ مَرَاحِلَ × ثَلَاثَةُ دُرُوسٍ</p>
+          </div>
+
+          {/* Row: درس ١ */}
+          <div className="mb-4">
+            <p className="text-emerald-300 text-xs font-bold text-right mb-2">📗 الدَّرْسُ الأَوَّلُ — الْهَمْزَةُ عَلَى نَبْرَةٍ</p>
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={() => setActiveGame("gate")}
+                className="py-3 px-2 rounded-2xl text-center text-white text-xs font-bold transition-all active:scale-95"
+                style={{ background: "linear-gradient(135deg,#064e3b,#059669)" }}>
+                <div className="text-2xl mb-1">🔓</div>فَرْزُ الْبَوَّابَةِ
+              </button>
+              <button onClick={() => setActiveGame("cross1")}
+                className="py-3 px-2 rounded-2xl text-center text-white text-xs font-bold transition-all active:scale-95"
+                style={{ background: "linear-gradient(135deg,#065f46,#047857)" }}>
+                <div className="text-2xl mb-1">🔤</div>مُتَقَاطِعَةٌ
+              </button>
+              <button onClick={() => setActiveGame("treasure-fix")}
+                className="py-3 px-2 rounded-2xl text-center text-white text-xs font-bold transition-all active:scale-95"
+                style={{ background: "linear-gradient(135deg,#1a5c2a,#064e3b)" }}>
+                <div className="text-2xl mb-1">🏆</div>صَنْدُوقُ التَّصْحِيحِ
+              </button>
+            </div>
+          </div>
+
+          {/* Row: درس ٢ */}
+          <div className="mb-4">
+            <p className="text-blue-300 text-xs font-bold text-right mb-2">📘 الدَّرْسُ الثَّانِي — الْهَمْزَةُ عَلَى السَّطْرِ</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => setActiveGame("river")}
+                className="py-3 px-2 rounded-2xl text-center text-white text-xs font-bold transition-all active:scale-95"
+                style={{ background: "linear-gradient(135deg,#1e3a8a,#1d4ed8)" }}>
+                <div className="text-2xl mb-1">🌊</div>عُبُورُ النَّهَرِ
+              </button>
+              <button onClick={() => setActiveGame("cross2")}
+                className="py-3 px-2 rounded-2xl text-center text-white text-xs font-bold transition-all active:scale-95"
+                style={{ background: "linear-gradient(135deg,#1d4ed8,#2563eb)" }}>
+                <div className="text-2xl mb-1">🔤</div>مُتَقَاطِعَةٌ
+              </button>
+            </div>
+          </div>
+
+          {/* Row: درس ٣ */}
+          <div>
+            <p className="text-amber-300 text-xs font-bold text-right mb-2">📙 الدَّرْسُ الثَّالِثُ — الْهَمْزَةُ الْمُتَطَرِّفَةُ</p>
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={() => setActiveGame("mountain")}
+                className="py-3 px-2 rounded-2xl text-center text-white text-xs font-bold transition-all active:scale-95"
+                style={{ background: "linear-gradient(135deg,#78350f,#b45309)" }}>
+                <div className="text-2xl mb-1">🏔️</div>تَسَلُّقُ الْجَبَلِ
+              </button>
+              <button onClick={() => setActiveGame("cross3")}
+                className="py-3 px-2 rounded-2xl text-center text-white text-xs font-bold transition-all active:scale-95"
+                style={{ background: "linear-gradient(135deg,#92400e,#b45309)" }}>
+                <div className="text-2xl mb-1">🔤</div>مُتَقَاطِعَةٌ
+              </button>
+              <button onClick={() => setActiveGame("treasure-dict")}
+                className="py-3 px-2 rounded-2xl text-center text-white text-xs font-bold transition-all active:scale-95"
+                style={{ background: "linear-gradient(135deg,#3b0764,#6b21a8)" }}>
+                <div className="text-2xl mb-1">🏆</div>صَنْدُوقُ الإِمْلَاءِ
+              </button>
+            </div>
           </div>
         </div>
 
