@@ -117,7 +117,7 @@ function Lesson1({ onBack }: { onBack: () => void }) {
       setGateFeedback(null);
       if (gateIdx < gateWords.length - 1) setGateIdx(i => i+1);
       else setGateDone(true);
-    }, 1200);
+    }, right ? 1200 : 2800);
   }
 
   function crossAnswer(opt: string) {
@@ -130,7 +130,7 @@ function Lesson1({ onBack }: { onBack: () => void }) {
       setCrossSelected(null);
       if (crossIdx < L1_CROSSWORD.length - 1) setCrossIdx(i => i+1);
       else setCrossDone(true);
-    }, 1300);
+    }, right ? 1300 : 2800);
   }
 
   function fixAnswer(opt: string) {
@@ -144,7 +144,7 @@ function Lesson1({ onBack }: { onBack: () => void }) {
       setFixFeedback(null); setFixSelected(null);
       if (fixIdx < L1_FIX.length - 1) setFixIdx(i => i+1);
       else setFixDone(true);
-    }, 1300);
+    }, right ? 1300 : 2800);
   }
 
   const bg = "linear-gradient(180deg,#0a1628,#064e3b)";
