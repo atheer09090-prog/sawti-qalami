@@ -7,7 +7,7 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَوَسِّطَةُ",
     correct: "بِئْرٌ",
     opts: ["بِيرٌ", "بِئْرٌ", "بِيئَرٌ", "بِئَرٌ"],
-    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+    img: "https://images.unsplash.com/photo-1604981338911-b7e37bcd3899?w=600&q=80",
     hint: "الْهَمْزَةُ عَلَى نَبْرَةٍ لِأَنَّ مَا قَبْلَهَا كَسْرَةٌ",
   },
   {
@@ -15,15 +15,15 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَوَسِّطَةُ",
     correct: "فِئَةٌ",
     opts: ["فِيئَةٌ", "فِأَةٌ", "فِئَةٌ", "فِاَةٌ"],
-    img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=80",
+    emoji: "🗂️",
     hint: "الْهَمْزَةُ عَلَى نَبْرَةٍ لِأَنَّ مَا قَبْلَهَا كَسْرَةٌ",
   },
   {
     word: "سُئِلَ",
     type: "الْهَمْزَةُ الْمُتَوَسِّطَةُ",
     correct: "سُئِلَ",
-    opts: ["سُءِلَ", "سُئِلَ", "سُوئِلَ", "سُيِلَ"],
-    img: "https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=600&q=80",
+    opts: ["سُأِلَ", "سُئِلَ", "سُوئِلَ", "سُيِلَ"],
+    img: "https://images.unsplash.com/photo-1758270704021-361c165d68fd?w=600&q=80",
     hint: "الْهَمْزَةُ عَلَى نَبْرَةٍ لِأَنَّ مَا بَعْدَهَا كَسْرَةٌ",
   },
   // ── الهمزة المتوسطة على ألف ──
@@ -32,7 +32,7 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَوَسِّطَةُ",
     correct: "يَسْأَلُ",
     opts: ["يَسْئَلُ", "يَسَالُ", "يَسْأَلُ", "يَسَألُ"],
-    img: "https://images.unsplash.com/photo-1532153975070-2e9ab71f1b14?w=600&q=80",
+    emoji: "🙋‍♂️",
     hint: "الْهَمْزَةُ عَلَى أَلِفٍ لِأَنَّ مَا قَبْلَهَا سَاكِنٌ وَمَا قَبْلَهُ مَفْتُوحٌ",
   },
   {
@@ -40,7 +40,7 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَوَسِّطَةُ",
     correct: "مَسْأَلَةٌ",
     opts: ["مَسْئَلَةٌ", "مَسْأَلَةٌ", "مَسَالَةٌ", "مَسْالَةٌ"],
-    img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&q=80",
+    emoji: "🧮",
     hint: "الْهَمْزَةُ عَلَى أَلِفٍ لِأَنَّ مَا قَبْلَهَا سَاكِنٌ وَمَا قَبْلَهُ فَتْحَةٌ",
   },
   {
@@ -48,7 +48,7 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَوَسِّطَةُ",
     correct: "رَأْسٌ",
     opts: ["رَاسٌ", "رَأْسٌ", "رَءْسٌ", "رَئْسٌ"],
-    img: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&q=80",
+    emoji: "🙋",
     hint: "الْهَمْزَةُ عَلَى أَلِفٍ لِأَنَّ مَا قَبْلَهَا فَتْحَةٌ",
   },
   {
@@ -56,7 +56,7 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَوَسِّطَةُ",
     correct: "يَأْكُلُ",
     opts: ["يَاكُلُ", "يَأْكُلُ", "يَئْكُلُ", "يَءْكُلُ"],
-    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80",
+    emoji: "🍽️",
     hint: "الْهَمْزَةُ عَلَى أَلِفٍ لِأَنَّ مَا قَبْلَهَا فَتْحَةٌ",
   },
   // ── الهمزة المتطرفة ──
@@ -65,7 +65,7 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَطَرِّفَةُ",
     correct: "بَدْءٌ",
     opts: ["بَدَأٌ", "بَدَاءٌ", "بَدْءٌ", "بَدِيءٌ"],
-    img: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80",
+    emoji: "🏁",
     hint: "الْهَمْزَةُ عَلَى السَّطْرِ لِأَنَّ مَا قَبْلَهَا سَاكِنٌ",
   },
   {
@@ -73,7 +73,7 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَطَرِّفَةُ",
     correct: "شَيْءٌ",
     opts: ["شَيِئٌ", "شَيْءٌ", "شَيَاءٌ", "شَيَءٌ"],
-    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+    emoji: "❓",
     hint: "الْهَمْزَةُ عَلَى السَّطْرِ لِأَنَّ مَا قَبْلَهَا سَاكِنٌ",
   },
   {
@@ -81,7 +81,7 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَطَرِّفَةُ",
     correct: "يَجْرُؤُ",
     opts: ["يَجْرُوُ", "يَجْرَأُ", "يَجْرُءُ", "يَجْرُؤُ"],
-    img: "https://images.unsplash.com/photo-1519791883288-dc8bd696e667?w=600&q=80",
+    emoji: "💪",
     hint: "الْهَمْزَةُ عَلَى وَاوٍ لِأَنَّ مَا قَبْلَهَا ضَمَّةٌ",
   },
   {
@@ -89,7 +89,7 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَطَرِّفَةُ",
     correct: "يُرْجَأُ",
     opts: ["يُرْجَاءُ", "يُرْجِئُ", "يُرْجَأُ", "يُرْجَءُ"],
-    img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80",
+    emoji: "⏳",
     hint: "الْهَمْزَةُ عَلَى أَلِفٍ لِأَنَّ مَا قَبْلَهَا فَتْحَةٌ",
   },
   {
@@ -97,7 +97,7 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَطَرِّفَةُ",
     correct: "مَسَاءٌ",
     opts: ["مَسَاءً", "مَسَاؤُ", "مَسَاءٌ", "مَسَائٌ"],
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
+    img: "https://images.unsplash.com/photo-1655269525951-f538ce98bba7?w=600&q=80",
     hint: "الْهَمْزَةُ عَلَى السَّطْرِ لِأَنَّ مَا قَبْلَهَا أَلِفٌ سَاكِنَةٌ",
   },
   {
@@ -105,7 +105,7 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَطَرِّفَةُ",
     correct: "هُدُوءٌ",
     opts: ["هُدُوُ", "هُدُوئٌ", "هُدُءٌ", "هُدُوءٌ"],
-    img: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80",
+    emoji: "🧘",
     hint: "الْهَمْزَةُ عَلَى السَّطْرِ لِأَنَّ مَا قَبْلَهَا وَاوٌ سَاكِنَةٌ",
   },
   {
@@ -113,7 +113,7 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَطَرِّفَةُ",
     correct: "قَرَأَ",
     opts: ["قَرَاءَ", "قَرَءَ", "قَرَأَ", "قَرَئَ"],
-    img: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&q=80",
+    img: "https://images.unsplash.com/flagged/photo-1551887373-6edba6dacbb1?w=600&q=80",
     hint: "الْهَمْزَةُ عَلَى أَلِفٍ لِأَنَّ مَا قَبْلَهَا فَتْحَةٌ",
   },
   {
@@ -121,7 +121,7 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَطَرِّفَةُ",
     correct: "أَنْبَأَ",
     opts: ["أَنْبَئَ", "أَنْبَاءَ", "أَنْبَأَ", "أَنْبَءَ"],
-    img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&q=80",
+    emoji: "📢",
     hint: "الْهَمْزَةُ عَلَى أَلِفٍ لِأَنَّ مَا قَبْلَهَا فَتْحَةٌ",
   },
   {
@@ -129,7 +129,7 @@ export const DICTATION_QUESTIONS = [
     type: "الْهَمْزَةُ الْمُتَطَرِّفَةُ",
     correct: "لُؤْلُؤٌ",
     opts: ["لُولُوٌ", "لُؤْلُوٌ", "لُؤْلُؤٌ", "لُولُؤٌ"],
-    img: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=600&q=80",
+    img: "https://images.unsplash.com/photo-1654699991520-aaaf4dd2608b?w=600&q=80",
     hint: "الْهَمْزَةُ عَلَى وَاوٍ لِأَنَّ مَا قَبْلَهَا ضَمَّةٌ",
   },
 ];

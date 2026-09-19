@@ -1,18 +1,16 @@
 import { useLocation } from "wouter";
 import { getState, setState } from "@/lib/store";
 
-const SECTIONS = ["أ", "ب", "ج", "د"];
+const CLASSES = [
+  "السادس ١", "السادس ٢", "السادس ٣", "السادس ٤",
+];
 
 export default function ClassSelection() {
   const [, setLocation] = useLocation();
   const student = getState();
 
-  // Extract base grade (e.g. "الصف السادس" from "الصف السادس أ")
-  const baseGrade = student.grade.replace(/ [أبجد]$/, "").trim();
-  const currentSection = student.grade.replace(baseGrade, "").trim();
-
-  function handleSection(section: string) {
-    setState(prev => ({ ...prev, grade: `${baseGrade} ${section}` }));
+  function handleClass(cls: string) {
+    setState(prev => ({ ...prev, grade: cls }));
     setLocation("/dashboard");
   }
 
@@ -29,8 +27,8 @@ export default function ClassSelection() {
         <div className="flex justify-between items-center">
           <span className="text-3xl p-2 bg-green-700 rounded-xl">🎓</span>
           <div className="text-right">
-            <h1 className="text-2xl font-bold text-white">تَحْدِيدُ الشُّعْبَةِ</h1>
-            <p className="text-green-200 text-sm">{baseGrade} — اخْتَرْ شُعْبَتَكَ</p>
+            <h1 className="text-2xl font-bold text-white">تَحْدِيدُ الْفَصْلِ</h1>
+            <p className="text-green-200 text-sm">اخْتَرْ فَصْلَكَ الدِّرَاسِيَّ</p>
           </div>
         </div>
       </div>
@@ -49,26 +47,23 @@ export default function ClassSelection() {
         </div>
 
         <h2 className="text-right font-bold text-lg mb-4" style={{ color: "#1a5c2a" }}>
-          🏫 اخْتَرْ شُعْبَتَكَ فِي {baseGrade}:
+          🏫 اخْتَرْ فَصْلَكَ:
         </h2>
 
-        <div className="grid grid-cols-2 gap-4">
-          {SECTIONS.map((section) => {
-            const isSelected = currentSection === section;
+        <div className="grid grid-cols-3 gap-3">
+          {CLASSES.map((cls) => {
+            const isSelected = student.grade === cls;
             return (
-              <button key={section} onClick={() => handleSection(section)}
-                className="p-8 rounded-2xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all text-center"
+              <button key={cls} onClick={() => handleClass(cls)}
+                className="p-4 rounded-2xl shadow text-center transition-all hover:-translate-y-0.5 hover:shadow-md"
                 style={{
                   background: isSelected ? "#dcf5e7" : "white",
                   border: `2px solid ${isSelected ? "#1a5c2a" : "#e5e7eb"}`,
                 }}
               >
-                <div className="text-4xl mb-2">{isSelected ? "✅" : "🏫"}</div>
-                <h3 className="font-bold text-5xl mb-1" style={{ color: "#1a5c2a" }}>{section}</h3>
-                <p className="text-gray-400 text-sm">{baseGrade} {section}</p>
-                {isSelected && (
-                  <span className="text-xs text-green-600 font-bold mt-1 block">شُعْبَتُكَ الْحَالِيَّةُ ✓</span>
-                )}
+                <div className="text-2xl mb-1">{isSelected ? "✅" : "🎒"}</div>
+                <p className="font-bold text-base" style={{ color: "#1a5c2a" }}>{cls}</p>
+                {isSelected && <span className="text-xs text-green-600 font-bold">✓ فَصْلُكَ</span>}
               </button>
             );
           })}

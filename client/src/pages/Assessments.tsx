@@ -51,6 +51,13 @@ export default function Assessments() {
           </div>
         </div>
 
+        <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4 text-right">
+          <p className="text-xs text-blue-800 leading-relaxed">
+            💡 كُلُّ نِسْبَةٍ أَدْنَاهُ تُمَثِّلُ <strong>أَفْضَلَ نَتِيجَةٍ حَقَّقْتَهَا</strong> فِي هَذِهِ الْمَهَارَةِ حَتَّى الْآنَ (وَلَيْسَتْ مُتَوَسِّطَ كُلِّ مُحَاوَلَاتِكَ)،
+            حَتَّى تَتَشَجَّعَ عَلَى إِعَادَةِ الْمُحَاوَلَةِ دُونَ خَوْفٍ مِنْ خَفْضِ نَتِيجَتِكَ.
+          </p>
+        </div>
+
         {skills.map((s) => {
           const grade = getGrade(s.value);
           return (

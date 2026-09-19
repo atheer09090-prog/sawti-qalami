@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { getState, clearState, StudentData } from "@/lib/store";
+import { getState, setState, StudentData, logout } from "@/lib/store";
 import { playSound, stopSound, setGender, stopAll, audioFile } from "@/lib/audio";
+import { submitReview } from "@/lib/api";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
+import { OnboardingTour } from "@/components/OnboardingTour";
+import { SusSurvey } from "@/components/SusSurvey";
 
 /* ── Welcome Popup ── */
 function WelcomePopup({ name, onClose }: { name: string; onClose: () => void }) {
@@ -52,10 +55,93 @@ function getLabel(v: number) {
   return "ابْدَأْ رِحْلَتَكَ";
 }
 
+/* ── ⭐ قيّم المنصة ── */
+function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="flex gap-1 justify-center">
+      {[1, 2, 3, 4, 5].map(i => (
+        <button key={i} onClick={() => onChange(i)} className="text-3xl leading-none">
+          <span style={{ color: i <= value ? "#f5c842" : "#e5e7eb" }}>★</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function RatingModal({ studentName, onClose }: { studentName: string; onClose: () => void }) {
+  const [quality, setQuality] = useState(0);
+  const [ease, setEase] = useState(0);
+  const [benefit, setBenefit] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+
+  async function handleSubmit() {
+    if (!quality || !ease || !benefit) return;
+    setSubmitting(true);
+    const ok = await submitReview({ student: studentName, quality, ease, benefit, comment: comment.trim() });
+    setSubmitting(false);
+    if (ok) setDone(true);
+    else alert("⚠️ تعذّر إرسال تقييمك. تحقّق من اتصالك بالإنترنت وحاول مرة أخرى.");
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.4)" }} onClick={onClose}>
+      <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm" dir="rtl" onClick={e => e.stopPropagation()}>
+        {!done ? (
+          <>
+            <h2 className="text-center font-bold text-lg mb-4" style={{ color: "#1a5c2a", fontFamily: "'Amiri', serif" }}>
+              ⭐ قَيِّمْ تَجْرِبَتَكَ مَعَ الْمَنْصَةِ
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <p className="text-center text-sm text-gray-500 mb-1">جَوْدَةُ الْمُحْتَوَى</p>
+                <StarPicker value={quality} onChange={setQuality} />
+              </div>
+              <div>
+                <p className="text-center text-sm text-gray-500 mb-1">سُهُولَةُ الِاسْتِخْدَامِ</p>
+                <StarPicker value={ease} onChange={setEase} />
+              </div>
+              <div>
+                <p className="text-center text-sm text-gray-500 mb-1">مِقْدَارُ الْفَائِدَةِ</p>
+                <StarPicker value={benefit} onChange={setBenefit} />
+              </div>
+              <textarea value={comment} onChange={e => setComment(e.target.value)}
+                placeholder="شَارِكْنَا رَأْيَكَ (اِخْتِيَارِيٌّ)..."
+                className="w-full h-20 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-green-500 focus:outline-none text-sm"
+                style={{ fontFamily: "'Cairo', sans-serif" }} />
+            </div>
+            <div className="flex gap-2 mt-5">
+              <button onClick={onClose} className="flex-1 py-2.5 border-2 border-gray-200 rounded-xl text-gray-500 font-bold">إِلْغَاءٌ</button>
+              <button onClick={handleSubmit} disabled={!quality || !ease || !benefit || submitting}
+                className="flex-1 py-2.5 rounded-xl text-white font-bold disabled:opacity-40"
+                style={{ background: "#1a5c2a" }}>
+                {submitting ? "..." : "إِرْسَالٌ"}
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-4">
+            <p className="text-5xl mb-3">🌟</p>
+            <p className="font-bold text-lg" style={{ color: "#1a5c2a" }}>شُكْرًا لَكَ عَلَى رَأْيِكَ!</p>
+            <p className="text-gray-500 text-sm mt-1">يُسَاعِدُنَا تَقْيِيمُكَ عَلَى تَطْوِيرِ الْمَنْصَةِ بِاسْتِمْرَارٍ.</p>
+            <button onClick={onClose} className="mt-4 px-6 py-2 rounded-xl text-white font-bold" style={{ background: "#1a5c2a" }}>
+              إِغْلَاقٌ
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [student, setStudent] = useState<StudentData>(getState());
   const [showPopup, setShowPopup] = useState(false);
+  const [showRating, setShowRating] = useState(false);
+  const [showTour, setShowTour] = useState(false);
 
   useEffect(() => {
     const s = getState();
@@ -65,6 +151,13 @@ export default function Dashboard() {
     // Restore gender from avatar
     const av = s.avatar || "boy1";
     setGender(av === "girl1" || av === "girl2" ? "female" : "male");
+
+    // الجولة التعريفية: تُعرض مرة واحدة فقط لكل طالب (وليس لكل جلسة
+    // متصفح كالترحيب)، ويمكن فتحها مرة أخرى لاحقًا من زر "؟" في الأعلى.
+    if (!s.onboardingSeen) {
+      setShowTour(true);
+      return; // لا داعي لعرض الترحيب أيضًا فوق الجولة في نفس الزيارة
+    }
 
     // Play welcome ONCE per browser session (not once ever)
     const sessionKey = `welcome_session_${s.name}`;
@@ -78,6 +171,12 @@ export default function Dashboard() {
     // Already shown this session — no sound, no popup
   }, []);
 
+  function finishTour() {
+    setState((prev) => ({ ...prev, onboardingSeen: true }));
+    setStudent((prev) => ({ ...prev, onboardingSeen: true }));
+    setShowTour(false);
+  }
+
   const chartData = [
     { name: "التَّحَدُّث", value: student.speakingProgress, fill: "#1a5c2a" },
     { name: "الْكِتَابَة", value: student.writingProgress, fill: "#b45309" },
@@ -89,6 +188,7 @@ export default function Dashboard() {
       dir="rtl"
       style={{ fontFamily: "'Cairo', sans-serif", minHeight: "100vh" }}
     >
+      {showTour && <OnboardingTour onFinish={finishTour} />}
       {showPopup && <WelcomePopup name={student.name} onClose={() => setShowPopup(false)} />}
       {/* Full-page background */}
       <div
@@ -102,10 +202,19 @@ export default function Dashboard() {
 
       {/* Top bar */}
       <div className="flex justify-between items-center px-4 py-3 bg-white/70 backdrop-blur-sm shadow-sm">
-        <div className="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 shadow-sm border border-yellow-200">
-          <span className="text-yellow-500 text-sm">⭐</span>
-          <span className="font-bold text-sm">{student.stars}</span>
-          <span className="text-xs text-gray-400">نُقَاطِي</span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 shadow-sm border border-yellow-200">
+            <span className="text-yellow-500 text-sm">⭐</span>
+            <span className="font-bold text-sm">{student.stars}</span>
+            <span className="text-xs text-gray-400">نُقَاطِي</span>
+          </div>
+          <button
+            onClick={() => setShowTour(true)}
+            title="دليل الاستخدام"
+            className="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50"
+          >
+            ؟
+          </button>
         </div>
         <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm text-right border border-gray-100">
           <div>
@@ -177,7 +286,7 @@ export default function Dashboard() {
 
             {/* Logout */}
             <button
-              onClick={() => { clearState(); setLocation("/"); }}
+              onClick={() => { logout(); setLocation("/"); }}
               className="p-4 rounded-2xl text-right shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
               style={{ background: "#fee2e2", border: "2px solid #fca5a5" }}
             >
@@ -224,7 +333,18 @@ export default function Dashboard() {
             ✨ أَنْتَ نَجْمٌ مُضِيءٌ فِي سَمَاءِ الْعِلْمِ وَالْمَعْرِفَةِ ✨
           </p>
         </div>
+
+        {/* ── فوتر: تقييم المنصة ── */}
+        <div className="mt-4 text-center pb-2">
+          <button onClick={() => setShowRating(true)}
+            className="text-sm px-5 py-2.5 rounded-full font-bold shadow-sm hover:shadow-md transition-all"
+            style={{ background: "#fef9e7", border: "2px solid #fde68a", color: "#b45309" }}>
+            ⭐ قَيِّمْ تَجْرِبَتَكَ
+          </button>
+        </div>
       </div>
+
+      {showRating && <SusSurvey onClose={() => setShowRating(false)} />}
     </div>
   );
 }

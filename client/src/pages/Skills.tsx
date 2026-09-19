@@ -14,11 +14,11 @@ export default function Skills() {
           <button onClick={() => setLocation("/dashboard")} className="text-green-200 text-sm">← الرَّئِيسِيَّةُ</button>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-4xl p-2 bg-green-700 rounded-xl">🎯</span>
           <div className="text-right">
             <h1 className="text-2xl font-bold text-white">الْمَهَارَاتُ اللُّغَوِيَّةُ</h1>
             <p className="text-green-200 text-sm">اخْتَرِ الْمَهَارَةَ الَّتِي تُرِيدُ تَطْوِيرَهَا</p>
           </div>
+          <span className="text-4xl p-2 bg-green-700 rounded-xl">🎯</span>
         </div>
       </div>
 
@@ -30,11 +30,11 @@ export default function Skills() {
           style={{ background: "#dcf5e7", border: "2px solid #86efac" }}
         >
           <div className="flex justify-between items-center mb-3">
-            <span className="text-4xl p-2 rounded-xl" style={{ background: "#1a5c2a" }}>🎙️</span>
             <div>
               <h2 className="text-xl font-bold" style={{ color: "#1a5c2a" }}>مَهَارَةُ التَّحَدُّثِ</h2>
               <p className="text-gray-500 text-sm">تَعَلَّمِ التَّعْبِيرَ الشَّفَهِيَّ وَالتَّحَدُّثَ بِثِقَةٍ</p>
             </div>
+            <span className="text-4xl p-2 rounded-xl" style={{ background: "#1a5c2a" }}>🎙️</span>
           </div>
           <div className="flex gap-2 flex-wrap mb-3">
             {["وَصْفُ رِحْلَةٍ صَيْفِيَّةٍ", "قِرَاءَةٌ مَنْشُورٌ تَوْعَوِيٌّ", "التَّعْبِيرُ عَنِ الرَّأْيِ"].map(t => (
@@ -61,11 +61,11 @@ export default function Skills() {
           style={{ background: "#fef3e2", border: "2px solid #fcd34d" }}
         >
           <div className="flex justify-between items-center mb-3">
-            <span className="text-4xl p-2 rounded-xl" style={{ background: "#b45309" }}>✏️</span>
             <div>
               <h2 className="text-xl font-bold text-amber-800">مَهَارَةُ الْكِتَابَةِ</h2>
               <p className="text-gray-500 text-sm">طَوِّرْ أُسْلُوبَكَ الْكِتَابِيَّ وَإِبْدَاعَكَ اللُّغَوِيَّ</p>
             </div>
+            <span className="text-4xl p-2 rounded-xl" style={{ background: "#b45309" }}>✏️</span>
           </div>
           <div className="flex gap-2 flex-wrap mb-3">
             {["وَصْفُ الْمَنْزِلِ", "وَصْفُ الْحَيِّ", "وَصْفُ الْمَسْجِدِ"].map(t => (
@@ -90,11 +90,11 @@ export default function Skills() {
           style={{ background: "#dbeafe", border: "2px solid #93c5fd" }}
         >
           <div className="flex justify-between items-center mb-3">
-            <span className="text-4xl p-2 rounded-xl" style={{ background: "#1d4ed8" }}>📚</span>
             <div>
               <h2 className="text-xl font-bold text-blue-800">مَهَارَةُ التَّعَلُّمِ الذَّاتِيِّ</h2>
               <p className="text-gray-500 text-sm">اكْتَشِفْ وَتَعَلَّمْ بِاسْتِقْلَالِيَّةٍ وَإِبْدَاعٍ</p>
             </div>
+            <span className="text-4xl p-2 rounded-xl" style={{ background: "#1d4ed8" }}>📚</span>
           </div>
           <div className="flex gap-2 flex-wrap mb-3">
             {["تَقْيِيمُ الذَّاتِ", "الْبَحْثُ وَالِاسْتِكْشَافُ", "الْمَشَارِيعُ الإِبْدَاعِيَّةُ"].map(t => (
