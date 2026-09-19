@@ -1,5 +1,5 @@
 /**
- * Sawti Qalami — رسائل ميكروفون موحّدة لكل حالات تسجيل الصوت في المنصة.
+ * Sawti Qalami — رسائل ميكروفون موحّدة لكل حالات تسجيل الصوت في البرنامج.
  * الهدف: بدل رسالة خطأ تقنية واحدة عامة، نميّز بين كل حالة ونعرض للطالب
  * رسالة عربية بسيطة توضّح بالضبط ما حدث وماذا يفعل الآن.
  */
@@ -22,7 +22,7 @@ export interface MicErrorInfo {
   canRetry: boolean;
 }
 
-/** يفحص إن كانت المنصة تدعم تسجيل الصوت أصلاً في هذا المتصفح/السياق */
+/** يفحص إن كان البرنامج يدعم تسجيل الصوت أصلاً في هذا المتصفح/السياق */
 export function checkMicSupport(): MicErrorInfo | null {
   if (typeof window === "undefined") return null;
   if (window.isSecureContext === false) {
@@ -30,7 +30,7 @@ export function checkMicSupport(): MicErrorInfo | null {
       kind: "insecure",
       title: "لا يمكن استخدام الميكروفون",
       message: "يعمل المتصفح على اتصال غير آمن (HTTP)، ولأسباب أمنية لا يسمح المتصفح باستخدام الميكروفون إلا عبر اتصال آمن (HTTPS).",
-      steps: ["تأكّد من أن رابط المنصة يبدأ بـ https://", "إن استمرت المشكلة تواصل مع معلّمك."],
+      steps: ["تأكّد من أن رابط البرنامج يبدأ بـ https://", "إن استمرت المشكلة تواصل مع معلّمك."],
       canRetry: false,
     };
   }
@@ -38,7 +38,7 @@ export function checkMicSupport(): MicErrorInfo | null {
     return {
       kind: "unsupported",
       title: "المتصفح لا يدعم تسجيل الصوت",
-      message: "هذا المتصفح لا يدعم خاصية تسجيل الصوت المطلوبة لهذه المنصة.",
+      message: "هذا المتصفح لا يدعم خاصية تسجيل الصوت المطلوبة لهذا البرنامج.",
       steps: ["جرّب استخدام متصفح حديث مثل Chrome أو Safari أو Edge.", "تأكّد من تحديث المتصفح لآخر إصدار."],
       canRetry: false,
     };

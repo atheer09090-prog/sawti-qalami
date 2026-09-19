@@ -15,7 +15,7 @@ type Mode = "login" | "register";
 
 export default function Login() {
   const [, setLocation] = useLocation();
-  const [mode, setMode] = useState<Mode>("register");
+  const [mode, setMode] = useState<Mode>("login");
   const [restoringSession, setRestoringSession] = useState(true);
 
   // حقول حساب جديد
@@ -24,9 +24,6 @@ export default function Login() {
   const [avatar, setAvatar] = useState("boy1");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showLegacy, setShowLegacy] = useState(false);
-  const [legacyName, setLegacyName] = useState("");
-  const [legacySection, setLegacySection] = useState("");
 
   // حقول دخول
   const [loginEmail, setLoginEmail] = useState("");
@@ -34,6 +31,7 @@ export default function Login() {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [emailNotFound, setEmailNotFound] = useState(false);
 
   useEffect(() => {
     stopSound();
@@ -74,9 +72,6 @@ export default function Login() {
     setBusy(true);
     const res = await registerAccount({
       name: name.trim(), grade, avatar, email: email.trim(), password,
-      ...(showLegacy && legacyName.trim() && legacySection.trim()
-        ? { legacy_name: legacyName.trim(), legacy_grade: `السادس ${legacySection.trim()}` }
-        : {}),
     });
     setBusy(false);
     if (!res.ok || !res.token || !res.user) return setError(res.error || "تعذّر إنشاء الحساب");
@@ -84,12 +79,15 @@ export default function Login() {
   }
 
   async function handleLogin() {
-    setError("");
+    setError(""); setEmailNotFound(false);
     if (!loginEmail.trim() || !loginPassword) return setError("الرجاء إدخال البريد الإلكتروني وكلمة المرور");
     setBusy(true);
     const res = await loginAccount(loginEmail.trim(), loginPassword);
     setBusy(false);
-    if (!res.ok || !res.token || !res.user) return setError(res.error || "تعذّر تسجيل الدخول");
+    if (!res.ok || !res.token || !res.user) {
+      setEmailNotFound(!!res.notFound);
+      return setError(res.error || "تعذّر تسجيل الدخول");
+    }
     await afterAuthSuccess(res.user, res.token);
   }
 
@@ -138,32 +136,37 @@ export default function Login() {
 
         {/* ── White Form ── */}
         <div className="bg-white px-6 py-5">
-          {/* Tabs */}
-          <div className="flex mb-5 rounded-xl overflow-hidden border-2" style={{ borderColor: "#e5e7eb" }}>
-            <button
-              onClick={() => { setMode("register"); setError(""); }}
-              className="flex-1 py-2.5 text-sm font-bold transition-colors"
-              style={mode === "register" ? { background: "#1a5c2a", color: "white" } : { background: "white", color: "#6b7280" }}
-            >
-              حِسَابٌ جَدِيدٌ
-            </button>
-            <button
-              onClick={() => { setMode("login"); setError(""); }}
-              className="flex-1 py-2.5 text-sm font-bold transition-colors"
-              style={mode === "login" ? { background: "#1a5c2a", color: "white" } : { background: "white", color: "#6b7280" }}
-            >
-              تَسْجِيلُ الدُّخُولِ
-            </button>
-          </div>
+          {mode === "login" && (
+            <p className="text-center text-sm font-bold mb-1" style={{ color: "#1a5c2a" }}>
+              أَهْلًا بِعَوْدَتِكَ 👋
+            </p>
+          )}
 
           {error && (
             <div className="mb-3 bg-red-50 border border-red-200 rounded-xl p-2.5 text-right">
               <p className="text-red-600 text-sm">⚠️ {error}</p>
+              {emailNotFound && (
+                <button
+                  type="button"
+                  onClick={() => { setMode("register"); setEmail(loginEmail.trim()); setError(""); setEmailNotFound(false); }}
+                  className="mt-2 text-xs font-bold underline underline-offset-2"
+                  style={{ color: "#1a5c2a" }}
+                >
+                  لَا يُوجَدُ حِسَابٌ بِهَذَا الْبَرِيدِ — اضْغَطْ هُنَا لِإِنْشَاءِ حِسَابٍ جَدِيدٍ
+                </button>
+              )}
             </div>
           )}
 
           {mode === "register" ? (
             <>
+              <button
+                type="button"
+                onClick={() => { setMode("login"); setError(""); }}
+                className="text-xs text-gray-400 mb-3 flex items-center gap-1"
+              >
+                → الرُّجُوعُ إِلَى تَسْجِيلِ الدُّخُولِ
+              </button>
               <p className="text-xs text-gray-400 text-center mb-4">
                 أَنْشِئْ حِسَابَكَ لِيُحْفَظَ تَقَدُّمُكَ تِلْقَائِيًّا وَتَسْتَعِيدَهُ مِنْ أَيِّ جِهَازٍ
               </p>
@@ -212,31 +215,6 @@ export default function Login() {
 
               {/* استعادة تقدم سابق */}
               <button
-                type="button"
-                onClick={() => setShowLegacy((v) => !v)}
-                className="w-full text-right text-xs text-blue-600 font-semibold mb-3 underline underline-offset-2"
-              >
-                {showLegacy ? "▲ " : "▼ "} هَلْ اسْتَخْدَمْتَ الْمَنَصَّةَ سَابِقًا بِدُونِ حِسَابٍ؟
-              </button>
-              {showLegacy && (
-                <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3">
-                  <p className="text-xs text-amber-800 mb-2 leading-relaxed">
-                    أَدْخِلِ اسْمَكَ وَشُعْبَتَكَ الْقَدِيمَيْنِ بِالضَّبْطِ كَمَا كُنْتَ تَكْتُبُهُمَا سَابِقًا، وَسَنَرْبُطُ تَقَدُّمَكَ الْقَدِيمَ (نِقَاطَكَ وَشَارَاتِكَ) بِحِسَابِكَ الْجَدِيدِ تِلْقَائِيًّا.
-                  </p>
-                  <input
-                    type="text" value={legacyName} onChange={(e) => setLegacyName(e.target.value)}
-                    placeholder="اسمك القديم"
-                    className="w-full mb-2 px-3 py-2 rounded-lg border text-right text-sm"
-                  />
-                  <input
-                    type="text" value={legacySection} onChange={(e) => setLegacySection(e.target.value)}
-                    placeholder="شعبتك القديمة (مثال: ٩)"
-                    className="w-full px-3 py-2 rounded-lg border text-right text-sm"
-                  />
-                </div>
-              )}
-
-              <button
                 onClick={handleRegister}
                 disabled={busy}
                 className="w-full py-4 rounded-xl text-white text-lg font-bold transition-all hover:opacity-90 active:scale-95 disabled:opacity-60"
@@ -258,6 +236,14 @@ export default function Login() {
               >
                 {busy ? "جَارٍ التَّحَقُّقُ..." : "تَسْجِيلُ الدُّخُولِ"}
               </button>
+
+              <button
+                type="button"
+                onClick={() => { setMode("register"); setError(""); }}
+                className="w-full mt-4 py-2 text-sm text-center text-gray-500"
+              >
+                لَيْسَ لَدَيْكَ حِسَابٌ؟ <span className="font-bold underline underline-offset-2" style={{ color: "#1a5c2a" }}>أَنْشِئْ حِسَابًا جَدِيدًا</span>
+              </button>
             </>
           )}
 
@@ -269,7 +255,7 @@ export default function Login() {
             onClick={() => setLocation("/about")}
             className="w-full mt-2 py-1.5 text-xs font-semibold text-gray-500 underline underline-offset-2"
           >
-            ℹ️ ما هي هذه المنصة؟ وكيف تعمل؟
+            ℹ️ ما هو هذا البرنامج؟ وكيف يعمل؟
           </button>
 
           <button

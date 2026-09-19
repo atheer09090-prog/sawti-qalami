@@ -1,8 +1,8 @@
 import { useLocation } from "wouter";
 
 /**
- * صفحة "عن المنصة" — تشرح للطالب أو ولي الأمر أو المعلم ما هي منصة
- * "صوتي قلمي"، وهدفها، وكيف تعمل، بأسلوب تعليمي واضح وبلا مبالغة تسويقية.
+ * صفحة "عن البرنامج" — تشرح للطالب أو ولي الأمر أو المعلم ما هو برنامج
+ * "صوتي قلمي"، وهدفه، وكيف يعمل، بأسلوب تعليمي واضح وبلا مبالغة تسويقية.
  */
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -13,22 +13,22 @@ export default function Home() {
         <button onClick={() => setLocation("/")} className="text-green-200 text-sm mb-2">← تسجيل الدخول</button>
         <div className="flex items-center gap-2">
           <img src="/assets/logo.png" alt="" className="w-9 h-9 object-contain" />
-          <h1 className="text-2xl font-bold text-white">عَنِ الْمَنَصَّةِ</h1>
+          <h1 className="text-2xl font-bold text-white">عَنِ الْبَرْنَامَجِ</h1>
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
         <section className="bg-white rounded-2xl p-5 shadow text-right">
-          <h2 className="font-bold text-lg mb-2" style={{ color: "#1a5c2a" }}>ما هي منصة "صوتي قلمي"؟</h2>
+          <h2 className="font-bold text-lg mb-2" style={{ color: "#1a5c2a" }}>ما هو برنامج "صوتي قلمي"؟</h2>
           <p className="text-gray-600 text-sm leading-loose">
-            "صوتي قلمي" منصة تعليمية إلكترونية موجّهة لطلاب الصف السادس، تهدف إلى مساعدة الطالب على
+            "صوتي قلمي" برنامج تعليمي إلكتروني موجّه لطلاب الصف السادس، يهدف إلى مساعدة الطالب على
             تطوير مهارتَي التحدّث والكتابة باللغة العربية الفصحى من خلال أنشطة تفاعلية وتغذية راجعة فورية،
             بدلاً من الاعتماد فقط على التصحيح اليدوي التقليدي في الفصل.
           </p>
         </section>
 
         <section className="bg-white rounded-2xl p-5 shadow text-right">
-          <h2 className="font-bold text-lg mb-2" style={{ color: "#1a5c2a" }}>كيف تساعدني المنصة؟</h2>
+          <h2 className="font-bold text-lg mb-2" style={{ color: "#1a5c2a" }}>كيف يساعدني البرنامج؟</h2>
           <ul className="text-gray-600 text-sm space-y-2 leading-loose">
             <li>🎙️ <strong>مهارة التحدث:</strong> تسجّل صوتك وأنت تتحدث عن موضوع معيّن، ويحلَّل تسجيلك تلقائيًا لتقييم النطق وبناء الجمل وترابط الأفكار.</li>
             <li>✏️ <strong>مهارة الكتابة:</strong> تكتب نصًّا حول موضوع، وتحصل على تصحيح وتقييم للأخطاء الإملائية والنحوية وترتيب الأفكار.</li>

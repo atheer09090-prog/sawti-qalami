@@ -55,7 +55,7 @@ function getLabel(v: number) {
   return "ابْدَأْ رِحْلَتَكَ";
 }
 
-/* ── ⭐ قيّم المنصة ── */
+/* ── ⭐ قيّم البرنامج ── */
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
     <div className="flex gap-1 justify-center">
@@ -334,7 +334,7 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* ── فوتر: تقييم المنصة ── */}
+        {/* ── فوتر: تقييم البرنامج ── */}
         <div className="mt-4 text-center pb-2">
           <button onClick={() => setShowRating(true)}
             className="text-sm px-5 py-2.5 rounded-full font-bold shadow-sm hover:shadow-md transition-all"

@@ -99,7 +99,7 @@ export function setState(updater: (prev: StudentData) => StudentData) {
   }
 }
 
-// يُستدعى عند تسجيل الدخول أو عند فتح المنصة وهناك جلسة محفوظة: يجلب
+// يُستدعى عند تسجيل الدخول أو عند فتح البرنامج وهناك جلسة محفوظة: يجلب
 // سجل التقدّم المحفوظ لحساب الطالب الحالي من الخادم، وإن وُجد يستعيد
 // منه (النقاط، الشارات، الدروس المكتملة...) بدل البدء من الصفر.
 export async function loadMyStudentFromServer(fallbackName: string, fallbackGrade: string, avatar: string): Promise<StudentData> {

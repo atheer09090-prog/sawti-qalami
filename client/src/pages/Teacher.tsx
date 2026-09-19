@@ -406,7 +406,7 @@ export default function Teacher() {
   const [savingComment, setSavingComment] = useState(false);
   const [downloadingReport, setDownloadingReport] = useState<string | null>(null);
 
-  // ── جلب تقييمات الطلاب الحقيقية لتجربة استخدام المنصة ──
+  // ── جلب تقييمات الطلاب الحقيقية لتجربة استخدام البرنامج ──
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [susSummary, setSusSummary] = useState<{ count: number; average: number | null; bands: Record<string, number> } | null>(null);

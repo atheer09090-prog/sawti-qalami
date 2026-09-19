@@ -162,7 +162,7 @@ function authHeaders(): Record<string, string> {
 }
 
 export interface AuthUser { id: string; name: string; grade: string; avatar: string; email: string }
-export interface AuthResult { ok: boolean; token?: string; user?: AuthUser; migrated?: boolean; error?: string }
+export interface AuthResult { ok: boolean; token?: string; user?: AuthUser; migrated?: boolean; error?: string; notFound?: boolean }
 
 export async function registerAccount(payload: {
   name: string; grade: string; avatar: string; email: string; password: string;
@@ -190,7 +190,7 @@ export async function loginAccount(email: string, password: string): Promise<Aut
       body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
-    if (!res.ok) return { ok: false, error: data?.detail || "تعذّر تسجيل الدخول" };
+    if (!res.ok) return { ok: false, error: data?.detail || "تعذّر تسجيل الدخول", notFound: res.status === 404 };
     return { ok: true, token: data.token, user: data.user };
   } catch {
     return { ok: false, error: "تعذّر الاتصال بالخادم. تحقّق من اتصالك بالإنترنت." };
@@ -257,7 +257,7 @@ export async function getSusSummary(): Promise<{ count: number; average: number 
   } catch { return { count: 0, average: null, bands: { poor: 0, ok: 0, good: 0 } }; }
 }
 
-// ── تقييمات الطلاب لتجربة استخدام المنصة (⭐ قيّم المنصة) ──
+// ── تقييمات الطلاب لتجربة استخدام البرنامج (⭐ قيّم البرنامج) ──
 export async function submitReview(review: {
   student: string; quality: number; ease: number; benefit: number; comment: string;
 }): Promise<boolean> {

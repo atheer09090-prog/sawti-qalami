@@ -2,7 +2,7 @@ import type { MicErrorInfo } from "@/lib/mic";
 
 /**
  * بطاقة موحّدة لعرض مشاكل الميكروفون (رفض الإذن، لا يوجد جهاز، قيد الاستخدام...)
- * بدل رسالة حمراء تقنية صغيرة. تُستخدم في كل صفحات تسجيل الصوت بالمنصة.
+ * بدل رسالة حمراء تقنية صغيرة. تُستخدم في كل صفحات تسجيل الصوت بالبرنامج.
  */
 export function MicPermissionCard({ info, onRetry }: { info: MicErrorInfo; onRetry: () => void }) {
   return (
