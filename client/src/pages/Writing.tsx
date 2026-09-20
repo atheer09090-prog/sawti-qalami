@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { evaluateWriting, evaluateContext, getWritingTopics } from "@/lib/api";
 import { playSound, stopSound, playEffect, stopAll, audioFile } from "@/lib/audio";
 import { setState } from "@/lib/store";
+import { ResultSkeleton } from "@/components/ResultSkeleton";
 import { DICTATION_QUESTIONS } from "@/lib/dictation-data";
 
 /* ── Writing topics ── */
@@ -842,6 +843,7 @@ export default function Writing() {
             {loading ? "⏳ جَارٍ التَّقْيِيمُ..." : "🏛️ تَقْيِيمُ الْكِتَابَةِ"}
           </button>
         </div>
+        {loading && <ResultSkeleton label="جَارٍ تَحْلِيلُ نَصِّكَ..." />}
         {result && !loading && <WritingResult result={result} originalText={text} contextSuggestions={contextSuggestions} />}
       </div>
     </div>

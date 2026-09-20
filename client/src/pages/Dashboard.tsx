@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { toast } from "sonner";
 import { getState, setState, StudentData, logout } from "@/lib/store";
 import { playSound, stopSound, setGender, stopAll, audioFile } from "@/lib/audio";
 import { submitReview } from "@/lib/api";
@@ -82,7 +83,7 @@ function RatingModal({ studentName, onClose }: { studentName: string; onClose: (
     const ok = await submitReview({ student: studentName, quality, ease, benefit, comment: comment.trim() });
     setSubmitting(false);
     if (ok) setDone(true);
-    else alert("⚠️ تعذّر إرسال تقييمك. تحقّق من اتصالك بالإنترنت وحاول مرة أخرى.");
+    else toast.error("تعذّر إرسال تقييمك. تحقّق من اتصالك بالإنترنت وحاول مرة أخرى.");
   }
 
   return (

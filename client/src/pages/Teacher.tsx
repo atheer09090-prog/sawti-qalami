@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getState } from "@/lib/store";
 import { DICTATION_QUESTIONS } from "@/lib/dictation-data";
 import {
@@ -9,7 +11,7 @@ import {
   addWordOrder, updateWordOrder, deleteWordOrder,
   addFillIn, updateFillIn, deleteFillIn,
   getHamzaJourneys, updateHamzaJourney, resetHamzaJourney,
-  teacherLogin, listStudents, saveStudentRecordByKey, downloadStudentReport, listReviews, getSusSummary, API_BASE,
+  teacherLogin, listStudents, saveStudentRecordByKey, downloadStudentReport, listReviews, getSusSummary, downloadSusReport, API_BASE,
 } from "@/lib/api";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer,
@@ -236,7 +238,7 @@ export default function Teacher() {
   async function saveDictation() {
     if (!dictationModal) return;
     const f = dictationForm;
-    if (!f.word?.trim()) return alert("أدخل الكلمة");
+    if (!f.word?.trim()) return toast.error("أدخل الكلمة");
     const q = {
       word: f.word, type: f.type || "", correct: f.correct || "",
       opts: f.opts?.split(/[،,]/).map((o:string) => o.trim()).filter(Boolean) || [],
@@ -296,16 +298,18 @@ export default function Teacher() {
     setJourneySaving(true);
     const ok = await updateHamzaJourney(gamesLesson, { [journeyEditModal.key]: journeyEditForm });
     setJourneySaving(false);
-    if (!ok) { alert("⚠️ تعذّر الحفظ. تحقّق من اتصالك بالخادم."); return; }
+    if (!ok) { toast.error("تعذّر الحفظ. تحقّق من اتصالك بالخادم."); return; }
     await refreshJourneys();
     setJourneyEditModal(null);
+    toast.success("تم الحفظ بنجاح");
   }
 
   async function handleResetJourney() {
     if (!confirm("إِعَادَةُ هَذِهِ الرَّحْلَةِ بِالْكَامِلِ إِلَى مُحْتَوَاهَا الِافْتِرَاضِيِّ؟")) return;
     const ok = await resetHamzaJourney(gamesLesson);
-    if (!ok) { alert("⚠️ تعذّر تنفيذ الإعادة."); return; }
+    if (!ok) { toast.error("تعذّر تنفيذ الإعادة."); return; }
     await refreshJourneys();
+    toast.success("تمت إعادة الرحلة إلى حالتها الافتراضية");
   }
 
   const [lessonModal, setLessonModal] = useState<{type:"speaking"|"writing"; item:any|null} | null>(null);
@@ -333,19 +337,19 @@ export default function Teacher() {
     if (!slModal) return;
     const { type, idx } = slModal;
     if (type === "quiz") {
-      if (!slForm.q?.trim()) return alert("أدخل نص السؤال");
+      if (!slForm.q?.trim()) return toast.error("أدخل نص السؤال");
       const opts = slForm.options?.split(/[،,]/).map((o:string) => o.trim()).filter(Boolean) || [];
-      if (opts.length < 2) return alert("أدخل خيارين على الأقل مفصولين بـ ،");
+      if (opts.length < 2) return toast.error("أدخل خيارين على الأقل مفصولين بـ ،");
       const q = { q: slForm.q, options: opts, correct: parseInt(slForm.correct) || 0 };
       idx !== null ? await updateQuizQuestion(idx, q) : await addQuizQuestion(q);
     } else if (type === "order") {
-      if (!slForm.answer?.trim()) return alert("أدخل الجملة الصحيحة");
+      if (!slForm.answer?.trim()) return toast.error("أدخل الجملة الصحيحة");
       const words = slForm.words?.split("،").map((w:string) => w.trim()).filter(Boolean) || [];
-      if (words.length < 2) return alert("أدخل الكلمات مفصولة بـ ،");
+      if (words.length < 2) return toast.error("أدخل الكلمات مفصولة بـ ،");
       const q = { words, answer: slForm.answer };
       idx !== null ? await updateWordOrder(idx, q) : await addWordOrder(q);
     } else {
-      if (!slForm.sentence?.trim() || !slForm.answer?.trim()) return alert("أدخل الجملة والإجابة");
+      if (!slForm.sentence?.trim() || !slForm.answer?.trim()) return toast.error("أدخل الجملة والإجابة");
       const q = { sentence: slForm.sentence, answer: slForm.answer };
       idx !== null ? await updateFillIn(idx, q) : await addFillIn(q);
     }
@@ -355,7 +359,7 @@ export default function Teacher() {
 
   async function saveSpeakingLesson() {
     const f = lessonForm;
-    if (!f.title?.trim()) return alert("أدخل عنوان الدرس");
+    if (!f.title?.trim()) return toast.error("أدخل عنوان الدرس");
     const lesson = {
       id: f.id || f.title.replace(/\s+/g, "-").substring(0, 20) + "-" + Date.now(),
       title: f.title, level: f.level || "سَهْلٌ",
@@ -367,11 +371,12 @@ export default function Teacher() {
     const data = await getSpeakingLessons();
     if (data) setSpeakingLessons(data);
     setLessonModal(null);
+    toast.success(f.id ? "تم تحديث الدرس" : "تمت إضافة الدرس");
   }
 
   async function saveWritingTopic() {
     const f = lessonForm;
-    if (!f.title?.trim()) return alert("أدخل عنوان الموضوع");
+    if (!f.title?.trim()) return toast.error("أدخل عنوان الموضوع");
     const topic = {
       id: f.id || f.title.replace(/\s+/g, "-").substring(0, 20) + "-" + Date.now(),
       title: f.title, icon: f.icon || "✏️",
@@ -382,18 +387,21 @@ export default function Teacher() {
     const data = await getWritingTopics();
     if (data) setWritingTopics(data);
     setLessonModal(null);
+    toast.success(f.id ? "تم تحديث الموضوع" : "تمت إضافة الموضوع");
   }
 
   async function handleDeleteSpeaking(id: string) {
     if (!confirm("هل تريد حذف هذا الدرس؟")) return;
     await deleteSpeakingLesson(id);
     setSpeakingLessons(p => p.filter(l => l.id !== id));
+    toast.success("تم حذف الدرس");
   }
 
   async function handleDeleteWriting(id: string) {
     if (!confirm("هل تريد حذف هذا الموضوع؟")) return;
     await deleteWritingTopic(id);
     setWritingTopics(p => p.filter(t => t.id !== id));
+    toast.success("تم حذف الموضوع");
   }
   const [teacherName] = useState("aa");
   const [searchQ, setSearchQ] = useState("");
@@ -410,6 +418,7 @@ export default function Teacher() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [susSummary, setSusSummary] = useState<{ count: number; average: number | null; bands: Record<string, number> } | null>(null);
+  const [downloadingSusPdf, setDownloadingSusPdf] = useState(false);
 
   useEffect(() => {
     if (!authed) return;
@@ -438,6 +447,7 @@ export default function Teacher() {
     await refreshStudents();
     setSavingComment(false);
     setSelectedStudent(null);
+    toast.success("تم حفظ الملاحظة");
   }
 
   async function handleDownloadReport(s: RealStudent) {
@@ -447,7 +457,7 @@ export default function Teacher() {
       speaking_progress: s.speaking, writing_progress: s.writing, self_learning_progress: s.selfLearning,
       teacher_comment: s.teacherComment, points: s.points, stars: s.stars,
     });
-    if (!ok) alert("⚠️ تعذّر توليد التقرير. حاول مرة أخرى.");
+    if (!ok) toast.error("تعذّر توليد التقرير. حاول مرة أخرى.");
     setDownloadingReport(null);
   }
 
@@ -643,7 +653,27 @@ export default function Teacher() {
             </div>
 
             {studentsLoading && (
-              <p className="text-center text-gray-400 text-sm py-10">⏳ جَارٍ تَحْمِيلُ بَيَانَاتِ الطُّلَّابِ...</p>
+              <div className="space-y-3" aria-label="جارٍ تحميل بيانات الطلاب">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="bg-white rounded-2xl p-4 shadow-sm">
+                    <div className="flex justify-between items-center mb-3">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="w-8 h-8 rounded-full" />
+                        <div className="space-y-1.5">
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-3 w-32" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-6 w-10" />
+                    </div>
+                    {[0, 1, 2].map((j) => (
+                      <div key={j} className="mb-2">
+                        <Skeleton className="h-2 w-full rounded-full" />
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
             )}
 
             {!studentsLoading && students.length === 0 && (
@@ -733,14 +763,29 @@ export default function Teacher() {
             <div className="bg-white rounded-2xl p-4 shadow-sm mb-5 border-2" style={{ borderColor: "#dcf5e7" }}>
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-bold text-sm" style={{ color: "#1a5c2a" }}>📋 استبيان قابلية الاستخدام (SUS)</h3>
-                <a
-                  href={`${API_BASE}/sus/export`}
-                  target="_blank" rel="noreferrer"
-                  className="text-xs px-3 py-1.5 rounded-lg border-2 font-bold"
-                  style={{ borderColor: "#1a5c2a", color: "#1a5c2a" }}
-                >
-                  ⬇️ تصدير البيانات الكاملة (JSON)
-                </a>
+                <div className="flex gap-2">
+                  <button
+                    onClick={async () => {
+                      setDownloadingSusPdf(true);
+                      const ok = await downloadSusReport();
+                      if (!ok) toast.error("تعذّر توليد التقرير. حاول مرة أخرى.");
+                      setDownloadingSusPdf(false);
+                    }}
+                    disabled={downloadingSusPdf}
+                    className="text-xs px-3 py-1.5 rounded-lg font-bold text-white disabled:opacity-50"
+                    style={{ background: "#1a5c2a" }}
+                  >
+                    {downloadingSusPdf ? "⏳ جَارٍ التَّحْمِيلُ..." : "📊 تقرير PDF (رسوم بيانية)"}
+                  </button>
+                  <a
+                    href={`${API_BASE}/sus/export`}
+                    target="_blank" rel="noreferrer"
+                    className="text-xs px-3 py-1.5 rounded-lg border-2 font-bold"
+                    style={{ borderColor: "#1a5c2a", color: "#1a5c2a" }}
+                  >
+                    ⬇️ JSON
+                  </a>
+                </div>
               </div>
               {!susSummary || susSummary.count === 0 ? (
                 <p className="text-xs text-gray-400 text-center py-4">لَا تُوجَدُ إِجَابَاتٌ عَلَى الِاسْتِبْيَانِ بَعْدُ.</p>

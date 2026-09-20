@@ -217,8 +217,7 @@ export default function Login() {
               <button
                 onClick={handleRegister}
                 disabled={busy}
-                className="w-full py-4 rounded-xl text-white text-lg font-bold transition-all hover:opacity-90 active:scale-95 disabled:opacity-60"
-                style={{ background: "linear-gradient(135deg, #1a5c2a 0%, #2d7a3e 100%)" }}
+                className="sawti-btn-primary w-full py-4 text-lg"
               >
                 {busy ? "جَارٍ إِنْشَاءُ الْحِسَابِ..." : "أَنْشِئْ حِسَابِي وَابْدَأْ! 🚀"}
               </button>
@@ -231,8 +230,7 @@ export default function Login() {
               <button
                 onClick={handleLogin}
                 disabled={busy}
-                className="w-full py-4 rounded-xl text-white text-lg font-bold transition-all hover:opacity-90 active:scale-95 disabled:opacity-60"
-                style={{ background: "linear-gradient(135deg, #1a5c2a 0%, #2d7a3e 100%)" }}
+                className="sawti-btn-primary w-full py-4 text-lg"
               >
                 {busy ? "جَارٍ التَّحَقُّقُ..." : "تَسْجِيلُ الدُّخُولِ"}
               </button>
@@ -298,10 +296,7 @@ function Field({ label, value, onChange, placeholder, icon, type = "text", onEnt
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && onEnter?.()}
           placeholder={placeholder}
-          className="w-full px-4 py-3 pr-10 rounded-xl border-2 text-right focus:outline-none text-base transition-colors"
-          style={{ borderColor: "#e5e7eb" }}
-          onFocus={(e) => (e.target.style.borderColor = "#1a5c2a")}
-          onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+          className="sawti-input pr-10 text-base"
         />
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{icon}</span>
       </div>

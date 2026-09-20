@@ -5,6 +5,7 @@ import { playSound, stopSound, playEffect, stopAll, audioFile } from "@/lib/audi
 import { setState, getState } from "@/lib/store";
 import { classifyMicError, checkMicSupport, type MicErrorInfo } from "@/lib/mic";
 import { MicPermissionCard, MicDoneNotice } from "@/components/MicPermissionCard";
+import { ResultSkeleton } from "@/components/ResultSkeleton";
 
 const DEFAULT_LESSONS = [
   { id: "summer", title: "وَصْفُ رِحْلَةٍ صَيْفِيَّةٍ", level: "سَهْلٌ", icon: "🏖️", desc: "تَحَدَّثْ عَنْ عُطْلَتِكَ الصَّيْفِيَّةِ", topics: ["رِحْلَةٌ بَحْرِيَّةٌ", "رِحْلَةٌ جَبَلِيَّةٌ", "صُورَةٌ دَالَّةٌ عَلَى تَعَلُّمٍ", "رِحْلَةٌ جَوِّيَّةٌ"] },
@@ -503,12 +504,7 @@ export default function Speaking() {
             </div>
           )}
 
-          {loading && (
-            <div className="text-center py-4">
-              <div className="w-12 h-12 border-4 border-green-300 border-t-green-700 rounded-full animate-spin mx-auto mb-2" />
-              <p className="text-green-600 text-sm">🔄 جَارٍ تَحْلِيلُ صَوْتِكَ بِالذَّكَاءِ الِاصْطِنَاعِيِّ...</p>
-            </div>
-          )}
+          {loading && <ResultSkeleton label="جَارٍ تَحْلِيلُ صَوْتِكَ بِالذَّكَاءِ الِاصْطِنَاعِيِّ..." />}
 
           {result && !loading && (
             <div className="text-right">

@@ -250,6 +250,25 @@ export async function getMySus(): Promise<{ score: number; band: { label: string
   } catch { return null; }
 }
 
+export async function downloadSusReport(): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/sus/report`);
+    if (!res.ok) return false;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "تقرير_استبيان_SUS.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function getSusSummary(): Promise<{ count: number; average: number | null; bands: Record<string, number> }> {
   try {
     const res = await fetch(`${API_BASE}/sus/summary`);

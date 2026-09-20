@@ -35,6 +35,13 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-writing: var(--writing);
+  --color-writing-dark: var(--writing-dark);
+  --color-self-learning: var(--self-learning);
+  --color-self-learning-dark: var(--self-learning-dark);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
 }
 
 :root {
@@ -66,6 +73,14 @@
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #2d7a3e;
   --sidebar-ring: #f5c842;
+
+  /* ألوان فرعية لكل مهارة، تُستخدَم بدل تكرار قيم hex في كل صفحة */
+  --writing: #b45309;
+  --writing-dark: #d97706;
+  --self-learning: #1d4ed8;
+  --self-learning-dark: #2563eb;
+  --success: #16a34a;
+  --warning: #f59e0b;
 }
 
 @layer base {
@@ -98,16 +113,44 @@
   }
   .flex { min-height: 0; min-width: 0; }
 
-  /* Sawti brand utilities */
+  /* Sawti brand utilities — نظام تصميم موحّد؛ استُخدم أصلًا في صفحة
+     تسجيل الدخول، ويُطبَّق تدريجيًا على بقية الصفحات لاحقًا بدل تكرار
+     نفس قيم الألوان والمسافات يدويًا في كل ملف. */
   .sawti-header {
     background: linear-gradient(160deg, #1a5c2a 0%, #2d7a3e 60%, #1a5c2a 100%);
   }
   .sawti-card {
     @apply bg-white rounded-2xl shadow-md;
   }
+  .sawti-card-hover {
+    @apply bg-white rounded-2xl shadow-sm transition-all hover:shadow-lg hover:-translate-y-0.5;
+  }
   .sawti-btn-primary {
     background: linear-gradient(135deg, #1a5c2a 0%, #2d7a3e 100%);
-    @apply text-white font-bold rounded-xl py-3 px-6 transition-all hover:opacity-90 active:scale-95;
+    @apply text-white font-bold rounded-xl py-3 px-6 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .sawti-btn-writing {
+    background: linear-gradient(135deg, var(--writing) 0%, var(--writing-dark) 100%);
+    @apply text-white font-bold rounded-xl py-3 px-6 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .sawti-btn-self-learning {
+    background: linear-gradient(135deg, var(--self-learning) 0%, var(--self-learning-dark) 100%);
+    @apply text-white font-bold rounded-xl py-3 px-6 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .sawti-btn-outline {
+    @apply bg-white border-2 font-bold rounded-xl py-2.5 px-5 transition-all hover:bg-gray-50 active:scale-95;
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .sawti-badge {
+    @apply inline-flex items-center gap-1 text-xs font-bold rounded-full px-3 py-1;
+  }
+  .sawti-input {
+    @apply w-full px-4 py-3 rounded-xl border-2 text-right focus:outline-none transition-colors;
+    border-color: var(--border);
+  }
+  .sawti-input:focus {
+    border-color: var(--primary);
   }
   .sawti-progress-bar {
     @apply h-2 rounded-full bg-gray-200 overflow-hidden;
