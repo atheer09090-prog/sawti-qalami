@@ -4,6 +4,7 @@ import { getState, setState, StudentData } from "@/lib/store";
 import { getSelfLearning, askSmartTeacher, evaluateWriting, evaluateSpeech } from "@/lib/api";
 import { classifyMicError, checkMicSupport, type MicErrorInfo } from "@/lib/mic";
 import { MicPermissionCard } from "@/components/MicPermissionCard";
+import { AudioWaveform } from "@/components/AudioWaveform";
 
 /* ══════════════════════════════════════════════════════════════
    رِحْلَةُ التَّعَلُّمِ الذَّاتِيِّ — تِسْعُ مَرَاحِلَ
@@ -1032,9 +1033,12 @@ export default function SelfLearning() {
                 {!micError && (
                   <>
                     {!recording && <p className="text-xs text-gray-400 mb-2">قَدْ يَطْلُبُ مِنْكَ الْمُتَصَفِّحُ إِذْنَ اسْتِخْدَامِ الْمِيكْرُوفُونِ — اضْغَطْ "سَمَاحٌ / Allow".</p>}
-                    <p className="text-2xl font-bold text-blue-700 mb-3">{speakFmt(speakTimer)}</p>
+                    <p className="text-2xl font-bold text-blue-700 mb-2">{speakFmt(speakTimer)}</p>
+                    {recording && <AudioWaveform stream={mediaRef.current?.stream ?? null} color="#1d4ed8" />}
                     <button onClick={recording ? stopSpeakRecording : startSpeakRecording}
-                      className={`w-20 h-20 rounded-full text-3xl text-white shadow-lg ${recording ? "bg-red-600 animate-pulse" : "bg-blue-700"}`}>
+                      aria-label={recording ? "إيقاف التسجيل" : "بدء تسجيل الصوت"}
+                      aria-pressed={recording}
+                      className={`w-20 h-20 rounded-full text-3xl text-white shadow-lg mt-2 ${recording ? "bg-red-600 animate-pulse" : "bg-blue-700"}`}>
                       {recording ? "⏹️" : "🎙️"}
                     </button>
                     <p className="text-xs text-gray-400 mt-2">{recording ? "جَارٍ التَّسْجِيلُ... اضْغَطْ لِإِنْهَائِهِ" : "اضْغَطْ لِبَدْءِ التَّسْجِيلِ"}</p>

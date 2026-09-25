@@ -212,6 +212,7 @@ export default function Dashboard() {
           <button
             onClick={() => setShowTour(true)}
             title="دليل الاستخدام"
+            aria-label="فتح دليل استخدام البرنامج"
             className="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50"
           >
             ؟

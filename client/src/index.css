@@ -95,6 +95,16 @@
   a[href], select:not(:disabled) {
     @apply cursor-pointer;
   }
+
+  /* حلقة تركيز واضحة عند التنقّل بلوحة المفاتيح فقط (Tab) — لا تظهر عند
+     النقر بالفأرة أو اللمس، فلا تغيّر أي شيء بصريًا للاستخدام العادي،
+     لكنها ضرورية لمن يعتمد على لوحة المفاتيح، خصوصًا أن عناصر كثيرة في
+     المشروع تُلغي الحلقة الافتراضية (focus:outline-none) بلا بديل. */
+  :focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
 @layer components {

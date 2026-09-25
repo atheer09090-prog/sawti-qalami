@@ -6,6 +6,7 @@ import { setState, getState } from "@/lib/store";
 import { classifyMicError, checkMicSupport, type MicErrorInfo } from "@/lib/mic";
 import { MicPermissionCard, MicDoneNotice } from "@/components/MicPermissionCard";
 import { ResultSkeleton } from "@/components/ResultSkeleton";
+import { AudioWaveform } from "@/components/AudioWaveform";
 
 const DEFAULT_LESSONS = [
   { id: "summer", title: "وَصْفُ رِحْلَةٍ صَيْفِيَّةٍ", level: "سَهْلٌ", icon: "🏖️", desc: "تَحَدَّثْ عَنْ عُطْلَتِكَ الصَّيْفِيَّةِ", topics: ["رِحْلَةٌ بَحْرِيَّةٌ", "رِحْلَةٌ جَبَلِيَّةٌ", "صُورَةٌ دَالَّةٌ عَلَى تَعَلُّمٍ", "رِحْلَةٌ جَوِّيَّةٌ"] },
@@ -469,7 +470,8 @@ export default function Speaking() {
                   <p className="text-2xl font-mono font-bold text-green-700 mb-1 animate-pulse">
                     🔴 جَارٍ التَّسْجِيلُ... {fmt(timer)} / 2:00
                   </p>
-                  <p className="text-gray-400 text-xs">تَحَدَّثْ الْآنَ بِوُضُوحٍ، وَاضْغَطْ ⏹️ عِنْدَ الِانْتِهَاءِ</p>
+                  <AudioWaveform stream={mediaRef.current?.stream ?? null} color="#1a5c2a" />
+                  <p className="text-gray-400 text-xs mt-1">تَحَدَّثْ الْآنَ بِوُضُوحٍ، وَاضْغَطْ ⏹️ عِنْدَ الِانْتِهَاءِ</p>
                 </div>
               )}
 
@@ -480,6 +482,8 @@ export default function Speaking() {
                   <button
                     onClick={recording ? stopRecording : startRecording}
                     disabled={loading}
+                    aria-label={recording ? "إيقاف التسجيل" : "بدء تسجيل الصوت"}
+                    aria-pressed={recording}
                     className="w-20 h-20 rounded-full text-3xl text-white shadow-lg transition-all hover:scale-105 disabled:opacity-50"
                     style={recording
                       ? { background: "#dc2626" }
@@ -507,7 +511,9 @@ export default function Speaking() {
           {loading && <ResultSkeleton label="جَارٍ تَحْلِيلُ صَوْتِكَ بِالذَّكَاءِ الِاصْطِنَاعِيِّ..." />}
 
           {result && !loading && (
-            <div className="text-right">
+            <div
+              className="text-right animate-in fade-in slide-in-from-bottom-2 duration-300"
+            >
               {/* Transcript */}
               {result.transcript && (
                 <div className="bg-white rounded-xl p-3 mb-3 border border-green-200">
@@ -567,8 +573,12 @@ export default function Speaking() {
                   { label: "📝 بِنَاءُ الْجُمَلِ",    value: result.sentence_structure,                         color: "#7c3aed", bg: "#ede9f5",  tip: "ترتيب الكلمات وتكوين الجمل" },
                   { label: "💡 ثَرَاءُ الْمُفْرَدَاتِ", value: result.vocabulary ?? result.grammar ?? 0,          color: "#0c7490", bg: "#e0f7fa",  tip: "تنوع الكلمات المستخدمة" },
                   { label: "🔗 تَرَابُطُ الْأَفْكَارِ", value: result.coherence ?? result.sentence_structure ?? 0, color: "#b45309", bg: "#fef3e2",  tip: "ترتيب الأفكار وتسلسلها" },
-                ]).map(({label,value,color,bg,tip})=>(
-                  <div key={label} className="rounded-xl p-3 text-center" style={{background:bg}}>
+                ]).map(({label,value,color,bg,tip}, i)=>(
+                  <div
+                    key={label}
+                    className="rounded-xl p-3 text-center animate-in fade-in slide-in-from-bottom-1"
+                    style={{background:bg, animationDelay:`${50*i}ms`, animationDuration:"200ms", animationFillMode:"both"}}
+                  >
                     <p className="text-xs text-gray-500 mb-1">{label}</p>
                     <p className="text-xl font-bold" style={{color}}>{value ?? 0}%</p>
                     <div className="w-full h-1.5 bg-white rounded-full mt-1 overflow-hidden">
