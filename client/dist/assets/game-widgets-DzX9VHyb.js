@@ -1,4 +1,4 @@
-import{r,j as e}from"./index-C7HCZwEc.js";function j(){return e.jsx("style",{"data-loc":"client/src/lib/game-widgets.tsx:12",children:`
+import{r,j as e}from"./index-DQqLnd4X.js";function j(){return e.jsx("style",{"data-loc":"client/src/lib/game-widgets.tsx:12",children:`
       @keyframes charBounceCorrect {
         0%   { transform: translate(-50%,-110%) scale(1) rotate(0deg); }
         30%  { transform: translate(-50%,-135%) scale(1.18) rotate(-6deg); }
