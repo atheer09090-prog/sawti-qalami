@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { setState, loadMyStudentFromServer } from "@/lib/store";
 import { stopSound, setGender } from "@/lib/audio";
-import { registerAccount, loginAccount, setToken, getToken, fetchMe } from "@/lib/api";
+import { registerAccount, loginAccount, guestLogin, setToken, getToken, fetchMe, warmUpServer } from "@/lib/api";
 
 const AVATARS = [
   { id: "boy1",  src: "/assets/omani-boy.png",   label: "طالب ١" },
@@ -30,11 +30,22 @@ export default function Login() {
   const [loginPassword, setLoginPassword] = useState("");
 
   const [busy, setBusy] = useState(false);
+  const [slowServer, setSlowServer] = useState(false);
+
+  // إن طال الانتظار أثناء الدخول/التسجيل أكثر من المعتاد (غالبًا لأن
+  // الخادم كان نائمًا واستيقظ للتو)، نوضّح للطالب أن هذا طبيعي بدل أن
+  // يظن أن شيئًا تعطَّل.
+  useEffect(() => {
+    if (!busy) { setSlowServer(false); return; }
+    const t = setTimeout(() => setSlowServer(true), 6000);
+    return () => clearTimeout(t);
+  }, [busy]);
   const [error, setError] = useState("");
   const [emailNotFound, setEmailNotFound] = useState(false);
 
   useEffect(() => {
     stopSound();
+    warmUpServer(); // نبدأ إيقاظ الخادم فورًا، قبل أي تفاعل من الطالب
     // إن كانت هناك جلسة محفوظة سابقًا (رمز دخول)، حاول استعادتها تلقائيًا
     // بدل إجبار الطالب على تسجيل الدخول من جديد في كل زيارة.
     (async () => {
@@ -88,6 +99,15 @@ export default function Login() {
       setEmailNotFound(!!res.notFound);
       return setError(res.error || "تعذّر تسجيل الدخول");
     }
+    await afterAuthSuccess(res.user, res.token);
+  }
+
+  async function handleGuestLogin() {
+    setError(""); setEmailNotFound(false);
+    setBusy(true);
+    const res = await guestLogin();
+    setBusy(false);
+    if (!res.ok || !res.token || !res.user) return setError(res.error || "تعذّر الدخول التجريبي");
     await afterAuthSuccess(res.user, res.token);
   }
 
@@ -221,6 +241,11 @@ export default function Login() {
               >
                 {busy ? "جَارٍ إِنْشَاءُ الْحِسَابِ..." : "أَنْشِئْ حِسَابِي وَابْدَأْ! 🚀"}
               </button>
+              {slowServer && (
+                <p className="text-xs text-amber-600 text-center mt-2">
+                  ⏳ الخادم يستيقظ من وضع السكون، قد يستغرق هذا حتى دقيقة في أول محاولة — الرجاء الانتظار.
+                </p>
+              )}
             </>
           ) : (
             <>
@@ -234,6 +259,11 @@ export default function Login() {
               >
                 {busy ? "جَارٍ التَّحَقُّقُ..." : "تَسْجِيلُ الدُّخُولِ"}
               </button>
+              {slowServer && (
+                <p className="text-xs text-amber-600 text-center mt-2">
+                  ⏳ الخادم يستيقظ من وضع السكون، قد يستغرق هذا حتى دقيقة في أول محاولة — الرجاء الانتظار.
+                </p>
+              )}
 
               <button
                 type="button"
@@ -262,6 +292,14 @@ export default function Login() {
             style={{ borderColor: "#f5c842", color: "#b45309" }}
           >
             🎓 دُخُولُ الْمُعَلِّمِ
+          </button>
+
+          <button
+            onClick={handleGuestLogin}
+            disabled={busy}
+            className="sawti-btn-outline w-full mt-2 text-sm disabled:opacity-50"
+          >
+            👁️ دُخُولٌ تَجْرِيبِيٌّ (لِلِاسْتِعْرَاضِ فَقَطْ — لِلَجْنَةِ التَّحْكِيمِ)
           </button>
         </div>
       </div>

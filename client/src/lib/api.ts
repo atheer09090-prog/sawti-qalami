@@ -1,5 +1,16 @@
 export const API_BASE = import.meta.env.VITE_API_URL || "https://sawti-0k3n.onrender.com/api";
 
+/**
+ * "إيقاظ" مبكر للخادم الخلفي. على خطة Render المجانية، يدخل الخادم في
+ * سُبات بعد فترة خمول، وأول طلب بعده يستغرق حتى دقيقة كاملة. نستدعي
+ * هذا فور فتح صفحة الدخول (قبل أن يبدأ الطالب حتى بالكتابة) حتى يبدأ
+ * الاستيقاظ في الخلفية، فيقلّ الانتظار الفعلي عند الضغط على "دخول".
+ * لا ننتظر نتيجته ولا نتعامل مع فشله — مجرد "نبضة" غير مؤثرة.
+ */
+export function warmUpServer() {
+  fetch(`${API_BASE}/health`).catch(() => {});
+}
+
 export async function diacritizeText(text: string): Promise<string> {
   if (!text) return text;
   try {
@@ -177,6 +188,17 @@ export async function registerAccount(payload: {
     const data = await res.json();
     if (!res.ok) return { ok: false, error: data?.detail || "تعذّر إنشاء الحساب" };
     return { ok: true, token: data.token, user: data.user, migrated: data.migrated };
+  } catch {
+    return { ok: false, error: "تعذّر الاتصال بالخادم. تحقّق من اتصالك بالإنترنت." };
+  }
+}
+
+export async function guestLogin(): Promise<AuthResult> {
+  try {
+    const res = await fetch(`${AUTH_BASE}/guest-login`, { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) return { ok: false, error: data?.detail || "تعذّر الدخول التجريبي" };
+    return { ok: true, token: data.token, user: data.user };
   } catch {
     return { ok: false, error: "تعذّر الاتصال بالخادم. تحقّق من اتصالك بالإنترنت." };
   }
