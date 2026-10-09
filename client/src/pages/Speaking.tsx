@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { evaluateSpeech, diacritizeText, getSpeakingLessons } from "@/lib/api";
+import { evaluateSpeech, diacritizeText, getSpeakingLessons, describeError } from "@/lib/api";
 import { playSound, stopSound, playEffect, stopAll, audioFile } from "@/lib/audio";
 import { setState, getState } from "@/lib/store";
 import { classifyMicError, checkMicSupport, type MicErrorInfo } from "@/lib/mic";
@@ -335,8 +335,8 @@ export default function Speaking() {
           } else {
             playEffect(audioFile("/assets/tryagain.mp3"), 0.6);
           }
-        } catch {
-          setError("تَعَذَّرَ الِاتِّصَالُ بِالْخَادِمِ. تَأَكَّدْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ، ثُمَّ حَاوِلْ مَرَّةً أُخْرَى.");
+        } catch (e) {
+          setError(describeError(e, "تَعَذَّرَ الِاتِّصَالُ بِالْخَادِمِ. تَأَكَّدْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ، ثُمَّ حَاوِلْ مَرَّةً أُخْرَى."));
         }
         setJustFinished(false);
         setLoading(false);
@@ -569,7 +569,7 @@ export default function Speaking() {
                   { label: "🔗 تَرَابُطُ الْأَفْكَارِ",  value: result.coherence_score,      color: "#b45309", bg: "#fef3e2", tip: "تسلسل الأفكار بشكل منطقي" },
                   { label: "🌱 رَأْيٌ/اقْتِرَاحٌ",       value: result.opinion_score,        color: "#dc2626", bg: "#fee2e2", tip: "هل قدّمت رأياً أو اقتراحاً مناسباً؟" },
                 ] : [
-                  { label: "🗣️ وُضُوحُ النُّطْقِ",   value: result.pronunciation,                              color: "#1a5c2a", bg: "#dcf5e7",  tip: "مدى وضوح نطق الكلمات" },
+                  { label: "🗣️ وُضُوحُ الْكَلَامِ",   value: result.pronunciation,                              color: "#1a5c2a", bg: "#dcf5e7",  tip: "مدى وضوح كلامك كما فهمه النظام" },
                   { label: "📝 بِنَاءُ الْجُمَلِ",    value: result.sentence_structure,                         color: "#7c3aed", bg: "#ede9f5",  tip: "ترتيب الكلمات وتكوين الجمل" },
                   { label: "💡 ثَرَاءُ الْمُفْرَدَاتِ", value: result.vocabulary ?? result.grammar ?? 0,          color: "#0c7490", bg: "#e0f7fa",  tip: "تنوع الكلمات المستخدمة" },
                   { label: "🔗 تَرَابُطُ الْأَفْكَارِ", value: result.coherence ?? result.sentence_structure ?? 0, color: "#b45309", bg: "#fef3e2",  tip: "ترتيب الأفكار وتسلسلها" },

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { getState, setState, StudentData } from "@/lib/store";
-import { getSelfLearning, askSmartTeacher, evaluateWriting, evaluateSpeech } from "@/lib/api";
+import { getSelfLearning, askSmartTeacher, evaluateWriting, evaluateSpeech, describeError } from "@/lib/api";
 import { classifyMicError, checkMicSupport, type MicErrorInfo } from "@/lib/mic";
 import { MicPermissionCard } from "@/components/MicPermissionCard";
 import { AudioWaveform } from "@/components/AudioWaveform";
@@ -236,6 +236,7 @@ export default function SelfLearning() {
   // ── 🤖 اسأل بذكاء ──
   const [question, setQuestion] = useState("");
   const [aiAnswer, setAiAnswer] = useState("");
+  const [askError, setAskError] = useState("");
   const [asking, setAsking] = useState(false);
 
   // ── 🧠 أنا المعلم ──
@@ -277,7 +278,7 @@ export default function SelfLearning() {
     setWordAnswer(""); setFillAnswer(""); setChecked(false);
     setWrongCount(0); setShowAssistMenu(false); setAssistReveal(null);
     setReflection({ learned: "", hard: "", better: "" });
-    setQuestion(""); setAiAnswer(""); setAsking(false);
+    setQuestion(""); setAiAnswer(""); setAskError(""); setAsking(false);
     setStudentAgrees(null); setCorrection(""); setTeacherSubmitted(false);
     setTeacherItem(TEACHER_CHECK_ITEMS[Math.floor(Math.random() * TEACHER_CHECK_ITEMS.length)]);
     setImproveStage("draft1"); setDraft1(""); setDraft1Result(null); setDraft2(""); setDraft2Result(null); setImproveLoading(false);
@@ -430,9 +431,15 @@ export default function SelfLearning() {
   async function askQuestion() {
     if (!question.trim() || asking) return;
     setAsking(true);
-    const answer = await askSmartTeacher(question.trim());
-    setAiAnswer(answer);
+    const res = await askSmartTeacher(question.trim());
     setAsking(false);
+    if (!res.ok) {
+      // فشل الطلب: نُبقي سؤال الطالب كما كتبه ولا نحتسب نشاطًا ولا عدّادًا
+      setAskError(res.message);
+      return;
+    }
+    setAskError("");
+    setAiAnswer(res.answer);
     recordActivity("طَرْحُ أَسْئِلَةٍ جَيِّدَةٍ");
     bumpCounter("questionsAskedCount");
     setStudent(getState());
@@ -457,8 +464,8 @@ export default function SelfLearning() {
       const res = await evaluateWriting(draft1.trim());
       setDraft1Result(res);
       setImproveStage("feedback1");
-    } catch {
-      setImproveError("تَعَذَّرَ الِاتِّصَالُ بِالْخَادِمِ لِتَقْيِيمِ النَّصِّ. تَحَقَّقْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ وَحَاوِلْ مَرَّةً أُخْرَى.");
+    } catch (e) {
+      setImproveError(describeError(e, "تَعَذَّرَ الِاتِّصَالُ بِالْخَادِمِ لِتَقْيِيمِ النَّصِّ. تَحَقَّقْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ وَحَاوِلْ مَرَّةً أُخْرَى."));
     }
     setImproveLoading(false);
   }
@@ -473,8 +480,8 @@ export default function SelfLearning() {
       recordActivity("الْكِتَابَةُ وَالْمُرَاجَعَةُ الذَّاتِيَّةُ");
       if (res.overall_score > draft1Result?.overall_score) bumpCounter("improvedCount");
       setStudent(getState());
-    } catch {
-      setImproveError("تَعَذَّرَ الِاتِّصَالُ بِالْخَادِمِ لِتَقْيِيمِ النَّصِّ. تَحَقَّقْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ وَحَاوِلْ مَرَّةً أُخْرَى.");
+    } catch (e) {
+      setImproveError(describeError(e, "تَعَذَّرَ الِاتِّصَالُ بِالْخَادِمِ لِتَقْيِيمِ النَّصِّ. تَحَقَّقْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ وَحَاوِلْ مَرَّةً أُخْرَى."));
     }
     setImproveLoading(false);
   }
@@ -529,8 +536,8 @@ export default function SelfLearning() {
       setSpeakResult(res);
       recordActivity("التَّحَدُّثُ وَالتَّقْيِيمُ الذَّاتِيُّ");
       setStudent(getState());
-    } catch {
-      setSpeakError("تَعَذَّرَ تَقْيِيمُ التَّسْجِيلِ. تَحَقَّقْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ.");
+    } catch (e) {
+      setSpeakError(describeError(e, "تَعَذَّرَ تَقْيِيمُ التَّسْجِيلِ. تَحَقَّقْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ."));
     }
     setSpeakLoading(false);
   }
@@ -843,10 +850,15 @@ export default function SelfLearning() {
               placeholder="مِثَالُ: لِمَاذَا نَكْتُبُ همزة الوصل بِدُونِ همزة فَوْقَ الْأَلِفِ؟"
               className="w-full h-24 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none mb-3"
               style={{ fontFamily: "'Cairo', sans-serif" }} disabled={!!aiAnswer} />
+            {askError && !aiAnswer && (
+              <p role="alert" className="text-right text-sm text-red-700 bg-red-50 rounded-xl p-3 mb-3">
+                {askError} سؤالك ما زال مكتوبًا، يمكنك إرساله مرة أخرى.
+              </p>
+            )}
             {!aiAnswer && (
               <button onClick={askQuestion} disabled={!question.trim() || asking}
                 className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">
-                {asking ? "جَارٍ التَّفْكِيرُ..." : "📨 أَرْسِلْ سُؤَالِي"}
+                {asking ? "جَارٍ التَّفْكِيرُ..." : askError ? "🔄 أَعِدِ الْمُحَاوَلَةَ" : "📨 أَرْسِلْ سُؤَالِي"}
               </button>
             )}
             {aiAnswer && (

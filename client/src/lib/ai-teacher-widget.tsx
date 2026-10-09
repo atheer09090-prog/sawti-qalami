@@ -35,9 +35,15 @@ export default function AiTeacherWidget() {
     setMessages(m => [...m, { role: "user", text: q }]);
     setInput("");
     setLoading(true);
-    const answer = await askSmartTeacher(q);
+    const res = await askSmartTeacher(q);
     setLoading(false);
-    setMessages(m => [...m, { role: "ai", text: answer }]);
+    if (!res.ok) {
+      // فشل: نعرض الرسالة ونُعيد سؤال الطالب لخانة الكتابة ليرسله مجددًا بضغطة
+      setMessages(m => [...m, { role: "ai", text: `⚠️ ${res.message}` }]);
+      setInput(q);
+      return;
+    }
+    setMessages(m => [...m, { role: "ai", text: res.answer }]);
   }
 
   return (

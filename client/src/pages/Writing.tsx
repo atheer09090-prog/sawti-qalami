@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { evaluateWriting, evaluateContext, getWritingTopics } from "@/lib/api";
+import { evaluateWriting, getWritingTopics, describeError } from "@/lib/api";
 import { playSound, stopSound, playEffect, stopAll, audioFile } from "@/lib/audio";
 import { setState } from "@/lib/store";
 import { ResultSkeleton } from "@/components/ResultSkeleton";
@@ -774,11 +774,11 @@ export default function Writing() {
         points: prev.points + Math.round(score / 10),
       }));
       if (score >= 70) playEffect(audioFile("/assets/achievement.mp3"), 0.7);
-    } catch {
+    } catch (e) {
       // لا نُظهِر نتيجةً وَهْمِيَّةً عند فشل الاتصال بالخادم — كانت التجربة
       // السابقة تعرض تقييمًا إيجابيًا مُلَفَّقًا (75%) وتحفظه في تقدُّم
       // الطالب الفعلي حتى لو تعطَّل الخادم، وهذا يُفسِد دقّة سجلّ تقدُّمه.
-      setWriteError("تَعَذَّرَ الِاتِّصَالُ بِالْخَادِمِ لِتَقْيِيمِ نَصِّكَ. تَحَقَّقْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ وَحَاوِلْ مَرَّةً أُخْرَى.");
+      setWriteError(describeError(e, "تَعَذَّرَ الِاتِّصَالُ بِالْخَادِمِ لِتَقْيِيمِ نَصِّكَ. تَحَقَّقْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ وَحَاوِلْ مَرَّةً أُخْرَى."));
     }
     setLoading(false);
   }

@@ -11,7 +11,9 @@ import {
   addWordOrder, updateWordOrder, deleteWordOrder,
   addFillIn, updateFillIn, deleteFillIn,
   getHamzaJourneys, updateHamzaJourney, resetHamzaJourney,
-  teacherLogin, listStudents, saveStudentRecordByKey, downloadStudentReport, listReviews, getSusSummary, downloadSusReport, API_BASE,
+  teacherLogin, teacherLogout, isTeacherTokenFresh, TEACHER_EXPIRED_EVENT,
+  getDictationQuestions, saveDictationQuestion, deleteDictationQuestion, downloadSusExport,
+  listStudents, saveStudentRecordByKey, downloadStudentReport, listReviews, getSusSummary, downloadSusReport,
 } from "@/lib/api";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer,
@@ -197,10 +199,18 @@ export default function Teacher() {
   const [, setLocation] = useLocation();
 
   // ── بَوَّابَةُ دُخُولِ الْمُعَلِّمِ بِرَمْزِ وُصُولٍ ──
-  // نستخدم sessionStorage (وليس localStorage) حتى يُطلب الرمز من جديد
-  // في كل جلسة متصفح جديدة، مع بقاء الدخول ساريًا أثناء التنقل بين
-  // تبويبات الصفحة نفسها دون إعادة إدخاله كل مرة.
-  const [authed, setAuthed] = useState(() => sessionStorage.getItem("sawti_teacher_authed") === "1");
+  // الدخول الفعلي = JWT المعلم الذي يصدره الخادم ويتحقق منه في كل طلب حسّاس.
+  // الرمز في sessionStorage (يُطلب الرمز من جديد في كل جلسة متصفح جديدة).
+  // هذه الحالة للعرض فقط: إن انتهت الجلسة أو رفضها الخادم (401) نعود لشاشة الدخول.
+  const [authed, setAuthed] = useState(() => isTeacherTokenFresh());
+  useEffect(() => {
+    const onExpired = () => {
+      setAuthed(false);
+      setAuthError("انتهت جلسة المعلم. أدخل رمز الدخول من جديد.");
+    };
+    window.addEventListener(TEACHER_EXPIRED_EVENT, onExpired);
+    return () => window.removeEventListener(TEACHER_EXPIRED_EVENT, onExpired);
+  }, []);
   const [code, setCode] = useState("");
   const [authError, setAuthError] = useState("");
   const [authChecking, setAuthChecking] = useState(false);
@@ -209,13 +219,13 @@ export default function Teacher() {
     if (!code.trim()) { setAuthError("الرجاء إدخال رمز الدخول"); return; }
     setAuthChecking(true);
     setAuthError("");
-    const ok = await teacherLogin(code.trim());
+    const res = await teacherLogin(code.trim());
     setAuthChecking(false);
-    if (ok) {
-      sessionStorage.setItem("sawti_teacher_authed", "1");
+    if (res.ok) {
+      setCode("");
       setAuthed(true);
     } else {
-      setAuthError("رَمْزُ الدُّخُولِ غَيْرُ صَحِيحٍ");
+      setAuthError(res.error || "رَمْزُ الدُّخُولِ غَيْرُ صَحِيحٍ");
     }
   }
 
@@ -230,8 +240,7 @@ export default function Teacher() {
   useEffect(() => {
     getSelfLearning(); // already called above
     // جلب أسئلة الإملاء من backend
-    fetch(`${import.meta.env.VITE_API_URL || "https://sawti-0k3n.onrender.com/api"}/lessons/dictation`)
-      .then(r => r.ok ? r.json() : null)
+    getDictationQuestions()
       .then(d => { if (d?.length) setDictationQuestions(d); else setDictationQuestions(DICTATION_QUESTIONS); });
   }, []);
 
@@ -244,23 +253,19 @@ export default function Teacher() {
       opts: f.opts?.split(/[،,]/).map((o:string) => o.trim()).filter(Boolean) || [],
       hint: f.hint || "", img: f.img || "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&q=80",
     };
-    const API = `${import.meta.env.VITE_API_URL || "https://sawti-0k3n.onrender.com/api"}/lessons/dictation`;
-    if (dictationModal.idx !== null) {
-      await fetch(`${API}/${dictationModal.idx}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(q) });
-    } else {
-      await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(q) });
-    }
-    const d = await fetch(API).then(r => r.json());
-    setDictationQuestions(d);
+    const saved = await saveDictationQuestion(dictationModal.idx, q);
+    if (!saved) return toast.error("تعذّر حفظ السؤال. تحقّق من الاتصال أو أعد تسجيل دخول المعلم.");
+    const d = await getDictationQuestions();
+    if (d) setDictationQuestions(d);
     setDictationModal(null);
   }
 
   async function deleteDictation(idx: number) {
     if (!confirm("حذف؟")) return;
-    const API = `${import.meta.env.VITE_API_URL || "https://sawti-0k3n.onrender.com/api"}/lessons/dictation`;
-    await fetch(`${API}/${idx}`, { method: "DELETE" });
-    const d = await fetch(API).then(r => r.json());
-    setDictationQuestions(d);
+    const deleted = await deleteDictationQuestion(idx);
+    if (!deleted) return toast.error("تعذّر الحذف. تحقّق من الاتصال أو أعد تسجيل دخول المعلم.");
+    const d = await getDictationQuestions();
+    if (d) setDictationQuestions(d);
   }
 
   // ── أَلْعَابُ الْهَمْزَةِ — ثَلَاثُ رَحَلَاتٍ تَفَاعُلِيَّةٍ ──
@@ -403,7 +408,7 @@ export default function Teacher() {
     setWritingTopics(p => p.filter(t => t.id !== id));
     toast.success("تم حذف الموضوع");
   }
-  const [teacherName] = useState("aa");
+  const teacherName = "الْمُعَلِّمُ";
   const [searchQ, setSearchQ] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<RealStudent | null>(null);
   const [comment, setComment] = useState("");
@@ -541,7 +546,7 @@ export default function Teacher() {
       <div className="flex justify-between items-center px-4 py-3 text-white"
         style={{ background: "linear-gradient(135deg, #1a5c2a 0%, #2d7a3e 100%)" }}>
         <div className="flex items-center gap-2">
-          <button onClick={() => setLocation("/")}
+          <button onClick={() => { teacherLogout(); setLocation("/"); }}
             className="bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1 rounded-full transition-all">
             خُرُوجٌ
           </button>
@@ -777,14 +782,16 @@ export default function Teacher() {
                   >
                     {downloadingSusPdf ? "⏳ جَارٍ التَّحْمِيلُ..." : "📊 تقرير PDF (رسوم بيانية)"}
                   </button>
-                  <a
-                    href={`${API_BASE}/sus/export`}
-                    target="_blank" rel="noreferrer"
+                  <button
+                    onClick={async () => {
+                      const ok = await downloadSusExport();
+                      if (!ok) toast.error("تعذّر تصدير البيانات. حاول مرة أخرى.");
+                    }}
                     className="text-xs px-3 py-1.5 rounded-lg border-2 font-bold"
                     style={{ borderColor: "#1a5c2a", color: "#1a5c2a" }}
                   >
                     ⬇️ JSON
-                  </a>
+                  </button>
                 </div>
               </div>
               {!susSummary || susSummary.count === 0 ? (
