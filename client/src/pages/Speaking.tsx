@@ -322,7 +322,9 @@ export default function Speaking() {
             });
           }
           const score = res.overall || 0;
-          const newStars = score >= 90 ? 5 : score >= 70 ? 4 : score >= 50 ? 3 : score >= 30 ? 2 : 1;
+          // إن لم يُتعرَّف على أي كلام (نص فارغ) لا تُمنح نجمة؛ كانت تُمنح نجمة واحدة حتى مع الدرجة 0
+          const noSpeech = !res.transcript || !res.transcript.trim();
+          const newStars = noSpeech ? 0 : score >= 90 ? 5 : score >= 70 ? 4 : score >= 50 ? 3 : score >= 30 ? 2 : 1;
           setState((prev) => ({
             ...prev,
             speakingProgress: Math.max(prev.speakingProgress, score),
