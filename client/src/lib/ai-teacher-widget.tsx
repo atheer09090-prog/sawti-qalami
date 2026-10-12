@@ -51,7 +51,7 @@ export default function AiTeacherWidget() {
       {/* ── الزر العائم (الشخصية) ── */}
       {!open && (
         <button onClick={() => setOpen(true)} aria-label="المعلم الذكي"
-          className="fixed bottom-5 left-5 z-40 w-16 h-16 rounded-full shadow-xl flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
+          className="fixed bottom-24 md:bottom-6 left-4 md:left-6 z-40 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-xl flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
           style={{ background: "linear-gradient(135deg,#1a5c2a,#2d7a3e)", border: "3px solid white" }}>
           <span className="text-3xl">🤖</span>
           <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white"
@@ -66,7 +66,7 @@ export default function AiTeacherWidget() {
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
 
           <div dir="rtl"
-            className="fixed bottom-5 left-5 z-50 w-[360px] max-w-[92vw] h-[520px] max-h-[75vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-24 md:bottom-6 left-4 md:left-6 z-50 w-[360px] max-w-[92vw] h-[520px] max-h-[75vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden"
             style={{
               background: "rgba(255,255,255,0.82)",
               backdropFilter: "blur(20px)",
@@ -90,7 +90,7 @@ export default function AiTeacherWidget() {
             </div>
 
             {/* الرسائل */}
-            <div ref={listRef} className="flex-1 overflow-y-auto p-3.5 space-y-2.5" style={{ fontFamily: "'Cairo', sans-serif" }}>
+            <div ref={listRef} className="flex-1 overflow-y-auto p-3.5 space-y-2.5" style={{ fontFamily: "var(--font-ui)" }}>
               {messages.map((m, i) => (
                 <div key={i} className={`flex ${m.role === "user" ? "justify-start" : "justify-end"}`}>
                   <div className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
@@ -134,7 +134,7 @@ export default function AiTeacherWidget() {
                 onKeyDown={e => e.key === "Enter" && send()}
                 placeholder="اكْتُبْ سُؤَالَكَ هُنَا..."
                 className="flex-1 min-w-0 px-3 py-2 rounded-xl border-2 border-gray-200 bg-white/80 text-right focus:border-green-500 focus:outline-none text-sm"
-                style={{ fontFamily: "'Cairo', sans-serif" }} />
+                style={{ fontFamily: "var(--font-ui)" }} />
             </div>
           </div>
 

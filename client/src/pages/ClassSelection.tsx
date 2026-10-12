@@ -1,5 +1,8 @@
 import { useLocation } from "wouter";
+import { Check, School } from "lucide-react";
 import { getState, setState } from "@/lib/store";
+import { PageHeader, avatarSrc } from "@/components/ds";
+import { cn } from "@/lib/utils";
 
 const CLASSES = [
   "السادس ١", "السادس ٢", "السادس ٣", "السادس ٤",
@@ -15,59 +18,31 @@ export default function ClassSelection() {
   }
 
   return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-      {/* Header */}
-      <div className="p-4" style={{ background: "linear-gradient(135deg, #1a5c2a 0%, #2d7a3e 100%)" }}>
-        <div className="flex items-center gap-2 mb-2">
-          <img src="/assets/logo.png" alt="" className="w-7 h-7 object-contain" />
-          <button onClick={() => setLocation("/dashboard")} className="text-green-200 text-sm">
-            ← الرَّئِيسِيَّةُ
-          </button>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-3xl p-2 bg-green-700 rounded-xl">🎓</span>
-          <div className="text-right">
-            <h1 className="text-2xl font-bold text-white">تَحْدِيدُ الْفَصْلِ</h1>
-            <p className="text-green-200 text-sm">اخْتَرْ فَصْلَكَ الدِّرَاسِيَّ</p>
-          </div>
-        </div>
-      </div>
+    <div dir="rtl" className="page-container page-narrow page-section">
+      <PageHeader icon={School} title="تَحْدِيدُ الْفَصْلِ" description="اخْتَرْ فَصْلَكَ الدِّرَاسِيَّ."
+        back={{ label: "الرَّئِيسِيَّةُ", to: "/dashboard" }} />
 
-      <div className="max-w-xl mx-auto px-4 py-6">
-        {/* Student card */}
-        <div className="bg-white rounded-xl p-3 mb-5 flex items-center gap-3 shadow">
-          <img
-            src={`/assets/${student.avatar === "boy1" || student.avatar === "boy2" ? "omani-boy" : student.avatar === "girl1" ? "omani-girl" : "omani-girl2"}.png`}
-            alt="" className="w-12 h-12 object-contain"
-          />
-          <div className="text-right">
-            <p className="font-bold text-sm">{student.name}</p>
-            <p className="text-gray-400 text-xs">{student.grade}</p>
-          </div>
+      <section className="card card-pad mb-6 flex items-center gap-3.5">
+        <img src={avatarSrc(student.avatar)} alt="" className="size-14 rounded-full border-2 border-primary bg-white object-contain" />
+        <div>
+          <p className="font-semibold text-text-primary">{student.name}</p>
+          <p className="t-small text-text-muted">{student.grade}</p>
         </div>
+      </section>
 
-        <h2 className="text-right font-bold text-lg mb-4" style={{ color: "#1a5c2a" }}>
-          🏫 اخْتَرْ فَصْلَكَ:
-        </h2>
-
-        <div className="grid grid-cols-3 gap-3">
-          {CLASSES.map((cls) => {
-            const isSelected = student.grade === cls;
-            return (
-              <button key={cls} onClick={() => handleClass(cls)}
-                className="p-4 rounded-2xl shadow text-center transition-all hover:-translate-y-0.5 hover:shadow-md"
-                style={{
-                  background: isSelected ? "#dcf5e7" : "white",
-                  border: `2px solid ${isSelected ? "#1a5c2a" : "#e5e7eb"}`,
-                }}
-              >
-                <div className="text-2xl mb-1">{isSelected ? "✅" : "🎒"}</div>
-                <p className="font-bold text-base" style={{ color: "#1a5c2a" }}>{cls}</p>
-                {isSelected && <span className="text-xs text-green-600 font-bold">✓ فَصْلُكَ</span>}
-              </button>
-            );
-          })}
-        </div>
+      <h2 className="t-section mb-3 text-text-primary">اخْتَرْ فَصْلَكَ</h2>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" role="radiogroup" aria-label="الفصل الدراسي">
+        {CLASSES.map((cls, i) => {
+          const isSelected = student.grade === cls;
+          return (
+            <button key={cls} type="button" role="radio" aria-checked={isSelected} onClick={() => handleClass(cls)} style={{ ["--i" as string]: i }}
+              className={cn("card card-interactive stagger-in flex min-h-[88px] flex-col items-center justify-center gap-1 p-4",
+                isSelected && "!border-primary !bg-primary-soft")}>
+              <span className="font-semibold text-text-primary">{cls}</span>
+              {isSelected && <span className="badge badge-primary"><Check size={13} strokeWidth={2.5} aria-hidden /> فَصْلُكَ</span>}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

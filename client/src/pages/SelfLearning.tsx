@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { getState, setState, StudentData } from "@/lib/store";
+import { Bot, Brain, ChevronDown, GraduationCap, ListOrdered, Mic as MicIcon, PenLine, Sparkles, Target as TargetIcon, TextCursorInput } from "lucide-react";
+import { Btn, PageHeader, ProgressBar } from "@/components/ds";
 import { getSelfLearning, askSmartTeacher, evaluateWriting, evaluateSpeech, describeError } from "@/lib/api";
 import { classifyMicError, checkMicSupport, type MicErrorInfo } from "@/lib/mic";
 import { MicPermissionCard } from "@/components/MicPermissionCard";
@@ -189,6 +191,8 @@ const SELF_RATING_CRITERIA = [
   { key: "vocab", label: "تَنَوُّعُ الْمُفْرَدَاتِ" },
   { key: "fluency", label: "الطَّلَاقَةُ" },
 ] as const;
+
+const FLOW_STEPS = [["goal", "الْهَدَفُ"], ["plan", "الْخُطَّةُ"], ["task", "الْمُهِمَّةُ"], ["reflect", "التَّأَمُّلُ"]] as const;
 
 export default function SelfLearning() {
   const [, setLocation] = useLocation();
@@ -398,14 +402,14 @@ export default function SelfLearning() {
         )}
 
         {assistReveal && (
-          <div className="bg-blue-50 rounded-xl p-3 text-right">
-            {assistReveal === "hint" && <p className="text-blue-800 text-sm">💡 {assistContent.hint}</p>}
-            {assistReveal === "example" && <p className="text-blue-800 text-sm">📝 {assistContent.example}</p>}
-            {assistReveal === "rule" && <p className="text-blue-800 text-sm">📚 {assistContent.rule}</p>}
+          <div className="bg-learning-soft rounded-xl p-3 text-right">
+            {assistReveal === "hint" && <p className="text-text-primary text-sm">💡 {assistContent.hint}</p>}
+            {assistReveal === "example" && <p className="text-text-primary text-sm">📝 {assistContent.example}</p>}
+            {assistReveal === "rule" && <p className="text-text-primary text-sm">📚 {assistContent.rule}</p>}
             {assistReveal === "solution" && (
               <div>
-                <p className="text-blue-800 text-sm font-bold mb-1">✅ الْحَلُّ: {correctAnswerText}</p>
-                <p className="text-blue-700 text-xs">{assistContent.rule}</p>
+                <p className="text-text-primary text-sm font-bold mb-1">✅ الْحَلُّ: {correctAnswerText}</p>
+                <p className="text-learning text-xs">{assistContent.rule}</p>
               </div>
             )}
             <div className="flex gap-2 mt-2">
@@ -560,195 +564,182 @@ export default function SelfLearning() {
   if (!activity) {
     const sl = student.selfLearning ?? EMPTY_SELF_LEARNING;
     const independence = computeIndependence(sl);
+    const ACTIVITIES = [
+      { id: "quiz", icon: Brain, title: "اخْتَبِرْ مَعْلُومَاتِكَ", desc: "أَسْئِلَةٌ تَفَاعُلِيَّةٌ لِقِيَاسِ مُسْتَوَاكَ" },
+      { id: "order", icon: ListOrdered, title: "رَتِّبِ الْكَلِمَاتِ", desc: "رَتِّبِ الْكَلِمَاتِ لِتَكُونَ جُمْلَةً صَحِيحَةً" },
+      { id: "fill", icon: TextCursorInput, title: "أَكْمِلِ الْجُمْلَةَ", desc: "أَكْمِلِ الْجُمَلَ النَّاقِصَةَ بِالْكَلِمَةِ الْمُنَاسِبَةِ" },
+      { id: "ask", icon: Bot, title: "اسْأَلْ بِذَكَاءٍ", desc: "صِغْ سُؤَالَكَ بِنَفْسِكَ وَاسْأَلِ الْمُعَلِّمَ الذَّكِيَّ" },
+      { id: "teacher", icon: GraduationCap, title: "أَنَا الْمُعَلِّمُ", desc: "تَحَقَّقْ مِنْ إِجَابَةِ الْمُعَلِّمِ الذَّكِيِّ وَصَحِّحْهَا إِنْ لَزِمَ" },
+      { id: "improve", icon: PenLine, title: "اكْتُبْ ثُمَّ حَسِّنْ", desc: "اُكْتُبْ فِقْرَةً ثُمَّ حَسِّنْهَا بَعْدَ الْمُرَاجَعَةِ" },
+      { id: "speak", icon: MicIcon, title: "تَحَدَّثْ ثُمَّ قَيِّمْ نَفْسَكَ", desc: "سَجِّلْ حَدِيثًا قَصِيرًا وَقَيِّمْ نَفْسَكَ قَبْلَ تَقْيِيمِ الذَّكَاءِ الِاصْطِنَاعِيِّ" },
+    ];
 
     return (
-      <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-        <div className="p-4" style={{ background: "linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)" }}>
-          <button onClick={() => setLocation("/skills")} className="text-blue-200 text-sm mb-2">← الْمَهَارَاتُ</button>
-          <div className="flex justify-between items-center">
-            <div className="text-right">
-              <h1 className="text-2xl font-bold text-white">مَهَارَةُ التَّعَلُّمِ الذَّاتِيِّ</h1>
-              <p className="text-blue-200 text-sm">اكْتَشِفْ وَتَعَلَّمْ بِاسْتِقْلَالِيَّةٍ وَإِبْدَاعٍ</p>
-            </div>
-            <span className="text-3xl p-2 bg-blue-800 rounded-xl">📚</span>
-          </div>
-        </div>
+      <div className="page-container page-section skill-learning">
+        <PageHeader skill="learning" icon={TargetIcon} title="مَهَارَةُ التَّعَلُّمِ الذَّاتِيِّ"
+          description="اكْتَشِفْ وَتَعَلَّمْ بِاسْتِقْلَالِيَّةٍ وَإِبْدَاعٍ."
+          back={{ label: "الْمَهَارَاتُ", to: "/skills" }} />
 
-        <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-          {/* ── بطاقة موجزة: ترحيب + تقدم ── */}
-          <div className="rounded-2xl p-5 text-right shadow"
-            style={{ background: "linear-gradient(135deg,#ecfdf5,#d1fae5)", border: "1px solid #a7f3d0" }}>
-            <h2 className="font-bold text-lg text-emerald-800">
-              مَرْحَبًا{student.name ? ` يَا ${student.name}` : ""}! أَنْتَ مَنْ يَقُودُ تَعَلُّمَكَ هُنَا 🌱
+        {/* ── بطاقة موجزة: ترحيب + تقدم ── */}
+        <section className="card card-pad mb-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <h2 className="t-section text-text-primary">
+              مَرْحَبًا{student.name ? ` يَا ${student.name}` : ""}! أَنْتَ مَنْ يَقُودُ تَعَلُّمَكَ هُنَا
             </h2>
-
-            <div className="w-full h-2.5 bg-white/60 rounded-full mt-3 mb-1 overflow-hidden">
-              <div className="h-2.5 rounded-full transition-all"
-                style={{ width: `${student.selfLearningProgress}%`, background: "linear-gradient(90deg,#059669,#10b981)" }} />
-            </div>
-
-            <div className="flex justify-between items-center mt-3">
-              <div className="flex gap-4">
-                <span className="text-sm text-emerald-800"><b>{sl.completedActivities}</b> أَنْشِطَةٌ</span>
-                <span className="text-sm text-emerald-800">🌱 <b>{independence === null ? "—" : `${independence}%`}</b></span>
-                <span className="text-sm text-emerald-800">🪪 <b>{BADGES.filter(b => b.check(sl)).length}</b>/{BADGES.length}</span>
-              </div>
-              <button onClick={() => setShowDetails(v => !v)} className="text-xs text-emerald-700 font-bold underline">
-                {showDetails ? "إِخْفَاءُ التَّفَاصِيلِ ▲" : "تَفَاصِيلُ رِحْلَتِي ▼"}
-              </button>
-            </div>
+            <Btn variant="ghost" size="sm" onClick={() => setShowDetails(v => !v)} aria-expanded={showDetails}>
+              {showDetails ? "إِخْفَاءُ التَّفَاصِيلِ" : "تَفَاصِيلُ رِحْلَتِي"}
+              <ChevronDown size={16} className={`transition-transform ${showDetails ? "rotate-180" : ""}`} aria-hidden />
+            </Btn>
           </div>
-
-          {/* ── تفاصيل إضافية (اختيارية، مطويّة افتراضيًا) ── */}
-          {showDetails && (
-            <div className="rounded-2xl p-5 shadow bg-white space-y-5">
-              {/* شارات */}
-              <div>
-                <h3 className="font-bold text-blue-800 text-right text-sm mb-3">🪪 جَوَازُ التَّعَلُّمِ الذَّاتِيِّ</h3>
-                <div className="grid grid-cols-3 gap-2">
-                  {BADGES.map(b => {
-                    const earned = b.check(sl);
-                    return (
-                      <div key={b.id} title={b.desc} className="rounded-xl p-2 text-center"
-                        style={{ background: earned ? "#fffbeb" : "#f9fafb", border: `1px solid ${earned ? "#fde68a" : "#e5e7eb"}`, opacity: earned ? 1 : 0.5 }}>
-                        <p className="text-xl">{earned ? b.icon : "🔒"}</p>
-                        <p className="text-[10px] font-bold text-gray-600 leading-tight mt-0.5">{b.title}</p>
-                      </div>
-                    );
-                  })}
-                </div>
+          <ProgressBar className="mt-3" large value={student.selfLearningProgress} label="تقدمك في التعلم الذاتي" />
+          <dl className="mt-4 grid grid-cols-3 gap-3 text-center">
+            {[
+              { k: "أَنْشِطَةٌ", v: sl.completedActivities },
+              { k: "الِاسْتِقْلَالِيَّةُ", v: independence === null ? "—" : `${independence}%` },
+              { k: "شَارَاتٌ", v: `${BADGES.filter(b => b.check(sl)).length}/${BADGES.length}` },
+            ].map(x => (
+              <div key={x.k} className="rounded-xl bg-learning-soft px-2 py-3">
+                <dd className="text-xl font-bold tabular-nums text-learning">{x.v}</dd>
+                <dt className="t-caption text-text-secondary">{x.k}</dt>
               </div>
+            ))}
+          </dl>
+        </section>
 
-              {/* مسار الرحلة */}
-              <div className="pt-4 border-t border-gray-100">
-                <h3 className="font-bold text-blue-800 text-right text-sm mb-3">🧭 رِحْلَةُ تَعَلُّمِي</h3>
-                <div className="flex overflow-x-auto gap-1 pb-2 -mx-1 px-1" style={{ scrollbarWidth: "thin" }}>
-                  {JOURNEY_STAGES.map((stage, i) => {
-                    const done = i < sl.journeyStageReached;
-                    const current = i === sl.journeyStageReached;
-                    return (
-                      <div key={i} className="flex items-center shrink-0">
-                        <button onClick={() => setActiveStage(activeStage === i ? null : i)}
-                          className="flex flex-col items-center gap-1 px-1.5 transition-transform active:scale-95">
-                          <span className="w-10 h-10 rounded-full flex items-center justify-center text-base shrink-0"
-                            style={{
-                              background: done ? "#059669" : current ? "#1d4ed8" : "#e5e7eb",
-                              color: done || current ? "white" : "#9ca3af",
-                              boxShadow: current ? "0 0 0 3px #bfdbfe" : "none",
-                            }}>
-                            {done ? "✓" : stage.icon}
-                          </span>
-                          <span className="text-[9px] text-gray-500 text-center w-14 leading-tight">{stage.label}</span>
-                        </button>
-                        {i < JOURNEY_STAGES.length - 1 && (
-                          <span className="w-3 h-0.5 shrink-0" style={{ background: i < sl.journeyStageReached ? "#059669" : "#e5e7eb" }} />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-                {activeStage !== null && (
-                  <div className="mt-2 bg-blue-50 rounded-xl p-3 text-right">
-                    <p className="text-sm text-blue-800 leading-relaxed" style={{ fontFamily: "'Amiri',serif" }}>
-                      {JOURNEY_STAGES[activeStage].icon} {JOURNEY_STAGES[activeStage].info}
-                    </p>
-                  </div>
-                )}
+        {/* ── تفاصيل إضافية (اختيارية، مطويّة افتراضيًا) ── */}
+        {showDetails && (
+          <section className="card card-pad menu-enter mb-6 space-y-5">
+            <div>
+              <h3 className="t-card-title mb-3 text-text-primary">جَوَازُ التَّعَلُّمِ الذَّاتِيِّ</h3>
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                {BADGES.map(b => {
+                  const earned = b.check(sl);
+                  return (
+                    <div key={b.id} title={b.desc} className={`rounded-xl border p-2 text-center ${earned ? "border-reward/30 bg-reward-soft" : "border-border bg-surface-subtle opacity-60"}`}>
+                      <p className="text-xl">{earned ? b.icon : "🔒"}</p>
+                      <p className="mt-0.5 text-[11px] font-semibold leading-tight text-text-secondary">{b.title}</p>
+                    </div>
+                  );
+                })}
               </div>
+            </div>
 
-              {sl.skillsImproved.length > 0 && (
-                <div className="pt-4 border-t border-gray-100">
-                  <h3 className="font-bold text-blue-800 text-right text-sm mb-2">مَهَارَاتٌ طَوَّرْتُهَا</h3>
-                  <div className="flex flex-wrap gap-1.5 justify-end">
-                    {sl.skillsImproved.map(s => (
-                      <span key={s} className="text-xs bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full font-semibold">{s}</span>
-                    ))}
-                  </div>
+            <div className="border-t border-border pt-4">
+              <h3 className="t-card-title mb-3 text-text-primary">رِحْلَةُ تَعَلُّمِي</h3>
+              <div className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-2" style={{ scrollbarWidth: "thin" }}>
+                {JOURNEY_STAGES.map((stage, i) => {
+                  const done = i < sl.journeyStageReached;
+                  const current = i === sl.journeyStageReached;
+                  return (
+                    <div key={i} className="flex shrink-0 items-center">
+                      <button onClick={() => setActiveStage(activeStage === i ? null : i)} aria-label={stage.label}
+                        className="flex min-h-[44px] flex-col items-center gap-1 px-1.5 transition-transform active:scale-95">
+                        <span className="grid size-10 shrink-0 place-items-center rounded-full text-base"
+                          style={{ background: done ? "var(--success)" : current ? "var(--self-learning)" : "var(--surface-subtle)", color: done || current ? "white" : "var(--text-muted)",
+                            boxShadow: current ? "0 0 0 3px #bfdbfe" : "none" }}>
+                          {done ? "✓" : stage.icon}
+                        </span>
+                        <span className="w-14 text-center text-[10px] leading-tight text-text-secondary">{stage.label}</span>
+                      </button>
+                      {i < JOURNEY_STAGES.length - 1 && <span className="h-0.5 w-3 shrink-0" style={{ background: i < sl.journeyStageReached ? "var(--success)" : "var(--border)" }} />}
+                    </div>
+                  );
+                })}
+              </div>
+              {activeStage !== null && (
+                <div className="mt-2 rounded-xl bg-learning-soft p-3 text-right">
+                  <p className="font-reading text-learning" style={{ lineHeight: 2 }}>{JOURNEY_STAGES[activeStage].icon} {JOURNEY_STAGES[activeStage].info}</p>
                 </div>
               )}
             </div>
-          )}
 
-          {/* ── الأنشطة ── */}
-          <div id="self-learning-activities">
-            <h2 className="text-right font-bold text-lg mb-4 text-blue-800">🎯 ابْدَأْ نَشَاطَكَ الْآنَ:</h2>
-            <div className="flex flex-col gap-3">
-              {[
-                { id: "quiz", icon: "🧠", title: "اخْتَبِرْ مَعْلُومَاتِكَ", desc: "أَسْئِلَةٌ تَفَاعُلِيَّةٌ لِقِيَاسِ مُسْتَوَاكَ" },
-                { id: "order", icon: "🔤", title: "رَتِّبِ الْكَلِمَاتِ", desc: "رَتِّبِ الْكَلِمَاتِ لِتَكُونَ جُمْلَةً صَحِيحَةً" },
-                { id: "fill", icon: "✏️", title: "أَكْمِلِ الْجُمْلَةَ", desc: "أَكْمِلِ الْجُمَلَ النَّاقِصَةَ بِالْكَلِمَةِ الْمُنَاسِبَةِ" },
-                { id: "ask", icon: "🤖", title: "اسْأَلْ بِذَكَاءٍ", desc: "صِغْ سُؤَالَكَ بِنَفْسِكَ وَاسْأَلِ الْمُعَلِّمَ الذَّكِيَّ" },
-                { id: "teacher", icon: "🧠", title: "أَنَا الْمُعَلِّمُ", desc: "تَحَقَّقْ مِنْ إِجَابَةِ الْمُعَلِّمِ الذَّكِيِّ وَصَحِّحْهَا إِنْ لَزِمَ" },
-                { id: "improve", icon: "✍️", title: "اكْتُبْ ثُمَّ حَسِّنْ", desc: "اُكْتُبْ فِقْرَةً ثُمَّ حَسِّنْهَا بَعْدَ الْمُرَاجَعَةِ" },
-                { id: "speak", icon: "🎙️", title: "تَحَدَّثْ ثُمَّ قَيِّمْ نَفْسَكَ", desc: "سَجِّلْ حَدِيثًا قَصِيرًا وَقَيِّمْ نَفْسَكَ قَبْلَ تَقْيِيمِ الذَّكَاءِ الِاصْطِنَاعِيِّ" },
-              ].map(a => (
-                <button key={a.id} onClick={() => startActivity(a.id)}
-                  className="p-4 bg-white rounded-xl shadow text-right hover:shadow-md transition-all flex justify-between items-center">
-                  <div><h3 className="font-bold text-blue-800">{a.title}</h3><p className="text-gray-500 text-sm">{a.desc}</p></div>
-                  <span className="text-4xl p-2 rounded-xl" style={{ background: "#dbeafe" }}>{a.icon}</span>
+            {sl.skillsImproved.length > 0 && (
+              <div className="border-t border-border pt-4">
+                <h3 className="t-card-title mb-2 text-text-primary">مَهَارَاتٌ طَوَّرْتُهَا</h3>
+                <ul className="flex flex-wrap gap-1.5">{sl.skillsImproved.map(sk => <li key={sk} className="badge badge-skill">{sk}</li>)}</ul>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ── الأنشطة ── */}
+        <section id="self-learning-activities">
+          <h2 className="t-section mb-1 text-text-primary">ابْدَأْ نَشَاطَكَ الْآنَ</h2>
+          <p className="t-small mb-4 text-text-secondary">اخْتَرِ النَّشَاطَ الَّذِي يُنَاسِبُكَ.</p>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {ACTIVITIES.map((a, i) => {
+              const Icon = a.icon;
+              return (
+                <button key={a.id} onClick={() => startActivity(a.id)} style={{ ["--i" as string]: i }}
+                  className="card card-interactive card-pad stagger-in group flex items-start gap-3.5 text-right">
+                  <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-skill-soft text-skill transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105"><Icon size={24} strokeWidth={1.75} /></span>
+                  <span className="min-w-0 flex-1">
+                    <h3 className="t-card-title text-text-primary">{a.title}</h3>
+                    <p className="t-small mt-0.5 text-text-secondary">{a.desc}</p>
+                  </span>
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        </div>
+        </section>
       </div>
     );
   }
 
+  const stepIndex = FLOW_STEPS.findIndex(([k]) => k === flowStep);
   return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-      <div className="p-4 bg-blue-700">
-        <button onClick={resetToHome} className="text-blue-200 text-sm">← الْعَوْدَةُ</button>
-        <h1 className="text-white font-bold text-lg text-right mt-1">مَهَارَةُ التَّعَلُّمِ الذَّاتِيِّ</h1>
-        {/* شريط مصغّر يوضح موضع الطالب داخل رحلة النشاط الحالي */}
-        <div className="flex gap-1.5 mt-2">
-          {(["goal", "plan", "task", "reflect"] as const).map(s => (
-            <div key={s} className="flex-1 h-1.5 rounded-full"
-              style={{ background: (["goal","plan","task","reflect"].indexOf(flowStep) >= ["goal","plan","task","reflect"].indexOf(s)) ? "#bfdbfe" : "rgba(255,255,255,0.25)" }} />
-          ))}
-        </div>
-      </div>
+    <div className="page-container page-section skill-learning">
+      <PageHeader skill="learning" icon={TargetIcon} title="مَهَارَةُ التَّعَلُّمِ الذَّاتِيِّ" back={{ label: "الْعَوْدَةُ", onClick: resetToHome }} />
+      {/* شريط يوضح موضع الطالب داخل رحلة النشاط الحالي */}
+      <ol className="mx-auto mb-6 flex max-w-2xl items-center gap-2" aria-label="مراحل النشاط">
+        {FLOW_STEPS.map(([k, label], i) => (
+          <li key={k} className="flex-1" aria-current={i === stepIndex ? "step" : undefined}>
+            <div className="h-1.5 rounded-full transition-colors duration-300" style={{ background: i <= stepIndex ? "var(--self-learning)" : "var(--border)" }} />
+            <span className={`mt-1 block text-center text-xs ${i === stepIndex ? "font-semibold text-learning" : "text-text-muted"}`}>{label}</span>
+          </li>
+        ))}
+      </ol>
 
-      <div className="max-w-2xl mx-auto px-4 py-4">
+      <div className="mx-auto max-w-2xl">
 
         {/* ── 🎯 هدفي اليوم ── */}
         {flowStep === "goal" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-1">🎯 هَدَفِي الْيَوْمَ</h2>
-            <p className="text-right text-sm text-gray-500 mb-4">مَا الْهَدَفُ الَّذِي تُرِيدُ تَحْقِيقَهُ الْيَوْمَ؟</p>
+          <div className="card card-pad">
+            <h2 className="t-section text-right text-text-primary mb-1">🎯 هَدَفِي الْيَوْمَ</h2>
+            <p className="text-right text-sm text-text-secondary mb-4">مَا الْهَدَفُ الَّذِي تُرِيدُ تَحْقِيقَهُ الْيَوْمَ؟</p>
             <div className="flex flex-col gap-2 mb-3">
               {GOAL_OPTIONS.map(g => (
                 <button key={g} onClick={() => setGoal(g)}
-                  className={`p-3 rounded-xl text-right border-2 transition-all ${goal === g ? "border-blue-500 bg-blue-50 font-bold text-blue-800" : "border-gray-200 bg-white"}`}>
+                  className={`p-3 rounded-xl text-right border-2 transition-all ${goal === g ? "border-blue-500 bg-learning-soft font-bold text-text-primary" : "border-gray-200 bg-white"}`}>
                   {g}
                 </button>
               ))}
               <button onClick={() => setGoal("custom")}
-                className={`p-3 rounded-xl text-right border-2 transition-all ${goal === "custom" ? "border-blue-500 bg-blue-50 font-bold text-blue-800" : "border-gray-200 bg-white"}`}>
+                className={`p-3 rounded-xl text-right border-2 transition-all ${goal === "custom" ? "border-blue-500 bg-learning-soft font-bold text-text-primary" : "border-gray-200 bg-white"}`}>
                 ✏️ هَدَفٌ أَكْتُبُهُ بِنَفْسِي
               </button>
               {goal === "custom" && (
                 <input value={customGoal} onChange={e => setCustomGoal(e.target.value)} placeholder="اكْتُبْ هَدَفَكَ هُنَا..."
-                  className="w-full p-3 rounded-xl border-2 border-gray-200 text-right focus:border-blue-500 focus:outline-none"
-                  style={{ fontFamily: "'Cairo', sans-serif" }} />
+                  className="input"
+                  />
               )}
             </div>
             <button onClick={confirmGoal} disabled={!goal || (goal === "custom" && !customGoal.trim())}
-              className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">التَّالِي: أُخَطِّطُ 🗺️</button>
+              className="btn btn-primary btn-lg btn-block">التَّالِي: أُخَطِّطُ 🗺️</button>
           </div>
         )}
 
         {/* ── 🗺️ خطتي للتعلم ── */}
         {flowStep === "plan" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-1">🗺️ خُطَّتِي لِلتَّعَلُّمِ</h2>
-            <p className="text-right text-sm text-gray-500 mb-4">رَتِّبْ خُطُوَاتِ إِنْجَازِ مَهَمَّتِكَ بِالضَّغْطِ عَلَيْهَا بِالتَّرْتِيبِ الَّذِي تَرَاهُ مُنَاسِبًا:</p>
+          <div className="card card-pad">
+            <h2 className="t-section text-right text-text-primary mb-1">🗺️ خُطَّتِي لِلتَّعَلُّمِ</h2>
+            <p className="text-right text-sm text-text-secondary mb-4">رَتِّبْ خُطُوَاتِ إِنْجَازِ مَهَمَّتِكَ بِالضَّغْطِ عَلَيْهَا بِالتَّرْتِيبِ الَّذِي تَرَاهُ مُنَاسِبًا:</p>
             <div className="flex flex-col gap-2 mb-4">
               {PLAN_STEPS_CANONICAL.map(step => {
                 const idx = planSelection.indexOf(step);
                 return (
                   <button key={step} onClick={() => !planChecked && togglePlanStep(step)}
-                    className={`p-3 rounded-xl text-right border-2 flex justify-between items-center transition-all ${idx !== -1 ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white"}`}>
+                    className={`p-3 rounded-xl text-right border-2 flex justify-between items-center transition-all ${idx !== -1 ? "border-blue-500 bg-learning-soft" : "border-gray-200 bg-white"}`}>
                     <span>{step}</span>
                     {idx !== -1 && <span className="w-6 h-6 shrink-0 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">{idx + 1}</span>}
                   </button>
@@ -757,16 +748,16 @@ export default function SelfLearning() {
             </div>
             {!planChecked ? (
               <button disabled={planSelection.length < PLAN_STEPS_CANONICAL.length} onClick={confirmPlan}
-                className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">✅ تَحَقَّقْ مِنَ التَّرْتِيبِ</button>
+                className="btn btn-primary btn-lg btn-block">✅ تَحَقَّقْ مِنَ التَّرْتِيبِ</button>
             ) : (
-              <div className="bg-blue-50 rounded-xl p-3 text-right">
-                <p className="text-sm text-blue-800 leading-relaxed">
+              <div className="bg-learning-soft rounded-xl p-3 text-right">
+                <p className="text-sm text-text-primary leading-relaxed">
                   {planSelection.join("|") === PLAN_STEPS_CANONICAL.join("|")
                     ? "👏 تَرْتِيبٌ مُمْتَازٌ! هَذَا بِالضَّبْطِ أَفْضَلُ أُسْلُوبٍ لِلتَّنْظِيمِ الذَّاتِيِّ."
                     : "👍 تَرْتِيبٌ مَقْبُولٌ! تَذَكَّرْ: قِرَاءَةُ السُّؤَالِ، ثُمَّ التَّفْكِيرُ، ثُمَّ الْإِجَابَةُ، ثُمَّ الْمُرَاجَعَةُ — عَادَةً مَا يُعْطِي أَفْضَلَ النَّتَائِجِ."}
                 </p>
                 <button onClick={() => setFlowStep("task")}
-                  className="mt-3 text-sm px-4 py-2 rounded-lg bg-blue-700 text-white font-bold">ابْدَأِ التَّنْفِيذَ ✍️</button>
+                  className="btn btn-primary btn-sm mt-3">ابْدَأِ التَّنْفِيذَ ✍️</button>
               </div>
             )}
           </div>
@@ -774,12 +765,12 @@ export default function SelfLearning() {
 
         {/* ── ✍️ أنفذ (الأنشطة الحالية) ── */}
         {flowStep === "task" && activity === "quiz" && !done && (
-          <div className="bg-white rounded-2xl p-5 shadow">
+          <div className="card card-pad">
             <div className="w-full h-2 bg-gray-200 rounded-full mb-4">
               <div className="h-2 rounded-full bg-blue-600 transition-all" style={{ width: `${(quizIdx / quiz.length) * 100}%` }} />
             </div>
-            <p className="text-right text-sm text-gray-500 mb-3">السُّؤَالُ {quizIdx + 1} مِنْ {quiz.length}</p>
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-4">{quiz[quizIdx].q}</h2>
+            <p className="text-right text-sm text-text-secondary mb-3">السُّؤَالُ {quizIdx + 1} مِنْ {quiz.length}</p>
+            <h2 className="t-section text-right text-text-primary mb-4">{quiz[quizIdx].q}</h2>
             <div className="flex flex-col gap-2">
               {quiz[quizIdx].options.map((opt, i) => (
                 <button key={i} onClick={() => selected === null && handleQuizAnswer(i)}
@@ -792,13 +783,13 @@ export default function SelfLearning() {
         )}
 
         {flowStep === "task" && activity === "quiz" && done && (
-          <div className="bg-white rounded-2xl p-5 shadow text-center">
+          <div className="card card-pad text-center">
             <p className="text-4xl mb-3">🎉</p>
-            <h2 className="font-bold text-xl text-blue-800 mb-2">أَحْسَنْتَ!</h2>
-            <p className="text-gray-600">نَتِيجَتُكَ: {score} / {quiz.length}</p>
+            <h2 className="t-section text-text-primary mb-2">أَحْسَنْتَ!</h2>
+            <p className="text-text-secondary">نَتِيجَتُكَ: {score} / {quiz.length}</p>
             <div className="flex gap-2 mt-4">
               <button onClick={() => { setQuizIdx(0); setSelected(null); setScore(0); setDone(false); }}
-                className="flex-1 py-2 border-2 border-blue-200 text-blue-700 rounded-xl font-bold">🔄 إِعَادَةُ الِاخْتِبَارِ</button>
+                className="flex-1 py-2 border-2 border-blue-200 text-learning rounded-xl font-bold">🔄 إِعَادَةُ الِاخْتِبَارِ</button>
               <button onClick={() => setFlowStep("reflect")}
                 className="flex-1 py-2 bg-blue-700 text-white rounded-xl font-bold">التَّالِي: أَتَأَمَّلُ 🪞</button>
             </div>
@@ -806,34 +797,34 @@ export default function SelfLearning() {
         )}
 
         {flowStep === "task" && activity === "order" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-2">🔤 رَتِّبِ الْكَلِمَاتِ</h2>
+          <div className="card card-pad">
+            <h2 className="t-section text-right text-text-primary mb-2">🔤 رَتِّبِ الْكَلِمَاتِ</h2>
             <div className="bg-green-50 rounded-xl p-3 text-right mb-4">
               <p className="text-sm font-semibold text-green-800">الْكَلِمَاتُ: «{wordOrder[0].words.join(" – ")}»</p>
             </div>
             <textarea value={wordAnswer} onChange={e => setWordAnswer(e.target.value)}
               placeholder="اكْتُبِ الْجُمْلَةَ الصَّحِيحَةَ هُنَا..."
-              className="w-full h-24 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none mb-3"
-              style={{ fontFamily: "'Cairo', sans-serif" }} />
+              className="textarea mb-3" style={{ minHeight: 96 }}
+              />
             {!checked && (
-              <button onClick={checkOrderAnswer} className="w-full py-3 bg-green-700 text-white rounded-xl font-bold">✅ تَحَقَّقْ</button>
+              <button onClick={checkOrderAnswer} className="btn btn-primary btn-lg btn-block">✅ تَحَقَّقْ</button>
             )}
             {checked && renderCheckResult(wordAnswer.trim() === wordOrder[0].answer, wordOrder[0].answer)}
           </div>
         )}
 
         {flowStep === "task" && activity === "fill" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-purple-800 mb-2">✏️ أَكْمِلِ الْجُمْلَةَ</h2>
+          <div className="card card-pad">
+            <h2 className="t-section text-right text-text-primary mb-2">✏️ أَكْمِلِ الْجُمْلَةَ</h2>
             <div className="bg-purple-50 rounded-xl p-3 text-right mb-4">
               <p className="font-semibold text-purple-800">«{fillIn[0].sentence}»</p>
             </div>
             <input value={fillAnswer} onChange={e => setFillAnswer(e.target.value)}
               placeholder="أَكْمِلِ الْفَرَاغَ..."
-              className="w-full p-3 rounded-xl border-2 border-gray-200 text-right focus:border-purple-500 focus:outline-none mb-3"
-              style={{ fontFamily: "'Cairo', sans-serif" }} />
+              className="input mb-3"
+              />
             {!checked && (
-              <button onClick={checkFillAnswer} className="w-full py-3 bg-purple-700 text-white rounded-xl font-bold">✅ تَحَقَّقْ</button>
+              <button onClick={checkFillAnswer} className="btn btn-primary btn-lg btn-block">✅ تَحَقَّقْ</button>
             )}
             {checked && renderCheckResult(fillAnswer.trim().includes("جميل"), fillIn[0].answer)}
           </div>
@@ -841,15 +832,15 @@ export default function SelfLearning() {
 
         {/* ── 🤖 اسأل بذكاء ── */}
         {flowStep === "task" && activity === "ask" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-2">🤖 اسْأَلْ بِذَكَاءٍ</h2>
-            <p className="text-right text-sm text-gray-500 mb-4">
+          <div className="card card-pad">
+            <h2 className="t-section text-right text-text-primary mb-2">🤖 اسْأَلْ بِذَكَاءٍ</h2>
+            <p className="text-right text-sm text-text-secondary mb-4">
               لَدَيْكَ كَلِمَةٌ أَوْ قَاعِدَةٌ لَمْ تَفْهَمْهَا؟ اكْتُبْ سُؤَالَكَ لِلْمُعَلِّمِ الذَّكِيِّ بِوُضُوحٍ:
             </p>
             <textarea value={question} onChange={e => setQuestion(e.target.value)}
               placeholder="مِثَالُ: لِمَاذَا نَكْتُبُ همزة الوصل بِدُونِ همزة فَوْقَ الْأَلِفِ؟"
-              className="w-full h-24 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none mb-3"
-              style={{ fontFamily: "'Cairo', sans-serif" }} disabled={!!aiAnswer} />
+              className="textarea mb-3" style={{ minHeight: 96 }}
+              disabled={!!aiAnswer} />
             {askError && !aiAnswer && (
               <p role="alert" className="text-right text-sm text-red-700 bg-red-50 rounded-xl p-3 mb-3">
                 {askError} سؤالك ما زال مكتوبًا، يمكنك إرساله مرة أخرى.
@@ -857,16 +848,16 @@ export default function SelfLearning() {
             )}
             {!aiAnswer && (
               <button onClick={askQuestion} disabled={!question.trim() || asking}
-                className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">
+                className="btn btn-primary btn-lg btn-block">
                 {asking ? "جَارٍ التَّفْكِيرُ..." : askError ? "🔄 أَعِدِ الْمُحَاوَلَةَ" : "📨 أَرْسِلْ سُؤَالِي"}
               </button>
             )}
             {aiAnswer && (
-              <div className="bg-blue-50 rounded-xl p-3 text-right mt-1">
-                <p className="text-xs text-blue-500 font-bold mb-1">🤖 الْمُعَلِّمُ الذَّكِيُّ:</p>
-                <p className="text-blue-800 text-sm leading-relaxed">{aiAnswer}</p>
+              <div className="bg-learning-soft rounded-xl p-3 text-right mt-1">
+                <p className="text-xs text-learning font-bold mb-1">🤖 الْمُعَلِّمُ الذَّكِيُّ:</p>
+                <p className="text-text-primary text-sm leading-relaxed">{aiAnswer}</p>
                 <button onClick={() => setFlowStep("reflect")}
-                  className="mt-3 text-sm px-4 py-2 rounded-lg bg-blue-700 text-white font-bold">
+                  className="btn btn-primary btn-sm mt-3">
                   التَّالِي: أَتَأَمَّلُ فِي تَعَلُّمِي 🪞
                 </button>
               </div>
@@ -876,38 +867,38 @@ export default function SelfLearning() {
 
         {/* ── 🧠 أنا المعلم ── */}
         {flowStep === "task" && activity === "teacher" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-2">🧠 أَنَا الْمُعَلِّمُ</h2>
-            <div className="bg-gray-50 rounded-xl p-3 text-right mb-2">
-              <p className="text-sm font-semibold text-gray-700">❓ {teacherItem.question}</p>
+          <div className="card card-pad">
+            <h2 className="t-section text-right text-text-primary mb-2">🧠 أَنَا الْمُعَلِّمُ</h2>
+            <div className="bg-surface-subtle rounded-xl p-3 text-right mb-2">
+              <p className="text-sm font-semibold text-text-primary">❓ {teacherItem.question}</p>
             </div>
-            <div className="bg-blue-50 rounded-xl p-3 text-right mb-4">
-              <p className="text-xs text-blue-500 font-bold mb-1">🤖 قَالَ الْمُعَلِّمُ الذَّكِيُّ:</p>
-              <p className="text-blue-800 text-sm">{teacherItem.aiAnswer}</p>
+            <div className="bg-learning-soft rounded-xl p-3 text-right mb-4">
+              <p className="text-xs text-learning font-bold mb-1">🤖 قَالَ الْمُعَلِّمُ الذَّكِيُّ:</p>
+              <p className="text-text-primary text-sm">{teacherItem.aiAnswer}</p>
             </div>
 
             {!teacherSubmitted ? (
               <>
-                <p className="text-right text-sm font-bold text-gray-600 mb-2">هَلْ تُوَافِقُ عَلَى هَذِهِ الْإِجَابَةِ؟</p>
+                <p className="text-right text-sm font-bold text-text-secondary mb-2">هَلْ تُوَافِقُ عَلَى هَذِهِ الْإِجَابَةِ؟</p>
                 <div className="flex gap-2 mb-3">
                   <button onClick={() => setStudentAgrees(true)}
-                    className={`flex-1 py-2 rounded-xl border-2 font-bold text-sm ${studentAgrees === true ? "border-blue-500 bg-blue-50 text-blue-800" : "border-gray-200"}`}>
+                    className={`flex-1 py-2 rounded-xl border-2 font-bold text-sm ${studentAgrees === true ? "border-blue-500 bg-learning-soft text-text-primary" : "border-gray-200"}`}>
                     ✅ أُوَافِقُ
                   </button>
                   <button onClick={() => setStudentAgrees(false)}
-                    className={`flex-1 py-2 rounded-xl border-2 font-bold text-sm ${studentAgrees === false ? "border-blue-500 bg-blue-50 text-blue-800" : "border-gray-200"}`}>
+                    className={`flex-1 py-2 rounded-xl border-2 font-bold text-sm ${studentAgrees === false ? "border-blue-500 bg-learning-soft text-text-primary" : "border-gray-200"}`}>
                     ❌ لَا أُوَافِقُ
                   </button>
                 </div>
                 {studentAgrees === false && (
                   <textarea value={correction} onChange={e => setCorrection(e.target.value)}
                     placeholder="مَا الْإِجَابَةُ الصَّحِيحَةُ فِي رَأْيِكَ؟ وَلِمَاذَا؟"
-                    className="w-full h-20 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none mb-3"
-                    style={{ fontFamily: "'Cairo', sans-serif" }} />
+                    className="textarea mb-3" style={{ minHeight: 80 }}
+                    />
                 )}
                 <button onClick={submitTeacherCheck}
                   disabled={studentAgrees === null || (studentAgrees === false && !correction.trim())}
-                  className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">✅ تَأَكَّدْ</button>
+                  className="btn btn-primary btn-lg btn-block">✅ تَأَكَّدْ</button>
               </>
             ) : (
               <div className={`rounded-xl p-3 text-right ${studentAgrees === false ? "bg-green-50" : "bg-amber-50"}`}>
@@ -920,10 +911,10 @@ export default function SelfLearning() {
                     🔎 فِي الْحَقِيقَةِ، إِجَابَةُ الْمُعَلِّمِ الذَّكِيِّ كَانَتْ خَاطِئَةً! لَا بَأْسَ، هَذَا تَمَامًا سَبَبُ أَهَمِّيَّةِ التَّحَقُّقِ دَائِمًا.
                   </p>
                 )}
-                <p className="text-sm text-gray-700 mt-1"><b>✅ الْإِجَابَةُ الصَّحِيحَةُ:</b> {teacherItem.correctAnswer}</p>
-                <p className="text-xs text-gray-500 mt-1">{teacherItem.explanation}</p>
+                <p className="text-sm text-text-primary mt-1"><b>✅ الْإِجَابَةُ الصَّحِيحَةُ:</b> {teacherItem.correctAnswer}</p>
+                <p className="text-xs text-text-secondary mt-1">{teacherItem.explanation}</p>
                 <button onClick={() => setFlowStep("reflect")}
-                  className="mt-3 text-sm px-4 py-2 rounded-lg bg-blue-700 text-white font-bold">
+                  className="btn btn-primary btn-sm mt-3">
                   التَّالِي: أَتَأَمَّلُ فِي تَعَلُّمِي 🪞
                 </button>
               </div>
@@ -933,10 +924,10 @@ export default function SelfLearning() {
 
         {/* ── ✍️ اكتب ثم حسّن ── */}
         {flowStep === "task" && activity === "improve" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-2">✍️ اكْتُبْ ثُمَّ حَسِّنْ</h2>
-            <div className="bg-blue-50 rounded-xl p-3 text-right mb-4">
-              <p className="text-sm font-semibold text-blue-800">{IMPROVE_PROMPT}</p>
+          <div className="card card-pad">
+            <h2 className="t-section text-right text-text-primary mb-2">✍️ اكْتُبْ ثُمَّ حَسِّنْ</h2>
+            <div className="bg-learning-soft rounded-xl p-3 text-right mb-4">
+              <p className="text-sm font-semibold text-text-primary">{IMPROVE_PROMPT}</p>
             </div>
 
             {improveError && (
@@ -949,10 +940,10 @@ export default function SelfLearning() {
               <>
                 <textarea value={draft1} onChange={e => setDraft1(e.target.value)}
                   placeholder="اكْتُبْ مُحَاوَلَتَكَ الْأُولَى هُنَا..."
-                  className="w-full h-32 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none mb-3"
-                  style={{ fontFamily: "'Cairo', sans-serif" }} />
+                  className="textarea mb-3" style={{ minHeight: 128 }}
+                  />
                 <button onClick={submitDraft1} disabled={draft1.trim().length < 10 || improveLoading}
-                  className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">
+                  className="btn btn-primary btn-lg btn-block">
                   {improveLoading ? "جَارٍ الْمُرَاجَعَةُ..." : "✅ أَرْسِلِ الْمُحَاوَلَةَ الْأُولَى"}
                 </button>
               </>
@@ -967,37 +958,37 @@ export default function SelfLearning() {
                   <p className="text-xs text-amber-700">{draft1Result.feedback}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-gray-50 rounded-xl p-2 text-center">
-                    <p className="text-lg font-bold text-blue-700">{draft1Result.spelling_score}%</p>
-                    <p className="text-xs text-gray-500">الْإِمْلَاءُ</p>
+                  <div className="bg-surface-subtle rounded-xl p-2 text-center">
+                    <p className="text-lg font-bold text-learning">{draft1Result.spelling_score}%</p>
+                    <p className="text-xs text-text-secondary">الْإِمْلَاءُ</p>
                   </div>
-                  <div className="bg-gray-50 rounded-xl p-2 text-center">
-                    <p className="text-lg font-bold text-blue-700">{draft1Result.structure_score}%</p>
-                    <p className="text-xs text-gray-500">التَّرْكِيبُ</p>
+                  <div className="bg-surface-subtle rounded-xl p-2 text-center">
+                    <p className="text-lg font-bold text-learning">{draft1Result.structure_score}%</p>
+                    <p className="text-xs text-text-secondary">التَّرْكِيبُ</p>
                   </div>
                 </div>
                 {(draft1Result.improvements || []).length > 0 && (
-                  <div className="bg-blue-50 rounded-xl p-3 text-right">
-                    <p className="text-xs font-bold text-blue-700 mb-1">💡 أَشْيَاءُ لِلِانْتِبَاهِ إِلَيْهَا:</p>
+                  <div className="bg-learning-soft rounded-xl p-3 text-right">
+                    <p className="text-xs font-bold text-learning mb-1">💡 أَشْيَاءُ لِلِانْتِبَاهِ إِلَيْهَا:</p>
                     {draft1Result.improvements.map((im: string, i: number) => (
-                      <p key={i} className="text-xs text-blue-700">• {im}</p>
+                      <p key={i} className="text-xs text-learning">• {im}</p>
                     ))}
                   </div>
                 )}
                 <button onClick={() => setImproveStage("draft2")}
-                  className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold">✍️ اكْتُبِ النُّسْخَةَ الْمُحَسَّنَةَ</button>
+                  className="btn btn-primary btn-lg btn-block">✍️ اكْتُبِ النُّسْخَةَ الْمُحَسَّنَةَ</button>
               </div>
             )}
 
             {improveStage === "draft2" && (
               <>
-                <p className="text-right text-sm text-gray-500 mb-2">اكْتُبِ النُّسْخَةَ الْمُحَسَّنَةَ مُسْتَفِيدًا مِمَّا لَاحَظْتَهُ:</p>
+                <p className="text-right text-sm text-text-secondary mb-2">اكْتُبِ النُّسْخَةَ الْمُحَسَّنَةَ مُسْتَفِيدًا مِمَّا لَاحَظْتَهُ:</p>
                 <textarea value={draft2} onChange={e => setDraft2(e.target.value)}
                   placeholder="النُّسْخَةُ الثَّانِيَةُ..."
-                  className="w-full h-32 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none mb-3"
-                  style={{ fontFamily: "'Cairo', sans-serif" }} />
+                  className="textarea mb-3" style={{ minHeight: 128 }}
+                  />
                 <button onClick={submitDraft2} disabled={draft2.trim().length < 10 || improveLoading}
-                  className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">
+                  className="btn btn-primary btn-lg btn-block">
                   {improveLoading ? "جَارٍ الْمُقَارَنَةُ..." : "✅ قَارِنْ بِالْمُحَاوَلَةِ الْأُولَى"}
                 </button>
               </>
@@ -1007,24 +998,24 @@ export default function SelfLearning() {
               <div className="space-y-3">
                 <p className="text-right font-bold text-green-700 text-sm">📊 مُقَارَنَةُ مُحَاوَلَتَيْكَ:</p>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 rounded-xl p-3 text-center">
-                    <p className="text-xs text-gray-400 mb-1">الْمُحَاوَلَةُ الْأُولَى</p>
-                    <p className="text-2xl font-bold text-gray-600">{draft1Result.overall_score}%</p>
+                  <div className="bg-surface-subtle rounded-xl p-3 text-center">
+                    <p className="text-xs text-text-muted mb-1">الْمُحَاوَلَةُ الْأُولَى</p>
+                    <p className="text-2xl font-bold text-text-secondary">{draft1Result.overall_score}%</p>
                   </div>
                   <div className="bg-green-50 rounded-xl p-3 text-center">
                     <p className="text-xs text-green-500 mb-1">الْمُحَاوَلَةُ الثَّانِيَةُ</p>
                     <p className="text-2xl font-bold text-green-700">{draft2Result.overall_score}%</p>
                   </div>
                 </div>
-                <div className="bg-blue-50 rounded-xl p-3 text-right">
-                  <p className="text-sm text-blue-800 font-bold">
+                <div className="bg-learning-soft rounded-xl p-3 text-right">
+                  <p className="text-sm text-text-primary font-bold">
                     {draft2Result.overall_score > draft1Result.overall_score
                       ? `📈 تَحَسَّنْتَ بِنِسْبَةِ ${draft2Result.overall_score - draft1Result.overall_score}%! أَحْسَنْتَ.`
                       : "👍 حَافَظْتَ عَلَى مُسْتَوَاكَ. رَاجِعْ التَّعْلِيقَاتِ لِمُحَاوَلَةٍ أَقْوَى فِي الْمَرَّةِ الْقَادِمَةِ."}
                   </p>
                 </div>
                 <button onClick={() => setFlowStep("reflect")}
-                  className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold">التَّالِي: أَتَأَمَّلُ فِي تَعَلُّمِي 🪞</button>
+                  className="btn btn-primary btn-lg btn-block">التَّالِي: أَتَأَمَّلُ فِي تَعَلُّمِي 🪞</button>
               </div>
             )}
           </div>
@@ -1032,10 +1023,10 @@ export default function SelfLearning() {
 
         {/* ── 🎙️ تحدث ثم قيّم نفسك ── */}
         {flowStep === "task" && activity === "speak" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-2">🎙️ تَحَدَّثْ ثُمَّ قَيِّمْ نَفْسَكَ</h2>
-            <div className="bg-blue-50 rounded-xl p-3 text-right mb-4">
-              <p className="text-sm font-semibold text-blue-800">{SPEAK_PROMPT}</p>
+          <div className="card card-pad">
+            <h2 className="t-section text-right text-text-primary mb-2">🎙️ تَحَدَّثْ ثُمَّ قَيِّمْ نَفْسَكَ</h2>
+            <div className="bg-learning-soft rounded-xl p-3 text-right mb-4">
+              <p className="text-sm font-semibold text-text-primary">{SPEAK_PROMPT}</p>
             </div>
 
             {!audioBlobState && (
@@ -1044,8 +1035,8 @@ export default function SelfLearning() {
                 {micError && <MicPermissionCard info={micError} onRetry={startSpeakRecording} />}
                 {!micError && (
                   <>
-                    {!recording && <p className="text-xs text-gray-400 mb-2">قَدْ يَطْلُبُ مِنْكَ الْمُتَصَفِّحُ إِذْنَ اسْتِخْدَامِ الْمِيكْرُوفُونِ — اضْغَطْ "سَمَاحٌ / Allow".</p>}
-                    <p className="text-2xl font-bold text-blue-700 mb-2">{speakFmt(speakTimer)}</p>
+                    {!recording && <p className="text-xs text-text-muted mb-2">قَدْ يَطْلُبُ مِنْكَ الْمُتَصَفِّحُ إِذْنَ اسْتِخْدَامِ الْمِيكْرُوفُونِ — اضْغَطْ "سَمَاحٌ / Allow".</p>}
+                    <p className="text-2xl font-bold text-learning mb-2">{speakFmt(speakTimer)}</p>
                     {recording && <AudioWaveform stream={mediaRef.current?.stream ?? null} color="#1d4ed8" />}
                     <button onClick={recording ? stopSpeakRecording : startSpeakRecording}
                       aria-label={recording ? "إيقاف التسجيل" : "بدء تسجيل الصوت"}
@@ -1053,7 +1044,7 @@ export default function SelfLearning() {
                       className={`w-20 h-20 rounded-full text-3xl text-white shadow-lg mt-2 ${recording ? "bg-red-600 animate-pulse" : "bg-blue-700"}`}>
                       {recording ? "⏹️" : "🎙️"}
                     </button>
-                    <p className="text-xs text-gray-400 mt-2">{recording ? "جَارٍ التَّسْجِيلُ... اضْغَطْ لِإِنْهَائِهِ" : "اضْغَطْ لِبَدْءِ التَّسْجِيلِ"}</p>
+                    <p className="text-xs text-text-muted mt-2">{recording ? "جَارٍ التَّسْجِيلُ... اضْغَطْ لِإِنْهَائِهِ" : "اضْغَطْ لِبَدْءِ التَّسْجِيلِ"}</p>
                   </>
                 )}
               </div>
@@ -1072,13 +1063,13 @@ export default function SelfLearning() {
                             style={{ opacity: (selfRatings[c.key] || 0) >= v ? 1 : 0.25 }}>⭐</button>
                         ))}
                       </div>
-                      <span className="text-sm text-gray-600 font-semibold">{c.label}</span>
+                      <span className="text-sm text-text-secondary font-semibold">{c.label}</span>
                     </div>
                   ))}
                 </div>
                 <button onClick={submitSelfRatingThenAI}
                   disabled={Object.keys(selfRatings).length < SELF_RATING_CRITERIA.length || speakLoading}
-                  className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">
+                  className="btn btn-primary btn-lg btn-block">
                   {speakLoading ? "جَارٍ التَّحْلِيلُ..." : "✅ تَأْكِيدُ تَقْيِيمِي"}
                 </button>
               </div>
@@ -1088,15 +1079,15 @@ export default function SelfLearning() {
               <div className="space-y-3">
                 {speakError && <p className="text-red-500 text-sm text-center">{speakError}</p>}
                 {speakResult && (
-                  <div className="bg-blue-50 rounded-xl p-3 text-right">
-                    <p className="text-xs text-blue-500 font-bold mb-1">🤖 تَقْيِيمُ الذَّكَاءِ الِاصْطِنَاعِيِّ:</p>
-                    <p className="text-blue-800 text-sm font-bold">النَّتِيجَةُ الْعَامَّةُ: {speakResult.overall ?? "—"}%</p>
-                    {speakResult.feedback && <p className="text-blue-700 text-xs mt-1">{speakResult.feedback}</p>}
+                  <div className="bg-learning-soft rounded-xl p-3 text-right">
+                    <p className="text-xs text-learning font-bold mb-1">🤖 تَقْيِيمُ الذَّكَاءِ الِاصْطِنَاعِيِّ:</p>
+                    <p className="text-text-primary text-sm font-bold">النَّتِيجَةُ الْعَامَّةُ: {speakResult.overall ?? "—"}%</p>
+                    {speakResult.feedback && <p className="text-learning text-xs mt-1">{speakResult.feedback}</p>}
                   </div>
                 )}
                 {(speakResult || speakError) && (
                   <button onClick={() => setFlowStep("reflect")}
-                    className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold">التَّالِي: أَتَأَمَّلُ فِي تَعَلُّمِي 🪞</button>
+                    className="btn btn-primary btn-lg btn-block">التَّالِي: أَتَأَمَّلُ فِي تَعَلُّمِي 🪞</button>
                 )}
               </div>
             )}
@@ -1105,31 +1096,31 @@ export default function SelfLearning() {
 
         {/* ── 🪞 ماذا تعلمت؟ ── */}
         {flowStep === "reflect" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-1">🪞 مَاذَا تَعَلَّمْتُ؟</h2>
-            <p className="text-right text-sm text-gray-500 mb-4">خُذْ لَحْظَةً لِلتَّأَمُّلِ فِي رِحْلَتِكَ (يُمْكِنُكَ الْكِتَابَةُ بِاخْتِصَارٍ):</p>
+          <div className="card card-pad">
+            <h2 className="t-section text-right text-text-primary mb-1">🪞 مَاذَا تَعَلَّمْتُ؟</h2>
+            <p className="text-right text-sm text-text-secondary mb-4">خُذْ لَحْظَةً لِلتَّأَمُّلِ فِي رِحْلَتِكَ (يُمْكِنُكَ الْكِتَابَةُ بِاخْتِصَارٍ):</p>
             <div className="space-y-3">
               <div>
-                <label className="block text-right text-sm font-semibold text-gray-600 mb-1">مَاذَا تَعَلَّمْتَ؟</label>
+                <label className="block text-right text-sm font-semibold text-text-secondary mb-1">مَاذَا تَعَلَّمْتَ؟</label>
                 <textarea value={reflection.learned} onChange={e => setReflection({ ...reflection, learned: e.target.value })}
-                  className="w-full p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none" rows={2}
-                  style={{ fontFamily: "'Cairo', sans-serif" }} />
+                  className="textarea" rows={2}
+                  />
               </div>
               <div>
-                <label className="block text-right text-sm font-semibold text-gray-600 mb-1">مَا الشَّيْءُ الَّذِي كَانَ صَعْبًا؟</label>
+                <label className="block text-right text-sm font-semibold text-text-secondary mb-1">مَا الشَّيْءُ الَّذِي كَانَ صَعْبًا؟</label>
                 <textarea value={reflection.hard} onChange={e => setReflection({ ...reflection, hard: e.target.value })}
-                  className="w-full p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none" rows={2}
-                  style={{ fontFamily: "'Cairo', sans-serif" }} />
+                  className="textarea" rows={2}
+                  />
               </div>
               <div>
-                <label className="block text-right text-sm font-semibold text-gray-600 mb-1">كَيْفَ سَأَتَعَلَّمُهُ بِصُورَةٍ أَفْضَلَ فِي الْمَرَّةِ الْقَادِمَةِ؟</label>
+                <label className="block text-right text-sm font-semibold text-text-secondary mb-1">كَيْفَ سَأَتَعَلَّمُهُ بِصُورَةٍ أَفْضَلَ فِي الْمَرَّةِ الْقَادِمَةِ؟</label>
                 <textarea value={reflection.better} onChange={e => setReflection({ ...reflection, better: e.target.value })}
-                  className="w-full p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none" rows={2}
-                  style={{ fontFamily: "'Cairo', sans-serif" }} />
+                  className="textarea" rows={2}
+                  />
               </div>
             </div>
             <button onClick={() => { updateJourney({ stage: 8 }); resetToHome(); }}
-              className="w-full py-3 mt-4 bg-emerald-600 text-white rounded-xl font-bold">✅ إِنْهَاءُ الرِّحْلَةِ وَالْعَوْدَةُ 🌱</button>
+              className="btn btn-primary btn-lg btn-block mt-4">✅ إِنْهَاءُ الرِّحْلَةِ وَالْعَوْدَةُ 🌱</button>
           </div>
         )}
       </div>

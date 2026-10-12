@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { playEffect, audioFile } from "@/lib/audio";
 import { getHamzaJourneys } from "@/lib/api";
+import { GameTopBar } from "@/components/ds";
 import {
   GameFeelStyles, useCombo, ComboIndicator, useCharacterReaction,
   VictoryModal, SmartReview, evaluateAchievements, type MistakeRecord,
@@ -96,15 +97,7 @@ const DEFAULT_CONTENT = {
 /* ══════════════ مكوّنات ثابتة (خارج المكوّن الرئيسي) ══════════════ */
 
 function TopBar({ points, keys, onBack }: { points: number; keys: number; onBack: () => void }) {
-  return (
-    <div className="flex items-center justify-between px-5 py-3" style={{ background: "rgba(41,26,13,0.55)" }}>
-      <button onClick={onBack} className="text-amber-100 text-base">← الْمَهَامُّ</button>
-      <div className="flex items-center gap-4">
-        <span className="flex items-center gap-1 bg-amber-900/60 text-amber-100 px-3 py-1 rounded-full text-base font-bold">🔑 {keys}</span>
-        <span className="flex items-center gap-1 bg-amber-900/60 text-yellow-300 px-3 py-1 rounded-full text-base font-bold">⭐ {points}</span>
-      </div>
-    </div>
-  );
+  return <GameTopBar onBack={onBack} tint="rgba(41,26,13,0.55)" stats={[{ icon: "🔑", value: keys, label: "المفاتيح" }, { icon: "⭐", value: points, label: "النقاط" }]} />;
 }
 
 function MapBackdrop({ phase, interactive, onActivate, reaction, reactKey }: { phase: Phase; interactive: boolean; onActivate: () => void; reaction: "idle" | "correct" | "wrong"; reactKey: number }) {
@@ -553,7 +546,7 @@ export default function TreasureMapLesson() {
   }
 
   return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", minHeight: "100vh" }} className="relative">
+    <div dir="rtl" style={{ fontFamily: "var(--font-ui)", minHeight: "100vh" }} className="relative">
       <GateStyles />
       <GameFeelStyles />
       <ComboIndicator combo={combo} pulseKey={pulseKey} accent="#d97706" />

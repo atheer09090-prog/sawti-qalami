@@ -1,6 +1,19 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* الخطوط مستضافة محليًا (بدل Google Fonts): أسرع، وبلا اعتماد على طرف ثالث.
+   IBM Plex Sans Arabic = خط الواجهة. Amiri = لنص القراءة التعليمي فقط
+   (الكلمات والجمل التي يقرؤها الطالب)، لأن شكل النبرة والكرسي أوضح بالنسخ. */
+@import "@fontsource/ibm-plex-sans-arabic/arabic-400.css";
+@import "@fontsource/ibm-plex-sans-arabic/arabic-500.css";
+@import "@fontsource/ibm-plex-sans-arabic/arabic-600.css";
+@import "@fontsource/ibm-plex-sans-arabic/arabic-700.css";
+@import "@fontsource/ibm-plex-sans-arabic/latin-400.css";
+@import "@fontsource/ibm-plex-sans-arabic/latin-600.css";
+@import "@fontsource/ibm-plex-sans-arabic/latin-700.css";
+@import "@fontsource/amiri/arabic-400.css";
+@import "@fontsource/amiri/arabic-700.css";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -42,29 +55,94 @@
   --color-self-learning-dark: var(--self-learning-dark);
   --color-success: var(--success);
   --color-warning: var(--warning);
+
+  /* ── Sawti design system ── */
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-border-strong: var(--border-strong);
+  --color-error: var(--error);
+  --color-error-soft: var(--error-soft);
+  --color-success-soft: var(--success-soft);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-reward: var(--reward);
+  --color-reward-soft: var(--reward-soft);
+  --color-writing-soft: var(--writing-soft);
+  --color-learning: var(--self-learning);
+  --color-learning-soft: var(--self-learning-soft);
+  --color-skill: var(--skill);
+  --color-skill-soft: var(--skill-soft);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --font-sans: var(--font-ui);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   Design tokens — الهوية (الأخضر العُماني) كأساس، مع تنظيف الدرجات
+   ═══════════════════════════════════════════════════════════════ */
 :root {
-  --radius: 0.75rem;
-  --background: #fdf8f0;
-  --foreground: #1a2e1a;
+  --font-ui: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', system-ui, sans-serif;
+  --font-reading: 'Amiri', 'Traditional Arabic', serif;
+
+  /* أسطح */
+  --background: #f5f7f3;          /* رمادي مائل لأخضر خفيف جدًا */
+  --surface: #ffffff;
+  --surface-subtle: #eef2eb;
+  --foreground: #16291c;
   --card: #ffffff;
-  --card-foreground: #1a2e1a;
+  --card-foreground: #16291c;
   --popover: #ffffff;
-  --popover-foreground: #1a2e1a;
+  --popover-foreground: #16291c;
+
+  /* نص (تباين ≥ 4.5:1 على الأبيض) */
+  --text-primary: #16291c;
+  --text-secondary: #46564b;
+  --text-muted: #647468;
+
+  /* العلامة */
   --primary: #1a5c2a;
+  --primary-hover: #14491f;
+  --primary-soft: #e6f2e9;
   --primary-foreground: #ffffff;
-  --secondary: #f0ebe0;
+  --secondary: #eaf0e7;
   --secondary-foreground: #1a5c2a;
-  --muted: #f5f0e8;
-  --muted-foreground: #6b7280;
+  --muted: #eef2eb;
+  --muted-foreground: #5a6a5f;
   --accent: #f5c842;
-  --accent-foreground: #1a5c2a;
-  --destructive: #dc2626;
-  --destructive-foreground: #ffffff;
-  --border: #e5ddd0;
-  --input: #e5ddd0;
+  --accent-foreground: #3b2f05;
   --ring: #1a5c2a;
+
+  /* حدود */
+  --border: #dfe6dc;
+  --border-strong: #c9d4c5;
+  --input: #cdd7c9;
+
+  /* حالات */
+  --success: #15803d;  --success-soft: #e4f4ea;
+  --warning: #b45309;  --warning-soft: #fdf1dc;
+  --error: #c62828;    --error-soft: #fdebeb;
+  --destructive: #c62828;
+  --destructive-foreground: #ffffff;
+  --info: #1d4ed8;     --info-soft: #e8eefc;
+
+  /* مكافآت (نجوم/نقاط) — الذهبي لها فقط */
+  --reward: #b7791f;   --reward-soft: #fdf3d9;
+
+  /* ألوان المهارات */
+  --speaking: #1a5c2a;       --speaking-soft: #e6f2e9;
+  --writing: #b45309;        --writing-dark: #d97706;  --writing-soft: #fcefdc;
+  --self-learning: #1d4ed8;  --self-learning-dark: #2563eb;  --self-learning-soft: #e8eefc;
+  --skill: var(--primary);   --skill-soft: var(--primary-soft);   /* تُعاد تعريفها داخل .skill-* */
+
+  /* الشريط الجانبي (مكوّنات shadcn) */
   --sidebar: #1a5c2a;
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #f5c842;
@@ -74,98 +152,246 @@
   --sidebar-border: #2d7a3e;
   --sidebar-ring: #f5c842;
 
-  /* ألوان فرعية لكل مهارة، تُستخدَم بدل تكرار قيم hex في كل صفحة */
-  --writing: #b45309;
-  --writing-dark: #d97706;
-  --self-learning: #1d4ed8;
-  --self-learning-dark: #2563eb;
-  --success: #16a34a;
-  --warning: #f59e0b;
+  /* الزوايا */
+  --radius: 0.75rem;           /* عناصر التحكم: 12px */
+  --radius-card: 1.125rem;     /* البطاقات: 18px */
+
+  /* الظلال — ناعمة جدًا */
+  --shadow-xs: 0 1px 2px rgba(22, 41, 28, 0.05);
+  --shadow-sm: 0 1px 2px rgba(22, 41, 28, 0.05), 0 2px 6px rgba(22, 41, 28, 0.04);
+  --shadow-md: 0 2px 4px rgba(22, 41, 28, 0.05), 0 8px 20px rgba(22, 41, 28, 0.07);
+  --shadow-lg: 0 4px 8px rgba(22, 41, 28, 0.06), 0 18px 40px rgba(22, 41, 28, 0.10);
+
+  /* الحركة */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-fast: 180ms;
+  --t-base: 240ms;
 }
+
+/* سمة لكل مهارة: تكفي إضافة class على الحاوية فتتلوّن الأزرار والشارات والأيقونات */
+.skill-speaking { --skill: var(--speaking); --skill-soft: var(--speaking-soft); --skill-strong: #124a20; }
+.skill-writing  { --skill: var(--writing);  --skill-soft: var(--writing-soft);  --skill-strong: #92400e; }
+.skill-learning { --skill: var(--self-learning); --skill-soft: var(--self-learning-soft); --skill-strong: #1e40af; }
 
 @layer base {
   * { @apply border-border outline-ring/50; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Cairo', sans-serif;
+    @apply text-foreground;
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    line-height: 1.8;                 /* مريح للتشكيل العربي */
+    -webkit-font-smoothing: antialiased;
+    background-color: var(--background);
+    background-image: radial-gradient(1100px 420px at 50% -120px, rgba(26, 92, 42, 0.08), transparent 70%);
+    background-repeat: no-repeat;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
-  a[href], select:not(:disabled) {
-    @apply cursor-pointer;
-  }
+  a[href], select:not(:disabled) { @apply cursor-pointer; }
+  button, input, select, textarea { font-family: inherit; }
 
-  /* حلقة تركيز واضحة عند التنقّل بلوحة المفاتيح فقط (Tab) — لا تظهر عند
-     النقر بالفأرة أو اللمس، فلا تغيّر أي شيء بصريًا للاستخدام العادي،
-     لكنها ضرورية لمن يعتمد على لوحة المفاتيح، خصوصًا أن عناصر كثيرة في
-     المشروع تُلغي الحلقة الافتراضية (focus:outline-none) بلا بديل. */
   :focus-visible {
-    outline: 3px solid var(--primary);
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 6px;
   }
 }
 
+/* ═══════════════ Typography ═══════════════ */
 @layer components {
+  .t-display      { font-size: clamp(1.625rem, 1.15rem + 2vw, 3rem);  line-height: 1.4;  font-weight: 700; letter-spacing: -0.005em; }
+  .t-page-title   { font-size: clamp(1.5rem, 1.2rem + 1.1vw, 2rem);  line-height: 1.5;  font-weight: 700; }
+  .t-section      { font-size: clamp(1.125rem, 1rem + 0.5vw, 1.5rem); line-height: 1.55; font-weight: 600; }
+  .t-card-title   { font-size: clamp(1.0625rem, 1rem + 0.2vw, 1.25rem); line-height: 1.6; font-weight: 600; }
+  .t-body         { font-size: clamp(0.9375rem, 0.9rem + 0.15vw, 1.0625rem); line-height: 1.9; font-weight: 400; }
+  .t-small        { font-size: 0.875rem; line-height: 1.75; font-weight: 400; }
+  .t-caption      { font-size: 0.8125rem; line-height: 1.7; font-weight: 500; }
+  .text-secondary-ds { color: var(--text-secondary); }
+  .text-muted-ds     { color: var(--text-muted); }
+  .font-reading { font-family: var(--font-reading); line-height: 2.1; }
+
+  /* ═══════════════ Layout ═══════════════ */
   .container {
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    width: 100%; margin-left: auto; margin-right: auto;
+    padding-left: 1rem; padding-right: 1rem;
   }
-  @media (min-width: 640px) {
-    .container { padding-left: 1.5rem; padding-right: 1.5rem; }
-  }
-  @media (min-width: 1024px) {
-    .container { padding-left: 2rem; padding-right: 2rem; max-width: 1280px; }
-  }
+  @media (min-width: 640px)  { .container { padding-left: 1.5rem; padding-right: 1.5rem; } }
+  @media (min-width: 1024px) { .container { padding-left: 2rem;   padding-right: 2rem; max-width: 1280px; } }
   .flex { min-height: 0; min-width: 0; }
 
-  /* Sawti brand utilities — نظام تصميم موحّد؛ استُخدم أصلًا في صفحة
-     تسجيل الدخول، ويُطبَّق تدريجيًا على بقية الصفحات لاحقًا بدل تكرار
-     نفس قيم الألوان والمسافات يدويًا في كل ملف. */
-  .sawti-header {
-    background: linear-gradient(160deg, #1a5c2a 0%, #2d7a3e 60%, #1a5c2a 100%);
+  .page-container { width: 100%; max-width: 1200px; margin-inline: auto; padding-inline: 1rem; }
+  @media (min-width: 640px)  { .page-container { padding-inline: 1.5rem; } }
+  @media (min-width: 1024px) { .page-container { padding-inline: 2rem; } }
+  .page-narrow { max-width: 760px; }
+  .page-section { padding-block: 1.5rem; }
+  @media (min-width: 768px) { .page-section { padding-block: 2rem; } }
+
+  /* ═══════════════ Cards ═══════════════ */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-xs);
   }
-  .sawti-card {
-    @apply bg-white rounded-2xl shadow-md;
+  .card-pad { padding: 1.25rem; }
+  @media (min-width: 768px) { .card-pad { padding: 1.5rem; } }
+  .card-interactive {
+    transition: transform var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-out), border-color var(--t-base);
   }
-  .sawti-card-hover {
-    @apply bg-white rounded-2xl shadow-sm transition-all hover:shadow-lg hover:-translate-y-0.5;
+  .card-interactive:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border-strong); }
+  .card-interactive:active { transform: translateY(-1px) scale(0.995); }
+
+  /* ═══════════════ Buttons ═══════════════ */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    min-height: 44px; padding: 0.5rem 1.25rem;
+    border-radius: var(--radius); border: 1px solid transparent;
+    font-size: 0.9375rem; font-weight: 600; line-height: 1.4; white-space: nowrap;
+    transition: background-color var(--t-fast), border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast) var(--ease-out), color var(--t-fast);
+    user-select: none;
   }
-  .sawti-btn-primary {
-    background: linear-gradient(135deg, #1a5c2a 0%, #2d7a3e 100%);
-    @apply text-white font-bold rounded-xl py-3 px-6 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  .btn:active:not(:disabled) { transform: scale(0.98); }
+  .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
+  .btn svg { flex-shrink: 0; }
+  .btn-lg { min-height: 52px; padding-inline: 1.75rem; font-size: 1rem; }
+  .btn-sm { min-height: 36px; padding: 0.25rem 0.875rem; font-size: 0.875rem; }
+  @media (pointer: coarse), (max-width: 640px) { .btn-sm { min-height: 44px; } }
+  .btn-block { width: 100%; }
+
+  .btn-primary   { background: var(--skill, var(--primary)); color: #fff; box-shadow: var(--shadow-xs); }
+  .btn-primary:hover:not(:disabled) { filter: brightness(0.9); box-shadow: var(--shadow-sm); }
+  .btn-secondary { background: var(--skill-soft, var(--primary-soft)); color: var(--skill-strong, var(--primary)); }
+  .btn-secondary:hover:not(:disabled) { filter: brightness(0.95); }
+  .btn-outline   { background: var(--surface); border-color: var(--border-strong); color: var(--text-primary); }
+  .btn-outline:hover:not(:disabled) { background: var(--surface-subtle); border-color: var(--skill, var(--primary)); }
+  .btn-ghost     { background: transparent; color: var(--text-secondary); }
+  .btn-ghost:hover:not(:disabled) { background: var(--surface-subtle); color: var(--text-primary); }
+  .btn-danger    { background: var(--error); color: #fff; }
+  .btn-danger:hover:not(:disabled) { filter: brightness(0.9); }
+  .btn-danger-soft { background: var(--error-soft); color: var(--error); }
+  .btn-danger-soft:hover:not(:disabled) { filter: brightness(0.96); }
+
+  .btn[aria-busy="true"] { pointer-events: none; opacity: 0.85; }
+  .spinner {
+    width: 1em; height: 1em; border-radius: 9999px;
+    border: 2px solid currentColor; border-top-color: transparent;
+    animation: spin 0.7s linear infinite;
   }
-  .sawti-btn-writing {
-    background: linear-gradient(135deg, var(--writing) 0%, var(--writing-dark) 100%);
-    @apply text-white font-bold rounded-xl py-3 px-6 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+
+  /* ═══════════════ Forms ═══════════════ */
+  .label { display: block; margin-bottom: 0.375rem; font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
+  .input, .textarea, .select {
+    width: 100%; min-height: 48px; padding: 0.625rem 0.875rem;
+    background: var(--surface); color: var(--text-primary);
+    border: 1px solid var(--input); border-radius: var(--radius);
+    font-size: 1rem; text-align: right;
+    transition: border-color var(--t-fast), box-shadow var(--t-fast);
   }
-  .sawti-btn-self-learning {
-    background: linear-gradient(135deg, var(--self-learning) 0%, var(--self-learning-dark) 100%);
-    @apply text-white font-bold rounded-xl py-3 px-6 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  .textarea { min-height: 120px; line-height: 1.9; resize: vertical; }
+  .input::placeholder, .textarea::placeholder { color: var(--text-muted); opacity: 0.85; }
+  .input:hover, .textarea:hover, .select:hover { border-color: var(--border-strong); }
+  .input:focus, .textarea:focus, .select:focus,
+  .input:focus-visible, .textarea:focus-visible, .select:focus-visible {
+    outline: none; border-color: var(--skill, var(--primary));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--skill, var(--primary)) 18%, transparent);
   }
-  .sawti-btn-outline {
-    @apply bg-white border-2 font-bold rounded-xl py-2.5 px-5 transition-all hover:bg-gray-50 active:scale-95;
-    border-color: var(--primary);
-    color: var(--primary);
+  .input[aria-invalid="true"], .textarea[aria-invalid="true"] { border-color: var(--error); }
+  .input[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.16); }
+  .field-hint  { margin-top: 0.375rem; font-size: 0.8125rem; color: var(--text-muted); }
+  .field-error { margin-top: 0.375rem; font-size: 0.8125rem; color: var(--error); display: flex; align-items: center; gap: 0.25rem; }
+
+  /* ═══════════════ Badges & alerts ═══════════════ */
+  .badge {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    padding: 0.125rem 0.75rem; border-radius: 9999px;
+    font-size: 0.8125rem; font-weight: 600; line-height: 1.7;
+    background: var(--surface-subtle); color: var(--text-secondary);
   }
-  .sawti-badge {
-    @apply inline-flex items-center gap-1 text-xs font-bold rounded-full px-3 py-1;
+  .badge-primary { background: var(--primary-soft); color: var(--primary); }
+  .badge-success { background: var(--success-soft); color: var(--success); }
+  .badge-warning { background: var(--warning-soft); color: var(--warning); }
+  .badge-error   { background: var(--error-soft);   color: var(--error); }
+  .badge-info    { background: var(--info-soft);    color: var(--info); }
+  .badge-reward  { background: var(--reward-soft);  color: var(--reward); }
+  .badge-skill   { background: var(--skill-soft);   color: var(--skill-strong, var(--skill)); }
+
+  .alert { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.875rem 1rem; border-radius: var(--radius); border: 1px solid transparent; font-size: 0.9375rem; }
+  .alert-error   { background: var(--error-soft);   color: #7f1d1d; border-color: #f4c9c9; }
+  .alert-success { background: var(--success-soft); color: #14532d; border-color: #bfe3cb; }
+  .alert-warning { background: var(--warning-soft); color: #7c3d06; border-color: #f2d9a6; }
+  .alert-info    { background: var(--info-soft);    color: #1e3a8a; border-color: #c5d3f6; }
+
+  /* ═══════════════ Progress ═══════════════ */
+  .progress { height: 0.5rem; border-radius: 9999px; background: var(--surface-subtle); overflow: hidden; }
+  .progress-lg { height: 0.75rem; }
+  .progress-fill {
+    height: 100%; border-radius: inherit; background: var(--skill, var(--primary));
+    transform-origin: right center;                 /* RTL: ينمو من اليمين */
+    animation: progress-grow 700ms var(--ease-out) both;
   }
-  .sawti-input {
-    @apply w-full px-4 py-3 rounded-xl border-2 text-right focus:outline-none transition-colors;
-    border-color: var(--border);
+
+  /* ═══════════════ Overlays ═══════════════ */
+  .overlay { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(16, 28, 20, 0.45); animation: fade-in 180ms ease-out both; }
+  .modal { background: var(--surface); border-radius: 1.25rem; box-shadow: var(--shadow-lg); animation: modal-in var(--t-base) var(--ease-out) both; }
+
+  /* ═══════════════ Legacy aliases (صفحة الدخول وغيرها) ═══════════════ */
+  .sawti-card        { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); box-shadow: var(--shadow-sm); }
+  .sawti-card-hover  { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); box-shadow: var(--shadow-xs); transition: transform var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-out); }
+  .sawti-card-hover:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+  .sawti-header      { background: var(--primary); }
+  .sawti-btn-primary, .sawti-btn-writing, .sawti-btn-self-learning, .sawti-btn-outline {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    min-height: 44px; padding: 0.5rem 1.25rem; border-radius: var(--radius);
+    font-weight: 600; transition: filter var(--t-fast), transform var(--t-fast) var(--ease-out), background-color var(--t-fast);
   }
-  .sawti-input:focus {
-    border-color: var(--primary);
-  }
-  .sawti-progress-bar {
-    @apply h-2 rounded-full bg-gray-200 overflow-hidden;
-  }
-  .sawti-progress-fill {
-    @apply h-full rounded-full transition-all duration-500;
+  .sawti-btn-primary { background: var(--primary); color: #fff; }
+  .sawti-btn-writing { background: var(--writing); color: #fff; }
+  .sawti-btn-self-learning { background: var(--self-learning); color: #fff; }
+  .sawti-btn-primary:hover, .sawti-btn-writing:hover, .sawti-btn-self-learning:hover { filter: brightness(0.9); }
+  .sawti-btn-outline { background: var(--surface); border: 1px solid var(--border-strong); color: var(--primary); }
+  .sawti-btn-outline:hover { background: var(--surface-subtle); }
+  .sawti-btn-primary:active, .sawti-btn-writing:active, .sawti-btn-self-learning:active, .sawti-btn-outline:active { transform: scale(0.98); }
+  .sawti-btn-primary:disabled, .sawti-btn-writing:disabled, .sawti-btn-self-learning:disabled { opacity: 0.5; pointer-events: none; }
+  .sawti-badge { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.8125rem; font-weight: 600; border-radius: 9999px; padding: 0.125rem 0.75rem; }
+  .sawti-input { width: 100%; min-height: 48px; padding: 0.625rem 0.875rem; border-radius: var(--radius); border: 1px solid var(--input); text-align: right; background: var(--surface); transition: border-color var(--t-fast), box-shadow var(--t-fast); }
+  .sawti-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26, 92, 42, 0.16); }
+  .sawti-progress-bar  { height: 0.5rem; border-radius: 9999px; background: var(--surface-subtle); overflow: hidden; }
+  .sawti-progress-fill { height: 100%; border-radius: 9999px; transition: width 500ms var(--ease-out); }
+}
+
+/* ═══════════════ Motion ═══════════════ */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes page-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes modal-in { from { opacity: 0; transform: scale(0.97) translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes pop-in { 0% { opacity: 0; transform: scale(0.85); } 60% { opacity: 1; transform: scale(1.03); } 100% { transform: scale(1); } }
+@keyframes progress-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.45; } 100% { transform: scale(1.7); opacity: 0; } }
+@keyframes draw-check { from { stroke-dashoffset: 30; } to { stroke-dashoffset: 0; } }
+@keyframes dots { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
+@keyframes drop-in { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+.page-enter { animation: page-enter 300ms var(--ease-out) both; }
+/* ظهور تدريجي متتابع للبطاقات: style={{ "--i": index }} */
+.stagger-in { animation: fade-up 420ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 60ms); }
+.modal-enter { animation: modal-in var(--t-base) var(--ease-out) both; }
+.pop-in { animation: pop-in 480ms var(--ease-out) both; }
+.menu-enter { animation: drop-in 160ms var(--ease-out) both; }
+.record-pulse::before, .record-pulse::after {
+  content: ""; position: absolute; inset: 0; border-radius: 9999px; background: var(--error);
+  animation: pulse-ring 1.8s ease-out infinite; z-index: -1;
+}
+.record-pulse::after { animation-delay: 0.9s; }
+.dot-loader span { display: inline-block; width: 8px; height: 8px; margin-inline: 3px; border-radius: 9999px; background: currentColor; animation: dots 1.2s ease-in-out infinite; }
+.dot-loader span:nth-child(2) { animation-delay: 0.15s; }
+.dot-loader span:nth-child(3) { animation-delay: 0.3s; }
+
+/* احترام تفضيل تقليل الحركة */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important; scroll-behavior: auto !important;
   }
 }
