@@ -3,9 +3,6 @@ import { useLocation } from "wouter";
 import { setState, loadMyStudentFromServer } from "@/lib/store";
 import { stopSound, setGender } from "@/lib/audio";
 import { registerAccount, loginAccount, guestLogin, setToken, getToken, fetchMe, warmUpServer } from "@/lib/api";
-import { AlertCircle, Eye, EyeOff, GraduationCap, Info, Lock, Mail, Mic, PenLine, Target, User } from "lucide-react";
-import { Btn } from "@/components/ds";
-import { cn } from "@/lib/utils";
 
 const AVATARS = [
   { id: "boy1",  src: "/assets/omani-boy.png",   label: "طالب ١" },
@@ -116,176 +113,230 @@ export default function Login() {
 
   if (restoringSession) {
     return (
-      <div dir="rtl" className="grid min-h-screen place-items-center" role="status">
-        <div className="flex flex-col items-center gap-3 text-text-secondary">
-          <img src="/assets/logo.png" alt="" className="size-16 animate-pulse object-contain" />
-          <p className="t-small">جَارٍ التَّحَقُّقُ مِنْ جَلْسَتِكَ...</p>
-        </div>
+      <div dir="rtl" className="min-h-screen flex items-center justify-center" style={{ fontFamily: "'Cairo', sans-serif" }}>
+        <p className="text-gray-500">جَارٍ التَّحَقُّقُ مِنْ جَلْسَتِكَ...</p>
       </div>
     );
   }
 
-  const isRegister = mode === "register";
-  const switchMode = (m: Mode) => { setMode(m); setError(""); setEmailNotFound(false); };
-
   return (
-    <div dir="rtl" className="grid min-h-screen place-items-center p-4 md:p-8">
-      <div className="page-enter card grid w-full max-w-5xl overflow-hidden shadow-lg lg:grid-cols-2" style={{ borderRadius: "1.5rem" }}>
+    <div
+      dir="rtl"
+      className="min-h-screen flex flex-col items-center justify-center p-4"
+      style={{
+        backgroundImage: "url('/assets/bg-main.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+        fontFamily: "'Cairo', sans-serif",
+      }}
+    >
+      {/* Card */}
+      <div className="w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl"
+        style={{ backdropFilter: "blur(2px)" }}>
 
-        {/* ── لوحة الهوية: الرسم العُماني + الرسالة ── */}
-        <aside className="relative hidden min-h-[640px] flex-col justify-between overflow-hidden p-10 text-white lg:flex"
-          style={{ backgroundImage: "url('/assets/bg-main.png')", backgroundSize: "cover", backgroundPosition: "8% center" }}>
-          <div aria-hidden className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(12,46,22,0.78) 0%, rgba(12,46,22,0.08) 36%, rgba(12,46,22,0.12) 52%, rgba(12,46,22,0.9) 100%)" }} />
-          <div className="relative">
-            <span className="mb-5 grid size-20 place-items-center rounded-2xl bg-white shadow-md">
-              <img src="/assets/logo.png" alt="صوتي قلمي" className="size-16 object-contain" />
-            </span>
-            <h1 className="t-display">صَوْتِي قَلَمِي</h1>
-            <p className="t-body mt-1 text-white/85">أَتَعَلَّمُ. أُبْدِعُ. أَتَعَبَّرُ.</p>
-          </div>
-          <div className="relative">
-            <ul className="space-y-3">
-              {[
-                { icon: Mic, text: "تَحَدَّثْ عَنْ مَوْضُوعٍ وَاحْصُلْ عَلَى تَقْيِيمٍ" },
-                { icon: PenLine, text: "اكْتُبْ نَصَّكَ وَصَحِّحْ أَخْطَاءَكَ" },
-                { icon: Target, text: "تَعَلَّمْ بِأُسْلُوبِكَ وَتَابِعْ تَقَدُّمَكَ" },
-              ].map(({ icon: Icon, text }) => (
-                <li key={text} className="flex items-center gap-3 text-[15px]">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white/15"><Icon size={18} strokeWidth={1.85} /></span>
-                  {text}
-                </li>
-              ))}
-            </ul>
-            <p className="t-caption mt-6 text-white/75">مَنَصَّةٌ تَعْلِيمِيَّةٌ لِطُلَّابِ الصَّفِّ السَّادِسِ · سَلْطَنَةُ عُمَانَ 🇴🇲</p>
-          </div>
-        </aside>
-
-        {/* ── النموذج ── */}
-        <main className="flex flex-col justify-center p-6 sm:p-10">
-          {/* هوية مصغّرة للهاتف/التابلت */}
-          <div className="mb-6 flex items-center gap-3 lg:hidden">
-            <img src="/assets/logo.png" alt="" className="size-14 object-contain" />
-            <div>
-              <h1 className="text-xl font-bold text-primary">صَوْتِي قَلَمِي</h1>
-              <p className="t-caption text-text-muted">أَتَعَلَّمُ. أُبْدِعُ. أَتَعَبَّرُ.</p>
-            </div>
-          </div>
-
-          {/* تبويب دخول / حساب جديد */}
-          <div role="tablist" aria-label="طريقة الدخول" className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-surface-subtle p-1">
-            {([["login", "تَسْجِيلُ الدُّخُولِ"], ["register", "حِسَابٌ جَدِيدٌ"]] as const).map(([m, label]) => (
-              <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => switchMode(m)}
-                className={cn("min-h-[44px] rounded-lg text-[15px] font-semibold transition-all",
-                  mode === m ? "bg-white text-primary shadow-sm" : "text-text-secondary hover:text-text-primary")}>
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <h2 className="t-section text-text-primary">{isRegister ? "أَنْشِئْ حِسَابَكَ" : "أَهْلًا بِعَوْدَتِكَ"}</h2>
-          <p className="t-small mb-5 mt-0.5 text-text-secondary">
-            {isRegister ? "لِيُحْفَظَ تَقَدُّمُكَ تِلْقَائِيًّا وَتَسْتَعِيدَهُ مِنْ أَيِّ جِهَازٍ." : "سَجِّلْ دُخُولَكَ لِلْمُتَابَعَةِ مِنْ حَيْثُ تَوَقَّفْتَ."}
+        {/* ── Green Header ── */}
+        <div
+          className="pt-8 pb-6 px-6 text-center"
+          style={{ background: "linear-gradient(160deg, #1a5c2a 0%, #2d7a3e 70%, #1a5c2a 100%)" }}
+        >
+          <img
+            src="/assets/logo.png"
+            alt="صوتي قلمي"
+            className="w-24 h-24 object-contain mx-auto mb-2"
+            style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" }}
+          />
+          <h1 style={{ fontFamily: "'Amiri', serif", color: "#f5c842", fontSize: "1.9rem", fontWeight: 700, lineHeight: 1.2 }}>
+            صَوْتِي قَلَمِي
+          </h1>
+          <p style={{ color: "#d4edda", fontSize: "0.85rem", marginTop: "4px" }}>
+            أَتَعَلَّمُ. أُبْدِعُ. أَتَعَبَّرُ
           </p>
+        </div>
+
+        {/* ── White Form ── */}
+        <div className="bg-white px-6 py-5">
+          {mode === "login" && (
+            <p className="text-center text-sm font-bold mb-1" style={{ color: "#1a5c2a" }}>
+              أَهْلًا بِعَوْدَتِكَ 👋
+            </p>
+          )}
 
           {error && (
-            <div role="alert" className="alert alert-error mb-4">
-              <AlertCircle size={20} strokeWidth={1.75} className="mt-0.5 shrink-0" aria-hidden />
-              <div className="flex-1">
-                <p>{error}</p>
-                {emailNotFound && (
-                  <button type="button" className="mt-1 text-sm font-semibold text-primary underline underline-offset-2"
-                    onClick={() => { setMode("register"); setEmail(loginEmail.trim()); setError(""); setEmailNotFound(false); }}>
-                    لَا يُوجَدُ حِسَابٌ بِهَذَا الْبَرِيدِ — أَنْشِئْ حِسَابًا جَدِيدًا
-                  </button>
-                )}
-              </div>
+            <div className="mb-3 bg-red-50 border border-red-200 rounded-xl p-2.5 text-right">
+              <p className="text-red-600 text-sm">⚠️ {error}</p>
+              {emailNotFound && (
+                <button
+                  type="button"
+                  onClick={() => { setMode("register"); setEmail(loginEmail.trim()); setError(""); setEmailNotFound(false); }}
+                  className="mt-2 text-xs font-bold underline underline-offset-2"
+                  style={{ color: "#1a5c2a" }}
+                >
+                  لَا يُوجَدُ حِسَابٌ بِهَذَا الْبَرِيدِ — اضْغَطْ هُنَا لِإِنْشَاءِ حِسَابٍ جَدِيدٍ
+                </button>
+              )}
             </div>
           )}
 
-          <form onSubmit={(e) => { e.preventDefault(); isRegister ? handleRegister() : handleLogin(); }} noValidate>
-            {isRegister ? (
-              <>
-                <fieldset className="mb-4">
-                  <legend className="label">اخْتَرْ صُورَتَكَ</legend>
-                  <div role="radiogroup" aria-label="الصورة الشخصية" className="flex gap-3">
-                    {AVATARS.map((av) => (
-                      <button key={av.id} type="button" role="radio" aria-checked={avatar === av.id} aria-label={av.label}
-                        onClick={() => setAvatar(av.id)}
-                        className={cn("size-14 overflow-hidden rounded-full border-2 bg-surface-subtle transition-all duration-200 sm:size-16",
-                          avatar === av.id ? "scale-110 border-primary bg-primary-soft shadow-md ring-4 ring-primary/15" : "border-border hover:border-border-strong")}>
-                        <img src={av.src} alt="" className="size-full object-contain p-1" />
-                      </button>
-                    ))}
-                  </div>
-                </fieldset>
-
-                <Field id="reg-name" label="اسْمُكَ الْكَرِيمُ" value={name} onChange={setName} placeholder="أَدْخِلِ اسْمَكَ" icon={User} autoComplete="name" />
-
-                <div className="mb-4">
-                  <label htmlFor="reg-section" className="label">شُعْبَتُكَ</label>
-                  <div className="flex gap-2">
-                    <span className="grid min-w-[84px] place-items-center rounded-xl bg-surface-subtle px-3 text-sm font-semibold text-text-secondary">السَّادِسُ</span>
-                    <input id="reg-section" className="input" value={section} onChange={(e) => setSection(e.target.value)} placeholder="مِثَالٌ: ٩ أَوْ أ" />
-                  </div>
-                </div>
-
-                <Field id="reg-email" label="الْبَرِيدُ الْإِلِكْتْرُونِيُّ" value={email} onChange={setEmail} placeholder="example@mail.com" icon={Mail} type="email" autoComplete="email" dir="ltr" />
-                <Field id="reg-pass" label="كَلِمَةُ الْمُرُورِ" value={password} onChange={setPassword} placeholder="6 أَحْرُفٍ عَلَى الْأَقَلِّ" icon={Lock} type="password" autoComplete="new-password" />
-              </>
-            ) : (
-              <>
-                <Field id="login-email" label="الْبَرِيدُ الْإِلِكْتْرُونِيُّ" value={loginEmail} onChange={setLoginEmail} placeholder="example@mail.com" icon={Mail} type="email" autoComplete="email" dir="ltr" />
-                <Field id="login-pass" label="كَلِمَةُ الْمُرُورِ" value={loginPassword} onChange={setLoginPassword} placeholder="••••••" icon={Lock} type="password" autoComplete="current-password" />
-              </>
-            )}
-
-            <Btn type="submit" size="lg" block loading={busy} className="mt-1">
-              {isRegister ? (busy ? "جَارٍ إِنْشَاءُ الْحِسَابِ..." : "أَنْشِئْ حِسَابِي وَابْدَأْ") : (busy ? "جَارٍ التَّحَقُّقُ..." : "تَسْجِيلُ الدُّخُولِ")}
-            </Btn>
-            {slowServer && (
-              <p role="status" className="alert alert-warning mt-3 !py-2 text-sm">
-                الْخَادِمُ يَسْتَيْقِظُ مِنْ وَضْعِ السُّكُونِ، وَقَدْ يَسْتَغْرِقُ هَذَا حَتَّى دَقِيقَةٍ فِي أَوَّلِ مُحَاوَلَةٍ. الرَّجَاءُ الِانْتِظَارُ.
+          {mode === "register" ? (
+            <>
+              <button
+                type="button"
+                onClick={() => { setMode("login"); setError(""); }}
+                className="text-xs text-gray-400 mb-3 flex items-center gap-1"
+              >
+                → الرُّجُوعُ إِلَى تَسْجِيلِ الدُّخُولِ
+              </button>
+              <p className="text-xs text-gray-400 text-center mb-4">
+                أَنْشِئْ حِسَابَكَ لِيُحْفَظَ تَقَدُّمُكَ تِلْقَائِيًّا وَتَسْتَعِيدَهُ مِنْ أَيِّ جِهَازٍ
               </p>
-            )}
-          </form>
 
-          <div className="my-6 flex items-center gap-3 text-text-muted" aria-hidden>
-            <span className="h-px flex-1 bg-border" /><span className="t-caption">خِيَارَاتٌ أُخْرَى</span><span className="h-px flex-1 bg-border" />
-          </div>
+              {/* Avatar picker */}
+              <div className="mb-4">
+                <label className="block text-right text-gray-600 mb-2 font-semibold text-sm">اخْتَرْ صُورَتَكَ:</label>
+                <div className="flex justify-center gap-3">
+                  {AVATARS.map((av) => (
+                    <button
+                      key={av.id}
+                      onClick={() => setAvatar(av.id)}
+                      className="w-14 h-14 rounded-full border-2 transition-all overflow-hidden"
+                      style={{
+                        borderColor: avatar === av.id ? "#1a5c2a" : "#e5e7eb",
+                        background: avatar === av.id ? "#dcf5e7" : "#f9fafb",
+                        transform: avatar === av.id ? "scale(1.15)" : "scale(1)",
+                        boxShadow: avatar === av.id ? "0 0 0 3px #a7f3c0" : "none",
+                      }}
+                    >
+                      <img src={av.src} alt={av.label} className="w-full h-full object-contain p-1" />
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Btn variant="outline" icon={GraduationCap} onClick={() => setLocation("/teacher")}>دُخُولُ الْمُعَلِّمِ</Btn>
-            <Btn variant="outline" icon={Info} onClick={() => setLocation("/about")}>مَا هَذَا الْبَرْنَامَجُ؟</Btn>
-          </div>
-          <Btn variant="ghost" size="sm" block className="mt-2 !whitespace-normal text-center" onClick={handleGuestLogin} disabled={busy}>
-            دُخُولٌ تَجْرِيبِيٌّ (لِلِاسْتِعْرَاضِ فَقَطْ — لِلَجْنَةِ التَّحْكِيمِ)
-          </Btn>
-        </main>
+              <Field label="اسْمُكَ الْكَرِيمُ:" value={name} onChange={setName} placeholder="أَدْخِلْ اسْمَكَ هُنَا..." icon="👤" />
+
+              <div className="mb-3">
+                <label className="block text-right text-gray-600 mb-1.5 font-semibold text-sm">
+                  شُعْبَتُكَ: <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">السادس</div>
+                  <input
+                    type="text" value={section} onChange={(e) => setSection(e.target.value)}
+                    placeholder="مثال: ٩ أو أ..."
+                    className="w-full pl-4 pr-20 py-3 rounded-xl border-2 text-right focus:outline-none text-base"
+                    style={{ borderColor: "#e5e7eb" }}
+                  />
+                </div>
+              </div>
+
+              <Field label="بَرِيدُكَ الإِلِكْتْرُونِيُّ:" value={email} onChange={setEmail} placeholder="example@mail.com" icon="✉️" type="email" />
+              <Field label="كَلِمَةُ الْمُرُورِ:" value={password} onChange={setPassword} placeholder="6 أحرف على الأقل" icon="🔒" type="password" />
+
+              {/* استعادة تقدم سابق */}
+              <button
+                onClick={handleRegister}
+                disabled={busy}
+                className="sawti-btn-primary w-full py-4 text-lg"
+              >
+                {busy ? "جَارٍ إِنْشَاءُ الْحِسَابِ..." : "أَنْشِئْ حِسَابِي وَابْدَأْ! 🚀"}
+              </button>
+              {slowServer && (
+                <p className="text-xs text-amber-600 text-center mt-2">
+                  ⏳ الخادم يستيقظ من وضع السكون، قد يستغرق هذا حتى دقيقة في أول محاولة — الرجاء الانتظار.
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-gray-400 text-center mb-4">سَجِّلْ دُخُولَكَ لِلْمُتَابَعَةِ مِنْ حَيْثُ تَوَقَّفْتَ</p>
+              <Field label="بَرِيدُكَ الإِلِكْتْرُونِيُّ:" value={loginEmail} onChange={setLoginEmail} placeholder="example@mail.com" icon="✉️" type="email" />
+              <Field label="كَلِمَةُ الْمُرُورِ:" value={loginPassword} onChange={setLoginPassword} placeholder="••••••" icon="🔒" type="password" onEnter={handleLogin} />
+              <button
+                onClick={handleLogin}
+                disabled={busy}
+                className="sawti-btn-primary w-full py-4 text-lg"
+              >
+                {busy ? "جَارٍ التَّحَقُّقُ..." : "تَسْجِيلُ الدُّخُولِ"}
+              </button>
+              {slowServer && (
+                <p className="text-xs text-amber-600 text-center mt-2">
+                  ⏳ الخادم يستيقظ من وضع السكون، قد يستغرق هذا حتى دقيقة في أول محاولة — الرجاء الانتظار.
+                </p>
+              )}
+
+              <button
+                type="button"
+                onClick={() => { setMode("register"); setError(""); }}
+                className="w-full mt-4 py-2 text-sm text-center text-gray-500"
+              >
+                لَيْسَ لَدَيْكَ حِسَابٌ؟ <span className="font-bold underline underline-offset-2" style={{ color: "#1a5c2a" }}>أَنْشِئْ حِسَابًا جَدِيدًا</span>
+              </button>
+            </>
+          )}
+
+          <p className="text-center text-gray-400 mt-3 text-xs">
+            ⭐ كُنْ مُجِدًّا بِتَقَدُّمِكَ، كُلُّ خُطْوَةٍ تُقَرِّبُكَ مِنَ الإِبْدَاعِ ⭐
+          </p>
+
+          <button
+            onClick={() => setLocation("/about")}
+            className="w-full mt-2 py-1.5 text-xs font-semibold text-gray-500 underline underline-offset-2"
+          >
+            ℹ️ ما هو هذا البرنامج؟ وكيف يعمل؟
+          </button>
+
+          <button
+            onClick={() => setLocation("/teacher")}
+            className="w-full mt-3 py-2.5 rounded-xl border-2 font-bold text-sm transition-all hover:bg-amber-50"
+            style={{ borderColor: "#f5c842", color: "#b45309" }}
+          >
+            🎓 دُخُولُ الْمُعَلِّمِ
+          </button>
+
+          <button
+            onClick={handleGuestLogin}
+            disabled={busy}
+            className="sawti-btn-outline w-full mt-2 text-sm disabled:opacity-50"
+          >
+            👁️ دُخُولٌ تَجْرِيبِيٌّ (لِلِاسْتِعْرَاضِ فَقَطْ — لِلَجْنَةِ التَّحْكِيمِ)
+          </button>
+        </div>
       </div>
+
+      <img
+        src="/assets/omani-boy.png"
+        alt="طالب عماني"
+        className="w-32 mt-4 drop-shadow-xl"
+        style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.15))" }}
+      />
+
+      <button
+        className="mt-3 px-5 py-2 rounded-full text-white text-sm font-bold shadow-lg"
+        style={{ background: "linear-gradient(135deg, #1a5c2a, #2d7a3e)" }}
+      >
+        🇴🇲 سَلْطَنَةُ عُمَانَ
+      </button>
     </div>
   );
 }
 
-function Field({ id, label, value, onChange, placeholder, icon: Icon, type = "text", autoComplete, dir }: {
-  id: string; label: string; value: string; onChange: (v: string) => void; placeholder: string;
-  icon: typeof Mail; type?: string; autoComplete?: string; dir?: "ltr" | "rtl";
+function Field({ label, value, onChange, placeholder, icon, type = "text", onEnter }: {
+  label: string; value: string; onChange: (v: string) => void; placeholder: string; icon: string; type?: string; onEnter?: () => void;
 }) {
-  const [show, setShow] = useState(false);
-  const isPass = type === "password";
   return (
     <div className="mb-4">
-      <label htmlFor={id} className="label">{label}</label>
+      <label className="block text-right text-gray-600 mb-1.5 font-semibold text-sm">{label}</label>
       <div className="relative">
-        <Icon size={18} strokeWidth={1.75} className="pointer-events-none absolute end-3.5 top-1/2 -translate-y-1/2 text-text-muted" aria-hidden />
-        <input id={id} className="input" style={{ paddingInlineStart: isPass ? "2.75rem" : undefined, paddingInlineEnd: "2.75rem", direction: dir }}
-          type={isPass && show ? "text" : type} value={value} onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder} autoComplete={autoComplete} />
-        {isPass && (
-          <button type="button" onClick={() => setShow(v => !v)} aria-label={show ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
-            className="absolute start-1 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-lg text-text-muted hover:bg-surface-subtle hover:text-text-primary">
-            {show ? <EyeOff size={18} strokeWidth={1.75} /> : <Eye size={18} strokeWidth={1.75} />}
-          </button>
-        )}
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && onEnter?.()}
+          placeholder={placeholder}
+          className="sawti-input pr-10 text-base"
+        />
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{icon}</span>
       </div>
     </div>
   );

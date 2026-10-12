@@ -2,7 +2,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, useLocation } from "wouter";
 import { lazy, Suspense } from "react";
-import { AppShell, usesShell } from "@/components/ds/AppShell";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Login from "./pages/Login";
@@ -36,42 +35,37 @@ initGenderFromStore();
  * جلب كود الصفحة المطلوبة — لا يُستخدَم أي شيء أثقل من هذا عمدًا. */
 function RouteFallback() {
   return (
-    <div className="page-container py-10" role="status" aria-label="جارٍ التحميل">
-      <div className="mb-8 h-9 w-56 animate-pulse rounded-lg bg-surface-subtle" />
-      <div className="grid gap-4 md:grid-cols-3">
-        {[0, 1, 2].map(i => <div key={i} className="h-40 animate-pulse rounded-[18px] bg-surface-subtle" />)}
-      </div>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "#f5f0e8" }}>
+      <div
+        className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin"
+        style={{ borderColor: "#1a5c2a", borderTopColor: "transparent" }}
+      />
     </div>
   );
 }
 
 function Router() {
-  const [location] = useLocation();
-  const routes = (
+  return (
     <Suspense fallback={<RouteFallback />}>
-      {/* key = المسار: يعيد تشغيل حركة الدخول (opacity + translateY 8px) عند كل تنقّل */}
-      <div key={location} className="page-enter">
-        <Switch>
-          <Route path="/" component={Login} />
-          <Route path="/about" component={Home} />
-          <Route path="/dashboard" component={Dashboard} />
-          <Route path="/skills" component={Skills} />
-          <Route path="/skills/speaking" component={Speaking} />
-          <Route path="/skills/writing" component={Writing} />
-          <Route path="/skills/self-learning" component={SelfLearning} />
-          <Route path="/assessments" component={Assessments} />
-          <Route path="/teacher" component={Teacher} />
-          <Route path="/class-selection" component={ClassSelection} />
-          <Route path="/writing-games" component={WritingGames} />
-          <Route path="/writing-games/treasure-map" component={TreasureMapLesson} />
-          <Route path="/writing-games/diver-pearl" component={DiverPearlLesson} />
-          <Route path="/writing-games/balloon" component={BalloonHamzaLesson} />
-          <Route component={NotFound} />
-        </Switch>
-      </div>
+      <Switch>
+        <Route path="/" component={Login} />
+        <Route path="/about" component={Home} />
+        <Route path="/dashboard" component={Dashboard} />
+        <Route path="/skills" component={Skills} />
+        <Route path="/skills/speaking" component={Speaking} />
+        <Route path="/skills/writing" component={Writing} />
+        <Route path="/skills/self-learning" component={SelfLearning} />
+        <Route path="/assessments" component={Assessments} />
+        <Route path="/teacher" component={Teacher} />
+        <Route path="/class-selection" component={ClassSelection} />
+        <Route path="/writing-games" component={WritingGames} />
+        <Route path="/writing-games/treasure-map" component={TreasureMapLesson} />
+        <Route path="/writing-games/diver-pearl" component={DiverPearlLesson} />
+        <Route path="/writing-games/balloon" component={BalloonHamzaLesson} />
+        <Route component={NotFound} />
+      </Switch>
     </Suspense>
   );
-  return usesShell(location) ? <AppShell>{routes}</AppShell> : routes;
 }
 
 // يظهر زر «المعلم الذكي» في كل صفحات الطالب الرئيسية، ويُخفى في صفحات

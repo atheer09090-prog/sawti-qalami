@@ -1,40 +1,141 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, Award, CheckCircle2, Layers, MessageSquareHeart, Mic, PenLine, Rocket, Sparkles, Star, Target, Trophy } from "lucide-react";
-import { getState, setState, StudentData } from "@/lib/store";
-import { playSound, setGender, audioFile } from "@/lib/audio";
+import { toast } from "sonner";
+import { getState, setState, StudentData, logout } from "@/lib/store";
+import { playSound, stopSound, setGender, stopAll, audioFile } from "@/lib/audio";
+import { submitReview } from "@/lib/api";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { SusSurvey } from "@/components/SusSurvey";
-import { Btn, SectionHeader, SkillCard, StatCard, ProgressRing, avatarSrc, skillClass, type Skill } from "@/components/ds";
 
-/* ── نافذة الترحيب (مرة واحدة لكل جلسة متصفح) ── */
-function WelcomePopup({ onClose }: { onClose: () => void }) {
+/* ── Welcome Popup ── */
+function WelcomePopup({ name, onClose }: { name: string; onClose: () => void }) {
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="welcome-title" onClick={onClose}>
-      <div className="modal w-full max-w-sm p-8 text-center" onClick={e => e.stopPropagation()}>
-        <span className="mx-auto mb-4 grid size-16 place-items-center rounded-2xl bg-primary-soft text-primary"><Sparkles size={32} strokeWidth={1.75} /></span>
-        <h2 id="welcome-title" className="font-reading text-primary" style={{ fontSize: "1.6rem", fontWeight: 700, lineHeight: 1.5 }}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.35)", backdropFilter: "blur(3px)" }}
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-3xl p-8 text-center shadow-2xl mx-4"
+        style={{ maxWidth: 340, animation: "popIn 0.35s cubic-bezier(0.34,1.56,0.64,1)" }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="text-6xl mb-4">👋</div>
+        <h2
+          style={{ fontFamily: "'Amiri', serif", color: "#1a5c2a", fontSize: "1.6rem", fontWeight: 700, lineHeight: 1.3 }}
+          dir="rtl"
+        >
           مَرْحَباً يَا بَطَلَ اللُّغَةِ الْعَرَبِيَّةِ!
         </h2>
-        <p className="t-body mt-2 text-text-secondary">هَيَّا نَتَعَلَّمُ وَنُبْدِعُ مَعًا</p>
-        <Btn className="mt-6" block size="lg" onClick={onClose} autoFocus>هَيَّا نَبْدَأْ</Btn>
+        <p className="text-gray-500 mt-2 mb-1" style={{ fontFamily: "'Cairo', sans-serif" }} dir="rtl">
+          هَيَّا نَتَعَلَّمُ وَنُبْدِعُ مَعًا ✨
+        </p>
+        <p
+          className="text-amber-600 text-sm cursor-pointer mt-4 font-bold"
+          style={{ fontFamily: "'Cairo', sans-serif" }}
+          onClick={onClose}
+        >
+          انْقُرْ لِلْمُتَابَعَةِ
+        </p>
       </div>
+      <style>{`
+        @keyframes popIn {
+          from { transform: scale(0.7); opacity: 0; }
+          to   { transform: scale(1);   opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
 
 function getLabel(v: number) {
-  if (v >= 80) return "مُمْتَازٌ";
-  if (v >= 60) return "جَيِّدٌ جِدًّا";
-  if (v >= 40) return "يَحْتَاجُ تَطْوِيرًا";
+  if (v >= 80) return "مُمْتَازٌ ⭐";
+  if (v >= 60) return "جَيِّدٌ جِدًّا ⭐";
+  if (v >= 40) return "يَحْتَاجُ تَطْوِيرًا ⭐";
   return "ابْدَأْ رِحْلَتَكَ";
 }
 
-const SKILLS: { id: Skill; to: string; icon: typeof Mic; title: string; description: string; key: keyof StudentData }[] = [
-  { id: "speaking", to: "/skills/speaking", icon: Mic, title: "التَّحَدُّثُ", description: "تَحَدَّثْ عَنْ مَوْضُوعٍ وَسَيُحَلِّلُ النِّظَامُ تَسْجِيلَكَ.", key: "speakingProgress" },
-  { id: "writing", to: "/skills/writing", icon: PenLine, title: "الْكِتَابَةُ", description: "اكْتُبْ نَصًّا وَاحْصُلْ عَلَى تَقْيِيمٍ وَتَصْحِيحٍ فَوْرِيٍّ.", key: "writingProgress" },
-  { id: "learning", to: "/skills/self-learning", icon: Target, title: "التَّعَلُّمُ الذَّاتِيُّ", description: "حَدِّدْ هَدَفَكَ وَتَعَلَّمْ بِأُسْلُوبِكَ الْخَاصِّ.", key: "selfLearningProgress" },
-];
+/* ── ⭐ قيّم البرنامج ── */
+function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="flex gap-1 justify-center">
+      {[1, 2, 3, 4, 5].map(i => (
+        <button key={i} onClick={() => onChange(i)} className="text-3xl leading-none">
+          <span style={{ color: i <= value ? "#f5c842" : "#e5e7eb" }}>★</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function RatingModal({ studentName, onClose }: { studentName: string; onClose: () => void }) {
+  const [quality, setQuality] = useState(0);
+  const [ease, setEase] = useState(0);
+  const [benefit, setBenefit] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+
+  async function handleSubmit() {
+    if (!quality || !ease || !benefit) return;
+    setSubmitting(true);
+    const ok = await submitReview({ student: studentName, quality, ease, benefit, comment: comment.trim() });
+    setSubmitting(false);
+    if (ok) setDone(true);
+    else toast.error("تعذّر إرسال تقييمك. تحقّق من اتصالك بالإنترنت وحاول مرة أخرى.");
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.4)" }} onClick={onClose}>
+      <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm" dir="rtl" onClick={e => e.stopPropagation()}>
+        {!done ? (
+          <>
+            <h2 className="text-center font-bold text-lg mb-4" style={{ color: "#1a5c2a", fontFamily: "'Amiri', serif" }}>
+              ⭐ قَيِّمْ تَجْرِبَتَكَ مَعَ الْمَنْصَةِ
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <p className="text-center text-sm text-gray-500 mb-1">جَوْدَةُ الْمُحْتَوَى</p>
+                <StarPicker value={quality} onChange={setQuality} />
+              </div>
+              <div>
+                <p className="text-center text-sm text-gray-500 mb-1">سُهُولَةُ الِاسْتِخْدَامِ</p>
+                <StarPicker value={ease} onChange={setEase} />
+              </div>
+              <div>
+                <p className="text-center text-sm text-gray-500 mb-1">مِقْدَارُ الْفَائِدَةِ</p>
+                <StarPicker value={benefit} onChange={setBenefit} />
+              </div>
+              <textarea value={comment} onChange={e => setComment(e.target.value)}
+                placeholder="شَارِكْنَا رَأْيَكَ (اِخْتِيَارِيٌّ)..."
+                className="w-full h-20 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-green-500 focus:outline-none text-sm"
+                style={{ fontFamily: "'Cairo', sans-serif" }} />
+            </div>
+            <div className="flex gap-2 mt-5">
+              <button onClick={onClose} className="flex-1 py-2.5 border-2 border-gray-200 rounded-xl text-gray-500 font-bold">إِلْغَاءٌ</button>
+              <button onClick={handleSubmit} disabled={!quality || !ease || !benefit || submitting}
+                className="flex-1 py-2.5 rounded-xl text-white font-bold disabled:opacity-40"
+                style={{ background: "#1a5c2a" }}>
+                {submitting ? "..." : "إِرْسَالٌ"}
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-4">
+            <p className="text-5xl mb-3">🌟</p>
+            <p className="font-bold text-lg" style={{ color: "#1a5c2a" }}>شُكْرًا لَكَ عَلَى رَأْيِكَ!</p>
+            <p className="text-gray-500 text-sm mt-1">يُسَاعِدُنَا تَقْيِيمُكَ عَلَى تَطْوِيرِ الْمَنْصَةِ بِاسْتِمْرَارٍ.</p>
+            <button onClick={onClose} className="mt-4 px-6 py-2 rounded-xl text-white font-bold" style={{ background: "#1a5c2a" }}>
+              إِغْلَاقٌ
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
@@ -48,24 +149,27 @@ export default function Dashboard() {
     if (!s.name) { setLocation("/"); return; }
     setStudent(s);
 
-    // استعادة جنس الصوت من الأفاتار
+    // Restore gender from avatar
     const av = s.avatar || "boy1";
     setGender(av === "girl1" || av === "girl2" ? "female" : "male");
 
-    // الجولة التعريفية: مرة واحدة لكل طالب (تُحفَظ في حسابه)، وتُفتح لاحقًا من قائمة الحساب.
+    // الجولة التعريفية: تُعرض مرة واحدة فقط لكل طالب (وليس لكل جلسة
+    // متصفح كالترحيب)، ويمكن فتحها مرة أخرى لاحقًا من زر "؟" في الأعلى.
     if (!s.onboardingSeen) {
       setShowTour(true);
-      return; // لا نعرض الترحيب فوق الجولة في نفس الزيارة
+      return; // لا داعي لعرض الترحيب أيضًا فوق الجولة في نفس الزيارة
     }
 
-    // الترحيب (صوت + نافذة) مرة واحدة لكل جلسة متصفح
+    // Play welcome ONCE per browser session (not once ever)
     const sessionKey = `welcome_session_${s.name}`;
-    if (!sessionStorage.getItem(sessionKey)) {
+    const alreadyShown = sessionStorage.getItem(sessionKey);
+    if (!alreadyShown) {
       sessionStorage.setItem(sessionKey, "1");
       playSound(audioFile("/assets/welcome.mp3"), 0.5);
       const t = setTimeout(() => setShowPopup(true), 500);
-      return () => clearTimeout(t);
+      return () => { clearTimeout(t); };
     }
+    // Already shown this session — no sound, no popup
   }, []);
 
   function finishTour() {
@@ -74,85 +178,175 @@ export default function Dashboard() {
     setShowTour(false);
   }
 
-  const progress = {
-    speaking: student.speakingProgress || 0,
-    writing: student.writingProgress || 0,
-    learning: student.selfLearningProgress || 0,
-  };
-  const overall = Math.round((progress.speaking + progress.writing + progress.learning) / 3);
-  const completed = (student.completedLessons?.length || 0) + (student.selfLearning?.completedActivities || 0);
-
-  // الخطوة التالية المقترحة = المهارة الأقل تقدّمًا (لا يوجد تتبّع لآخر نشاط)
-  const next = [...SKILLS].sort((a, b) => progress[a.id] - progress[b.id])[0];
-  const started = overall > 0;
+  const chartData = [
+    { name: "التَّحَدُّث", value: student.speakingProgress, fill: "#1a5c2a" },
+    { name: "الْكِتَابَة", value: student.writingProgress, fill: "#b45309" },
+    { name: "التَّعَلُّم", value: student.selfLearningProgress, fill: "#1d4ed8" },
+  ];
 
   return (
-    <div className="page-container page-section">
+    <div
+      dir="rtl"
+      style={{ fontFamily: "'Cairo', sans-serif", minHeight: "100vh" }}
+    >
       {showTour && <OnboardingTour onFinish={finishTour} />}
-      {showPopup && <WelcomePopup onClose={() => setShowPopup(false)} />}
-      {showRating && <SusSurvey onClose={() => setShowRating(false)} />}
+      {showPopup && <WelcomePopup name={student.name} onClose={() => setShowPopup(false)} />}
+      {/* Full-page background */}
+      <div
+        style={{
+          position: "fixed", inset: 0, zIndex: -1,
+          backgroundImage: "url('/assets/bg-main.png')",
+          backgroundSize: "cover", backgroundPosition: "center",
+          opacity: 0.25,
+        }}
+      />
 
-      {/* ── الترحيب ── */}
-      <section className="card relative mb-6 overflow-hidden" aria-labelledby="hello">
-        <div aria-hidden className="pointer-events-none absolute inset-y-0 start-0 w-2/3 opacity-[0.16] md:w-1/2"
-          style={{ backgroundImage: "url('/assets/bg-main.png')", backgroundSize: "cover", backgroundPosition: "left center",
-            maskImage: "linear-gradient(to right, black, transparent)", WebkitMaskImage: "linear-gradient(to right, black, transparent)" }} />
-        <div className="relative flex flex-col gap-6 p-6 md:flex-row md:items-center md:justify-between md:p-8">
-          <div className="flex items-center gap-4 md:gap-5">
-            <img src={avatarSrc(student.avatar)} alt="" className="size-16 shrink-0 rounded-full border-2 border-primary bg-white object-contain md:size-20" />
-            <div className="min-w-0">
-              <p className="t-caption text-text-muted">{student.grade}</p>
-              <h1 id="hello" className="t-display text-text-primary">مَرْحَباً، {student.name} 👋</h1>
-              <p className="t-body mt-1 text-text-secondary">أَنْتَ نَجْمٌ مُضِيءٌ فِي سَمَاءِ الْعِلْمِ وَالْمَعْرِفَةِ.</p>
-            </div>
+      {/* Top bar */}
+      <div className="flex justify-between items-center px-4 py-3 bg-white/70 backdrop-blur-sm shadow-sm">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 shadow-sm border border-yellow-200">
+            <span className="text-yellow-500 text-sm">⭐</span>
+            <span className="font-bold text-sm">{student.stars}</span>
+            <span className="text-xs text-gray-400">نُقَاطِي</span>
           </div>
-          <Btn size="lg" icon={Rocket} className="md:shrink-0" onClick={() => setLocation(next.to)}>
-            {started ? "تَابِعِ التَّدْرِيبَ" : "ابْدَأْ أَوَّلَ تَدْرِيبٍ"}
-          </Btn>
+          <button
+            onClick={() => setShowTour(true)}
+            title="دليل الاستخدام"
+            aria-label="فتح دليل استخدام البرنامج"
+            className="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50"
+          >
+            ؟
+          </button>
         </div>
-      </section>
-
-      {/* ── ملخص التقدم ── */}
-      <section aria-label="ملخص تقدمك" className="mb-8 grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
-        <StatCard index={0} icon={Star} tone="reward" label="النُّجُومُ" value={student.stars ?? 0} />
-        <StatCard index={1} icon={Trophy} tone="primary" label="النِّقَاطُ" value={student.points ?? 0} />
-        <StatCard index={2} icon={CheckCircle2} tone="learning" label="الْأَنْشِطَةُ الْمُكْتَمِلَةُ" value={completed} />
-        <StatCard index={3} icon={Award} tone="writing" label="التَّقَدُّمُ الْعَامُّ" value={`${overall}%`} hint={getLabel(overall)} />
-      </section>
-
-      {/* ── الخطوة التالية ── */}
-      <section className={`card card-pad mb-8 flex flex-col gap-5 sm:flex-row sm:items-center ${skillClass(next.id)}`} aria-label="الخطوة التالية">
-        <ProgressRing value={progress[next.id]} size={92} stroke={9} label={next.title} />
-        <div className="min-w-0 flex-1">
-          <span className="badge badge-skill mb-1.5"><Sparkles size={14} aria-hidden /> الْخُطْوَةُ التَّالِيَةُ الْمُقْتَرَحَةُ</span>
-          <h2 className="t-section text-text-primary">{next.title}</h2>
-          <p className="t-small text-text-secondary">{started ? "هَذِهِ أَقَلُّ مَهَارَةٍ تَقَدُّمًا حَتَّى الْآنَ، وَسَتَرْتَفِعُ بِتَدْرِيبٍ قَصِيرٍ." : next.description}</p>
+        <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm text-right border border-gray-100">
+          <div>
+            <p className="text-xs font-bold" style={{ color: "#1a5c2a" }}>مَرْحَباً بِكَ</p>
+            <p className="font-bold text-sm">{student.name}</p>
+            <p className="text-xs text-gray-400">{student.grade}</p>
+          </div>
+          <img
+            src={`/assets/${student.avatar === "boy1" || student.avatar === "boy2" ? "omani-boy" : student.avatar === "girl1" ? "omani-girl" : "omani-girl2"}.png`}
+            alt=""
+            className="w-12 h-12 object-contain rounded-full border-2"
+            style={{ borderColor: "#1a5c2a" }}
+          />
         </div>
-        <Btn variant="secondary" size="lg" icon={ArrowLeft} className="sm:shrink-0" onClick={() => setLocation(next.to)}>
-          {progress[next.id] > 0 ? "تَابِعْ" : "ابْدَأِ التَّدْرِيبَ"}
-        </Btn>
-      </section>
+      </div>
 
-      {/* ── المهارات ── */}
-      <section aria-label="المهارات">
-        <SectionHeader title="الْمَهَارَاتُ" description="اخْتَرِ الْمَهَارَةَ الَّتِي تُرِيدُ التَّدَرُّبَ عَلَيْهَا."
-          action={<Btn variant="ghost" size="sm" icon={Layers} onClick={() => setLocation("/skills")}>عَرْضُ الْكُلِّ</Btn>} />
-        <div className="grid gap-4 md:grid-cols-3">
-          {SKILLS.map((s, i) => (
-            <SkillCard key={s.id} index={i} skill={s.id} icon={s.icon} title={s.title} description={s.description}
-              progress={progress[s.id]} to={s.to} cta={progress[s.id] > 0 ? "تَابِعِ التَّدْرِيبَ" : "ابْدَأِ التَّدْرِيبَ"} />
-          ))}
+      <div className="max-w-4xl mx-auto px-4 pb-8">
+        {/* Logo & Title */}
+        <div className="text-center py-5">
+          <img src="/assets/logo.png" alt="صوتي قلمي" className="w-20 h-20 object-contain mx-auto mb-2" />
+          <p className="text-gray-600 text-sm">
+            مَنْصَةٌ تَفَاعُلِيَّةٌ لِتَعْلِيمِ اللُّغَةِ الْعَرَبِيَّةِ لِطُلَّابِ الصَّفِّ السَّادِسِ
+          </p>
+          <span
+            className="inline-block mt-1 px-4 py-1 rounded-full text-white text-xs font-bold"
+            style={{ background: "#1a5c2a" }}
+          >
+            🇴🇲 سَلْطَنَةُ عُمَانَ
+          </span>
         </div>
-      </section>
 
-      {/* ── طلب التقييم (SUS) ── */}
-      <section className="mt-8 flex flex-col items-start gap-3 rounded-[18px] border border-dashed border-border-strong bg-white/60 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="t-card-title text-text-primary">سَاعِدْنَا فِي تَحْسِينِ الْمَنَصَّةِ</h3>
-          <p className="t-small text-text-secondary">قَيِّمْ تَجْرِبَتَكَ فِي دَقِيقَتَيْنِ، فَرَأْيُكَ يُهِمُّنَا.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Navigation Cards */}
+          <div className="flex flex-col gap-3">
+            {/* Skills */}
+            <button
+              onClick={() => setLocation("/skills")}
+              className="p-4 rounded-2xl text-right shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
+              style={{ background: "#dcf5e7", border: "2px solid #86efac" }}
+            >
+              <div className="flex justify-between items-center">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                  style={{ background: "#1a5c2a" }}>🎙️</div>
+                <div>
+                  <h3 className="font-bold text-lg" style={{ color: "#1a5c2a" }}>الْمَهَارَاتُ</h3>
+                  <p className="text-sm text-gray-500">دُرُوسٌ - تَمَارِينُ - تَقْيِيمَاتٌ</p>
+                </div>
+              </div>
+              <p className="text-green-600 text-sm mt-2 font-semibold">دُخُولٌ ←</p>
+            </button>
+
+
+            {/* Assessments */}
+            <button
+              onClick={() => setLocation("/assessments")}
+              className="p-4 rounded-2xl text-right shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
+              style={{ background: "#fef9e7", border: "2px solid #fde68a" }}
+            >
+              <div className="flex justify-between items-center">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                  style={{ background: "#b45309" }}>📊</div>
+                <div>
+                  <h3 className="font-bold text-lg text-amber-700">تَقْيِيمَاتِي</h3>
+                  <p className="text-sm text-gray-500">عَرْضُ نَتَائِجِكَ وَتَقَدُّمِكَ</p>
+                </div>
+              </div>
+              <p className="text-amber-600 text-sm mt-2 font-semibold">دُخُولٌ ←</p>
+            </button>
+
+            {/* Logout */}
+            <button
+              onClick={() => { logout(); setLocation("/"); }}
+              className="p-4 rounded-2xl text-right shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
+              style={{ background: "#fee2e2", border: "2px solid #fca5a5" }}
+            >
+              <div className="flex justify-between items-center">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                  style={{ background: "#dc2626" }}>🚪</div>
+                <div>
+                  <h3 className="font-bold text-lg text-red-600">تَسْجِيلُ الْخُرُوجِ</h3>
+                  <p className="text-sm text-gray-500">الْخُرُوجُ مِنَ الْمَنْصَةِ</p>
+                </div>
+              </div>
+              <p className="text-red-500 text-sm mt-2 font-semibold">دُخُولٌ ←</p>
+            </button>
+          </div>
+
+          {/* Stats card */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-5 shadow-md">
+            <h3 className="text-right font-bold text-lg mb-4" style={{ color: "#1a5c2a" }}>
+              📊 إِحْصَائِيَّاتُ تَقَدُّمِكَ
+            </h3>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {chartData.map((d) => (
+                <div key={d.name} className="text-center p-3 rounded-xl" style={{ background: "#f5f0e8" }}>
+                  <p className="text-xs text-gray-500 mb-1">{d.name}</p>
+                  <p className="text-2xl font-bold" style={{ color: d.fill }}>{d.value}%</p>
+                  <p className="text-xs" style={{ color: d.fill }}>{getLabel(d.value)}</p>
+                </div>
+              ))}
+            </div>
+            <ResponsiveContainer width="100%" height={155}>
+              <BarChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <XAxis dataKey="name" tick={{ fontSize: 9, fontFamily: "'Cairo', sans-serif" }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 9 }} />
+                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                  {chartData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-        <Btn variant="outline" icon={MessageSquareHeart} onClick={() => setShowRating(true)}>قَيِّمْ تَجْرِبَتَكَ</Btn>
-      </section>
+
+        <div className="mt-5 p-4 rounded-2xl text-center bg-white/60 backdrop-blur-sm border border-green-100">
+          <p className="text-gray-600 text-sm">
+            ✨ أَنْتَ نَجْمٌ مُضِيءٌ فِي سَمَاءِ الْعِلْمِ وَالْمَعْرِفَةِ ✨
+          </p>
+        </div>
+
+        {/* ── فوتر: تقييم البرنامج ── */}
+        <div className="mt-4 text-center pb-2">
+          <button onClick={() => setShowRating(true)}
+            className="text-sm px-5 py-2.5 rounded-full font-bold shadow-sm hover:shadow-md transition-all"
+            style={{ background: "#fef9e7", border: "2px solid #fde68a", color: "#b45309" }}>
+            ⭐ قَيِّمْ تَجْرِبَتَكَ
+          </button>
+        </div>
+      </div>
+
+      {showRating && <SusSurvey onClose={() => setShowRating(false)} />}
     </div>
   );
 }

@@ -2,8 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { playEffect, stopAll, audioFile } from "@/lib/audio";
 import { getGames } from "@/lib/api";
-import { ArrowLeft, Gamepad2, Sparkles } from "lucide-react";
-import { PageHeader } from "@/components/ds";
 
 /* ══════════════════════════════════════════════════════
    UTIL — shuffle (Fisher–Yates) so option order/correct
@@ -217,7 +215,7 @@ function Lesson1({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
   const accent = "#059669";
 
   return (
-    <div dir="rtl" style={{ fontFamily: "var(--font-ui)", background: "#f5f0e8", minHeight: "100vh" }}>
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
       <Confetti trigger={confetti} />
       <div className="p-4" style={{ background: "linear-gradient(135deg,#064e3b,#065f46)" }}>
         <button onClick={onBack} className="text-emerald-200 text-sm mb-2">← قَائِمَةُ الدُّرُوسِ</button>
@@ -606,7 +604,7 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
   const accent = "#1d4ed8";
 
   return (
-    <div dir="rtl" style={{ fontFamily: "var(--font-ui)", background: "#f5f0e8", minHeight: "100vh" }}>
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
       <Confetti trigger={confetti} />
       <div className="p-4" style={{ background: "linear-gradient(135deg,#1e3a8a,#1d4ed8)" }}>
         <button onClick={onBack} className="text-blue-200 text-sm mb-2">← قَائِمَةُ الدُّرُوسِ</button>
@@ -974,7 +972,7 @@ function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
   const accent = "#b45309";
 
   return (
-    <div dir="rtl" style={{ fontFamily: "var(--font-ui)", background: "#f5f0e8", minHeight: "100vh" }}>
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
       <Confetti trigger={confetti} />
       <div className="p-4" style={{ background: "linear-gradient(135deg,#78350f,#b45309)" }}>
         <button onClick={onBack} className="text-amber-100 text-sm mb-2">← قَائِمَةُ الدُّرُوسِ</button>
@@ -1219,33 +1217,59 @@ export default function WritingGames() {
     { id: "l3", num: "٣", title: "الْهَمْزَةُ الْمُتَطَرِّفَةُ", sub: "أَلِف — وَاو — يَاء — السَّطْر", icon: "🏔️", color: "#b45309", bg: "linear-gradient(135deg,#78350f,#b45309)", phases: ["🎯 أَهْدَاف","🎬 الْحِرْبَاءُ","🏔️ تَسَلُّقُ الْجَبَلِ","🔤 اخْتَرِ الصَّحِيحَ","🏆 تَحَدِّي الْكُرْسِيِّ"] },
   ];
 
-  const GAMES = [
-    { to: "/writing-games/treasure-map", icon: "🗺️", tile: "linear-gradient(135deg,#92400e,#d97706)", title: "رِحْلَةُ الْمُسْتَكْشِفِ التَّفَاعُلِيَّةُ", desc: "الْهَمْزَةُ عَلَى نَبْرَةٍ — مَسَارٌ عَبْرَ خَرِيطَةِ كَنْزٍ" },
-    { to: "/writing-games/diver-pearl", icon: "🤿", tile: "linear-gradient(135deg,#0c4a6e,#0891b2)", title: "الْغَوَّاصُ وَصَائِدُ اللَّآلِئِ", desc: "الْهَمْزَةُ عَلَى السَّطْرِ — رِحْلَةٌ فِي أَعْمَاقِ الْبَحْرِ" },
-    { to: "/writing-games/balloon", icon: "🎈", tile: "linear-gradient(135deg,#1e3a8a,#3b82f6)", title: "قَائِدُ الْمِنْطَادِ وَجَزِيرَةُ الْكَنْزِ", desc: "الْهَمْزَةُ الْمُتَطَرِّفَةُ — رِحْلَةٌ فِي السَّمَاءِ" },
-  ];
-
   return (
-    <div className="page-container page-section skill-writing">
-      <PageHeader skill="writing" icon={Gamepad2} title="أَلْعَابُ الْهَمْزَةِ" description="ثَلَاثُ رِحْلَاتٍ مُمْتِعَةٌ لِلتَّدَرُّبِ عَلَى كِتَابَةِ الْهَمْزَةِ."
-        back={{ label: "مَهَارَةُ الْكِتَابَةِ", to: "/skills/writing" }} />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {GAMES.map((g, i) => (
-          <button key={g.to} type="button" onClick={() => setLocation(g.to)} style={{ ["--i" as string]: i }}
-            className="card card-interactive stagger-in group flex flex-col overflow-hidden text-right">
-            <span className="relative grid h-32 w-full place-items-center overflow-hidden" style={{ background: g.tile }}>
-              <span className="text-6xl drop-shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3" aria-hidden>{g.icon}</span>
-              <span className="badge absolute start-3 top-3 !bg-white/25 !text-white backdrop-blur-sm"><Sparkles size={13} aria-hidden /> تَجْرِبَةٌ جَدِيدَةٌ</span>
-            </span>
-            <span className="flex flex-1 flex-col gap-1 p-5">
-              <h2 className="t-card-title text-text-primary">{g.title}</h2>
-              <p className="t-small flex-1 text-text-secondary">{g.desc}</p>
-              <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-skill-strong" style={{ color: "var(--skill-strong)" }}>
-                الْعَبِ الْآنَ <ArrowLeft size={16} strokeWidth={2} className="transition-transform duration-200 group-hover:-translate-x-1" aria-hidden />
-              </span>
-            </span>
-          </button>
-        ))}
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
+      {/* Header */}
+      <div className="p-4" style={{ background: "linear-gradient(135deg,#1a1a2e,#16213e)" }}>
+        <button onClick={() => setLocation("/skills/writing")} className="text-purple-300 text-sm mb-3">← مَهَارَةُ الْكِتَابَةِ</button>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <h1 className="text-2xl font-bold text-white">أَلْعَابُ الْهَمْزَةِ</h1>
+            <p className="text-purple-300 text-sm">٣ دُرُوسٌ × ٥ مَرَاحِلَ</p>
+          </div>
+          <span className="text-3xl">🎮</span>
+        </div>
+      </div>
+
+      <div className="max-w-xl mx-auto px-4 py-6 space-y-4">
+        <button onClick={() => setLocation("/writing-games/treasure-map")}
+          className="w-full rounded-3xl overflow-hidden text-right transition-all active:scale-98 hover:scale-101 shadow-xl relative"
+          style={{ background: "linear-gradient(135deg,#78350f,#d97706)" }}>
+          <div className="p-5 flex items-center gap-4">
+            <span className="text-5xl">🗺️</span>
+            <div>
+              <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-white/25 text-white mb-1">✨ تَجْرِبَةٌ جَدِيدَةٌ</span>
+              <h2 className="text-white font-bold text-lg leading-snug">رِحْلَةُ الْمُسْتَكْشِفِ التَّفَاعُلِيَّةُ</h2>
+              <p className="text-white/70 text-sm mt-1">الْهَمْزَةُ عَلَى نَبْرَةٍ — مَسَارٌ عَبْرَ خَرِيطَةِ كَنْزٍ</p>
+            </div>
+          </div>
+        </button>
+
+        <button onClick={() => setLocation("/writing-games/diver-pearl")}
+          className="w-full rounded-3xl overflow-hidden text-right transition-all active:scale-98 hover:scale-101 shadow-xl relative"
+          style={{ background: "linear-gradient(135deg,#0c4a6e,#0891b2)" }}>
+          <div className="p-5 flex items-center gap-4">
+            <span className="text-5xl">🤿</span>
+            <div>
+              <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-white/25 text-white mb-1">✨ تَجْرِبَةٌ جَدِيدَةٌ</span>
+              <h2 className="text-white font-bold text-lg leading-snug">الْغَوَّاصُ وَصَائِدُ اللَّآلِئِ</h2>
+              <p className="text-white/70 text-sm mt-1">الْهَمْزَةُ عَلَى السَّطْرِ — رِحْلَةٌ فِي أَعْمَاقِ الْبَحْرِ</p>
+            </div>
+          </div>
+        </button>
+
+        <button onClick={() => setLocation("/writing-games/balloon")}
+          className="w-full rounded-3xl overflow-hidden text-right transition-all active:scale-98 hover:scale-101 shadow-xl relative"
+          style={{ background: "linear-gradient(135deg,#1e3a8a,#3b82f6)" }}>
+          <div className="p-5 flex items-center gap-4">
+            <span className="text-5xl">🎈</span>
+            <div>
+              <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-white/25 text-white mb-1">✨ تَجْرِبَةٌ جَدِيدَةٌ</span>
+              <h2 className="text-white font-bold text-lg leading-snug">قَائِدُ الْمِنْطَادِ وَجَزِيرَةُ الْكَنْزِ</h2>
+              <p className="text-white/70 text-sm mt-1">الْهَمْزَةُ الْمُتَطَرِّفَةُ — رِحْلَةٌ فِي السَّمَاءِ</p>
+            </div>
+          </div>
+        </button>
       </div>
     </div>
   );

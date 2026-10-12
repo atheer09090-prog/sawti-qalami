@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { playEffect, audioFile } from "@/lib/audio";
 import { getHamzaJourneys } from "@/lib/api";
-import { GameTopBar } from "@/components/ds";
 import {
   GameFeelStyles, useCombo, ComboIndicator, useCharacterReaction,
   VictoryModal, SmartReview, evaluateAchievements, type MistakeRecord,
@@ -103,7 +102,15 @@ const DEFAULT_CONTENT = {
 /* ══════════════ مكوّنات ثابتة (خارج المكوّن الرئيسي) ══════════════ */
 
 function TopBar({ pearls, oxygen, onBack }: { pearls: number; oxygen: number; onBack: () => void }) {
-  return <GameTopBar onBack={onBack} tint="rgba(6,30,50,0.55)" stats={[{ icon: "🫧", value: oxygen, label: "الأكسجين" }, { icon: "🦪", value: pearls, label: "اللآلئ" }]} />;
+  return (
+    <div className="flex items-center justify-between px-5 py-3" style={{ background: "rgba(6,30,50,0.55)" }}>
+      <button onClick={onBack} className="text-cyan-100 text-base">← الْمَهَامُّ</button>
+      <div className="flex items-center gap-4">
+        <span className="flex items-center gap-1 bg-cyan-950/60 text-cyan-100 px-3 py-1 rounded-full text-base font-bold">🫧 {oxygen}</span>
+        <span className="flex items-center gap-1 bg-cyan-950/60 text-yellow-200 px-3 py-1 rounded-full text-base font-bold">🦪 {pearls}</span>
+      </div>
+    </div>
+  );
 }
 
 function OceanBackdrop({ phase, interactive, onActivate, reaction, reactKey }: { phase: Phase; interactive: boolean; onActivate: () => void; reaction: "idle" | "correct" | "wrong"; reactKey: number }) {
@@ -554,7 +561,7 @@ export default function DiverPearlLesson() {
   }
 
   return (
-    <div dir="rtl" style={{ fontFamily: "var(--font-ui)", minHeight: "100vh" }} className="relative">
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", minHeight: "100vh" }} className="relative">
       <PearlStyles />
       <GameFeelStyles />
       <ComboIndicator combo={combo} pulseKey={pulseKey} accent="#0891b2" />

@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { playEffect, audioFile } from "@/lib/audio";
 import { getHamzaJourneys } from "@/lib/api";
-import { GameTopBar } from "@/components/ds";
 import {
   GameFeelStyles, useCombo, ComboIndicator, useCharacterReaction,
   VictoryModal, SmartReview, evaluateAchievements, type MistakeRecord,
@@ -94,7 +93,15 @@ const DEFAULT_CONTENT = {
 /* ══════════════ مكوّنات ثابتة (خارج المكوّن الرئيسي) ══════════════ */
 
 function TopBar({ stars, fuel, onBack }: { stars: number; fuel: number; onBack: () => void }) {
-  return <GameTopBar onBack={onBack} tint="rgba(15,23,42,0.45)" stats={[{ icon: "⛽", value: fuel, label: "الوقود" }, { icon: "⭐", value: stars, label: "النجوم" }]} />;
+  return (
+    <div className="flex items-center justify-between px-5 py-3" style={{ background: "rgba(15,23,42,0.4)" }}>
+      <button onClick={onBack} className="text-blue-100 text-base">← الْمَهَامُّ</button>
+      <div className="flex items-center gap-4">
+        <span className="flex items-center gap-1 bg-slate-900/50 text-orange-200 px-3 py-1 rounded-full text-base font-bold">⛽ {fuel}</span>
+        <span className="flex items-center gap-1 bg-slate-900/50 text-yellow-300 px-3 py-1 rounded-full text-base font-bold">⭐ {stars}</span>
+      </div>
+    </div>
+  );
 }
 
 function SkyBackdrop({ phase, interactive, onActivate, reaction, reactKey }: { phase: Phase; interactive: boolean; onActivate: () => void; reaction: "idle" | "correct" | "wrong"; reactKey: number }) {
@@ -526,7 +533,7 @@ export default function BalloonHamzaLesson() {
   }
 
   return (
-    <div dir="rtl" style={{ fontFamily: "var(--font-ui)", minHeight: "100vh" }} className="relative">
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", minHeight: "100vh" }} className="relative">
       <TargetStyles />
       <GameFeelStyles />
       <ComboIndicator combo={combo} pulseKey={pulseKey} accent="#1d4ed8" />

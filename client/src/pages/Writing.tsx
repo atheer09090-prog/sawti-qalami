@@ -4,10 +4,6 @@ import { evaluateWriting, getWritingTopics, describeError } from "@/lib/api";
 import { playSound, stopSound, playEffect, stopAll, audioFile } from "@/lib/audio";
 import { setState } from "@/lib/store";
 import { ResultSkeleton } from "@/components/ResultSkeleton";
-import {
-  AlertCircle, ArrowLeft, CheckCircle2, Dices, Gamepad2, Lightbulb, MessageSquareText, PenLine, Pin, ScanSearch, Sparkles, X,
-} from "lucide-react";
-import { Btn, CriterionTile, ErrorState, ProcessingState, ProgressBar, ResultList, ScoreCard, SectionHeader, PageHeader } from "@/components/ds";
 import { DICTATION_QUESTIONS } from "@/lib/dictation-data";
 
 /* ── Writing topics ── */
@@ -63,7 +59,7 @@ function SpinWheel({ questions, onSelect }: { questions: typeof DICTATION_QUESTI
       ctx.rotate(start + sliceAngle / 2);
       ctx.textAlign = "right";
       ctx.fillStyle = "#fff";
-      ctx.font = "600 13px 'IBM Plex Sans Arabic', sans-serif";
+      ctx.font = "bold 13px Cairo, sans-serif";
       ctx.fillText(q.word.slice(0, 5) + "...", r - 12, 5);
       ctx.restore();
     });
@@ -175,10 +171,18 @@ function DictationGame({ onBack }: { onBack: () => void }) {
 
   /* ── Intro ── */
   if (phase === "intro") return (
-    <div dir="rtl" className="page-container page-section skill-writing">
-      <PageHeader skill="writing" icon={Dices} title="رِحْلَةُ الإِمْلَاءِ" description="أَدِرِ الْعَجَلَةَ — اخْتَرِ الْكِتَابَةَ الصَّحِيحَةَ"
-        back={{ label: "مَهَارَةُ الْكِتَابَةِ", onClick: onBack }} />
-      <div className="mx-auto max-w-xl">
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
+      <div className="p-4" style={{ background: "linear-gradient(135deg, #b45309 0%, #d97706 100%)" }}>
+        <button onClick={onBack} className="text-amber-100 text-sm mb-1">← مَهَارَةُ الْكِتَابَةِ</button>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <h1 className="text-xl font-bold text-white">رِحْلَةُ الإِمْلَاءِ</h1>
+            <p className="text-amber-100 text-xs">أَدِرِ الْعَجَلَةَ — اخْتَرِ الْكِتَابَةَ الصَّحِيحَةَ</p>
+          </div>
+          <span className="text-3xl p-2 bg-amber-800 rounded-xl">🎡</span>
+        </div>
+      </div>
+      <div className="max-w-xl mx-auto px-4 py-5">
         <div className="bg-white rounded-2xl p-5 shadow text-right mb-4">
           <h2 className="font-bold text-lg text-amber-800 mb-2">🎉 أَهْلاً فِي رِحْلَةِ الإِمْلَاءِ!</h2>
           <p className="text-gray-500 text-sm mb-4">أَدِرِ الْعَجَلَةَ لِاخْتِيَارِ سُؤَالٍ إِمْلَائِيٍّ، ثُمَّ اخْتَرِ الْكِتَابَةَ الصَّحِيحَةَ.</p>
@@ -196,11 +200,15 @@ function DictationGame({ onBack }: { onBack: () => void }) {
           </div>
           <div className="flex flex-wrap gap-2 justify-end mb-4">
             {Object.entries(TYPE_COLORS).map(([type, color]) => (
-              <span key={type} className="badge">{type}</span>
+              <span key={type} className="text-xs px-2 py-1 rounded-full text-white font-bold" style={{ background: color }}>{type}</span>
             ))}
           </div>
           <p className="text-xs text-gray-400 text-center mb-4">🎯 فِئَاتُ الأَسْئِلَةِ ({DICTATION_QUESTIONS.length} سُؤَالٌ)</p>
-          <Btn size="lg" block icon={Dices} onClick={() => setPhase("wheel")}>ابْدَأِ الرِّحْلَةَ!</Btn>
+          <button onClick={() => setPhase("wheel")}
+            className="w-full py-4 rounded-xl text-white font-bold text-lg"
+            style={{ background: "linear-gradient(135deg, #b45309, #d97706)" }}>
+            🎡 ابْدَأِ الرِّحْلَةَ!
+          </button>
         </div>
       </div>
     </div>
@@ -208,12 +216,19 @@ function DictationGame({ onBack }: { onBack: () => void }) {
 
   /* ── Wheel ── */
   if (phase === "wheel") return (
-    <div dir="rtl" className="page-container page-section skill-writing">
-      <PageHeader skill="writing" icon={Dices} title="رِحْلَةُ الإِمْلَاءِ"
-        back={{ label: "مَهَارَةُ الْكِتَابَةِ", onClick: onBack }}
-        actions={<span className="badge badge-skill tabular-nums">{correct} ✓ / {total}</span>} />
-      <ProgressBar className="mb-6" value={(total / DICTATION_QUESTIONS.length) * 100} label="تقدمك في الأسئلة" />
-      <div className="mx-auto max-w-xl">
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
+      <div className="p-4" style={{ background: "linear-gradient(135deg, #b45309 0%, #d97706 100%)" }}>
+        <button onClick={onBack} className="text-amber-100 text-sm mb-1">← مَهَارَةُ الْكِتَابَةِ</button>
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-amber-100">{correct} ✓ / {total}</span>
+          <h1 className="text-xl font-bold text-white">رِحْلَةُ الإِمْلَاءِ</h1>
+        </div>
+        {/* Progress bar */}
+        <div className="mt-2 w-full h-2 bg-amber-800 rounded-full overflow-hidden">
+          <div className="h-2 bg-white rounded-full transition-all" style={{ width: `${(total / DICTATION_QUESTIONS.length) * 100}%` }} />
+        </div>
+      </div>
+      <div className="max-w-xl mx-auto px-4 py-5">
         {/* Question status */}
         <div className="bg-white rounded-2xl p-4 shadow mb-4">
           <p className="text-right text-sm font-bold text-gray-500 mb-2">📊 حَالَةُ الأَسْئِلَةِ:</p>
@@ -246,12 +261,18 @@ function DictationGame({ onBack }: { onBack: () => void }) {
 
   /* ── Question ── */
   if (phase === "question" && currentQ) return (
-    <div dir="rtl" className="page-container page-section skill-writing">
-      <PageHeader skill="writing" icon={Dices} title="رِحْلَةُ الإِمْلَاءِ"
-        back={{ label: "مَهَارَةُ الْكِتَابَةِ", onClick: () => setPhase("wheel") }}
-        actions={<span className="badge badge-skill tabular-nums">{correct} ✓ / {total}</span>} />
-      <ProgressBar className="mb-6" value={(total / DICTATION_QUESTIONS.length) * 100} label="تقدمك في الأسئلة" />
-      <div className="mx-auto max-w-xl">
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
+      <div className="p-4" style={{ background: "linear-gradient(135deg, #b45309 0%, #d97706 100%)" }}>
+        <button onClick={() => setPhase("wheel")} className="text-amber-100 text-sm mb-1">← مَهَارَةُ الْكِتَابَةِ</button>
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-amber-100">{correct} ✓ / {total}</span>
+          <h1 className="text-xl font-bold text-white">رِحْلَةُ الإِمْلَاءِ</h1>
+        </div>
+        <div className="mt-2 w-full h-2 bg-amber-800 rounded-full overflow-hidden">
+          <div className="h-2 bg-white rounded-full transition-all" style={{ width: `${(total / DICTATION_QUESTIONS.length) * 100}%` }} />
+        </div>
+      </div>
+      <div className="max-w-xl mx-auto px-4 py-4">
         <div className="bg-white rounded-2xl overflow-hidden shadow">
           {/* Header */}
           <div className="flex justify-between items-center px-4 py-2 border-b border-gray-100">
@@ -335,30 +356,9 @@ function errorCountLabel(n: number): string {
 function WritingResult({ result, originalText, contextSuggestions }: { result: any; originalText: string; contextSuggestions: Array<{original: string; suggested: string; rule: string}> }) {
   const [activeError, setActiveError] = useState<number | null>(null);
 
-  /** نافذة التصحيح: بطاقة فاتحة تظهر أسفل الشاشة (بدل مربع داكن)، تُغلق بالنقر خارجها أو Esc. */
-  function renderPopover(err: { wrong: string; correct: string; explanation: string }) {
-    const close = (e: { stopPropagation: () => void }) => { e.stopPropagation(); setActiveError(null); };
-    return (
-      <>
-        <div className="fixed inset-0 z-40" onClick={close} />
-        <span role="dialog" aria-label="تصحيح الكلمة" className="menu-enter card fixed inset-x-0 bottom-4 z-50 mx-auto block p-4 text-right shadow-lg"
-          style={{ width: "min(340px, 92vw)" }} onKeyDown={(e) => { if (e.key === "Escape") setActiveError(null); }}>
-          <span className="mb-2 flex items-center gap-2 text-base font-bold">
-            <span className="text-error line-through decoration-2">{err.wrong}</span>
-            <ArrowLeft size={15} className="text-text-muted" aria-hidden />
-            <span className="text-success">{err.correct}</span>
-          </span>
-          <span className="t-small mb-2 flex gap-2 text-text-secondary"><Pin size={15} className="mt-1.5 shrink-0" aria-hidden />{err.explanation}</span>
-          <span className="t-small block rounded-lg bg-success-soft px-3 py-2 text-success">اكْتُبْ: <strong>{err.correct}</strong></span>
-          <button type="button" onClick={close} className="btn btn-ghost btn-sm mt-2 w-full"><X size={15} aria-hidden /> إِغْلَاقٌ</button>
-        </span>
-      </>
-    );
-  }
-
   function renderAnnotatedText() {
     if (errors.length === 0) {
-      return <span className="text-text-primary">{originalText}</span>;
+      return <span className="text-gray-700 leading-relaxed">{originalText}</span>;
     }
     const words = originalText.split(/(\s+)/);
     // بناء قائمة الكلمات التي تنتمي لخطأ متعدد الكلمات
@@ -379,26 +379,76 @@ function WritingResult({ result, originalText, contextSuggestions }: { result: a
         if (start !== -1 && pos >= idx + e.wrong.length) break;
       }
     });
-    const markClass = "rounded bg-error-soft px-0.5 text-error underline decoration-wavy decoration-error underline-offset-4";
     return (
-      <span className="font-reading text-lg" style={{ lineHeight: 2.3 }}>
+      <span className="leading-loose text-base" style={{ fontFamily: "'Cairo', sans-serif" }}>
         {words.map((word, i) => {
           const stripD = (s: string) => s.replace(/[\u064B-\u065F\u0670]/g, "");
           const cleanWord = stripD(word.replace(/[.,،؛:!؟٣٢١٠0-9]/g, ""));
           // خطأ متعدد الكلمات
           const multiError = multiWordErrorMap.get(i);
           const inMulti = multiWordErrorRanges.has(i) && !multiWordErrorMap.has(i);
-          if (inMulti) return <span key={i} className={markClass}>{word}</span>;
+          if (inMulti) return <span key={i} className="underline decoration-wavy decoration-red-500 px-0.5 rounded" style={{ background: "#fee2e2", color: "#dc2626" }}>{word}</span>;
+          if (multiError && word.trim()) {
+            const isOpen = activeError === i;
+            return (
+              <span key={i} className="relative inline-block">
+                <span
+                  className="underline decoration-wavy decoration-red-500 cursor-pointer px-0.5 rounded"
+                  style={{ background: "#fee2e2", color: "#dc2626" }}
+                  onClick={() => setActiveError(isOpen ? null : i)}
+                >{word}</span>
+                {isOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveError(null); }} />
+                    <span className="fixed bottom-4 left-1/2 z-50 bg-gray-900 text-white text-xs rounded-xl p-3 text-right shadow-2xl"
+                      style={{ width: "min(300px, 90vw)", transform: "translateX(-50%)" }}>
+                      <span className="flex items-center gap-2 mb-2">
+                        <span className="line-through text-red-400 font-bold text-sm">{multiError.wrong}</span>
+                        <span className="text-gray-400">←</span>
+                        <span className="text-green-400 font-bold text-sm">{multiError.correct}</span>
+                      </span>
+                      <span className="block text-yellow-200 text-xs mb-2 leading-relaxed">📌 {multiError.explanation}</span>
+                      <span className="block bg-gray-800 rounded-lg p-2 text-xs leading-relaxed text-gray-300">
+                        ✍️ اكتب: <span className="text-green-300 font-bold">{multiError.correct}</span>
+                      </span>
+                      <span className="block text-gray-500 text-xs mt-2 cursor-pointer text-center" onClick={(e) => { e.stopPropagation(); setActiveError(null); }}>✕ إغلاق</span>
+                    </span>
+                  </>
+                )}
+              </span>
+            );
+          }
           const error = multiError || errors.find(e => !e.wrong?.includes(" ") && (e.wrong === cleanWord || stripD(e.wrong) === cleanWord));
           if (error && word.trim()) {
             const isOpen = activeError === i;
             return (
               <span key={i} className="relative inline-block">
-                <span role="button" tabIndex={0} aria-label={`تصحيح كلمة ${word}`} className={`${markClass} cursor-pointer`}
+                <span
+                  className="underline decoration-wavy decoration-red-500 cursor-pointer px-0.5 rounded"
+                  style={{ background: "#fee2e2", color: "#dc2626" }}
                   onClick={() => setActiveError(isOpen ? null : i)}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActiveError(isOpen ? null : i); } }}
                 >{word}</span>
-                {isOpen && renderPopover(error)}
+                {isOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveError(null); }} />
+                    <span className="fixed bottom-4 left-1/2 z-50 bg-gray-900 text-white text-xs rounded-xl p-3 text-right shadow-2xl"
+                      style={{ width: "min(300px, 90vw)", transform: "translateX(-50%)" }}>
+                      {/* الخطأ والصحيح */}
+                      <span className="flex items-center gap-2 mb-2">
+                        <span className="line-through text-red-400 font-bold text-sm">{error.wrong}</span>
+                        <span className="text-gray-400">←</span>
+                        <span className="text-green-400 font-bold text-sm">{error.correct}</span>
+                      </span>
+                      {/* الشرح */}
+                      <span className="block text-yellow-200 text-xs mb-2 leading-relaxed">📌 {error.explanation}</span>
+                      {/* طريقة الكتابة */}
+                      <span className="block bg-gray-800 rounded-lg p-2 text-xs leading-relaxed text-gray-300">
+                        ✍️ اكتب: <span className="text-green-300 font-bold">{error.correct}</span>
+                      </span>
+                      <span className="block text-gray-500 text-xs mt-2 cursor-pointer text-center" onClick={(e) => { e.stopPropagation(); setActiveError(null); }}>✕ إغلاق</span>
+                    </span>
+                  </>
+                )}
               </span>
             );
           }
@@ -526,92 +576,147 @@ function WritingResult({ result, originalText, contextSuggestions }: { result: a
 
   const spelling = Math.round(calcSpellingScore());
 
-  const friendlyImprovement = (s: string) => s
-    // Convert generic "صحح N خطأ" messages to friendlier Arabic
-    .replace(/صحح\s*(\d+)\s*خط[أا]\s*إملائي/g, (_, n) => {
-      const num = parseInt(n, 10);
-      if (num === 1) return "لَدَيْكَ خَطَأٌ إِمْلَائِيٌّ وَاحِدٌ — اضْغَطْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِمَعْرِفَتِهِ";
-      if (num === 2) return "لَدَيْكَ خَطَأَانِ إِمْلَائِيَّانِ — اضْغَطْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِمَعْرِفَتِهِمَا";
-      if (num <= 10) return `لَدَيْكَ ${num} أَخْطَاءٍ إِمْلَائِيَّةٍ — اضْغَطْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِمَعْرِفَتِهَا`;
-      return `لَدَيْكَ ${num} خَطَأً إِمْلَائِيًّا — اضْغَطْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِمَعْرِفَتِهَا`;
-    })
-    .replace(/أضف\s*(\d+)\s*كلمة/g, (_, n) => `أَضِفْ ${n} كَلِمَاتٍ عَلَى الْأَقَلِّ لِإِثْرَاءِ النَّصِّ`)
-    .replace(/أضف\s*أدوات\s*ربط/g, "أَضِفْ أَدَوَاتِ رَبْطٍ بَيْنَ الْجُمَلِ")
-    .replace(/استخدم\s*علامات\s*الترقيم/g, "اسْتَخْدِمْ عَلَامَاتِ التَّرْقِيمِ بِشَكْلٍ صَحِيحٍ (. ، ؟ !)")
-    .replace(/وسّع\s*المفردات/gi, "حَاوِلْ اسْتِخْدَامَ كَلِمَاتٍ أَكْثَرَ تَنَوُّعاً وَثَرَاءً");
-
   return (
-    <div className="mt-8 space-y-4 text-right page-enter" aria-live="polite">
-      <SectionHeader title="نَتِيجَةُ التَّقْيِيمِ" description="هَذَا مَا حَلَّلَهُ النِّظَامُ مِنْ نَصِّكَ." />
-      <ScoreCard score={overall} feedback={result.feedback || result.general_feedback} title="نَتِيجَةُ التَّقْيِيمِ" />
-
-      <div className="grid gap-3 sm:grid-cols-3">
-        <CriterionTile index={0} icon={PenLine} label="الْإِمْلَاءُ" value={spelling} />
-        <CriterionTile index={1} icon={ScanSearch} label="التَّرْكِيبُ" value={structure} />
-        <CriterionTile index={2} icon={MessageSquareText} label="الْمُحْتَوَى" value={contentS} />
+    <div className="bg-white rounded-2xl shadow mt-4 overflow-hidden text-right">
+      {/* Score header */}
+      <div className="p-5" style={{ background: overall >= 70 ? "linear-gradient(135deg,#dcf5e7,#f0fdf4)" : "linear-gradient(135deg,#fef3e2,#fffbeb)" }}>
+        <div className="flex justify-between items-center mb-3">
+          <div className="flex gap-1">
+            {[1,2,3,4,5].map(i => (
+              <span key={i} style={{ color: i <= Math.ceil(overall/20) ? "#f5c842" : "#d1d5db", fontSize: "20px" }}>★</span>
+            ))}
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-500">📊 نَتِيجَةُ التَّقْيِيمِ</p>
+            <p className="text-4xl font-bold" style={{ color: overall >= 70 ? "#1a5c2a" : "#b45309" }}>{overall}%</p>
+          </div>
+        </div>
+        <p className="text-gray-700 text-sm">{result.feedback || result.general_feedback}</p>
       </div>
 
-      {/* النص مع تمييز الأخطاء */}
-      <section className="card card-pad">
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <h3 className="t-card-title text-text-primary">نَصُّكَ مَعَ تَمْيِيزِ الْأَخْطَاءِ</h3>
-          {errors.length > 0 && <span className="badge badge-error">{errorCountLabel(errors.length)}</span>}
+      {/* Score breakdown */}
+      <div className="p-4 border-b border-gray-100">
+        <p className="font-bold text-gray-700 mb-3">📈 تَفْصِيلُ الدَّرَجَاتِ:</p>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: "الإِمْلَاءُ",   value: spelling,  color: "#b45309", bg: "#fef3e2" },
+            { label: "التَّرْكِيبُ",  value: structure, color: "#7c3aed", bg: "#ede9f5" },
+            { label: "الْمُحْتَوَى", value: contentS,  color: "#1d4ed8", bg: "#dbeafe" },
+          ].map(({ label, value, color, bg }) => (
+            <div key={label} className="rounded-xl p-3 text-center" style={{ background: bg }}>
+              <p className="text-xs text-gray-500 mb-1">{label}</p>
+              <p className="text-2xl font-bold" style={{ color }}>{value}%</p>
+              <div className="w-full h-1.5 bg-white rounded-full mt-1.5 overflow-hidden">
+                <div className="h-1.5 rounded-full" style={{ width: `${value}%`, background: color }} />
+              </div>
+            </div>
+          ))}
         </div>
-        <div className="rounded-xl border border-border bg-surface-subtle/60 p-4" dir="rtl">{renderAnnotatedText()}</div>
-        {errors.length > 0 && <p className="t-caption mt-2 text-center text-text-muted">اضْغَطْ عَلَى الْكَلِمَاتِ الْمُلَوَّنَةِ بِالْأَحْمَرِ لِرُؤْيَةِ التَّصْحِيحِ.</p>}
-      </section>
+      </div>
 
+      {/* Annotated text */}
+      <div className="p-4 border-b border-gray-100">
+        <p className="font-bold text-gray-700 mb-2">
+          🔍 نَصُّكَ مَعَ تَمْيِيزِ الأَخْطَاءِ:
+          {errors.length > 0 && (
+            <span className="mr-2 text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">
+              {errorCountLabel(errors.length)}
+            </span>
+          )}
+        </p>
+        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 leading-relaxed" dir="rtl">
+          {renderAnnotatedText()}
+        </div>
+        {errors.length > 0 && (
+          <p className="text-xs text-gray-400 mt-1 text-center">💡 اضْغَطْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِرُؤْيَةِ التَّصْحِيحِ</p>
+        )}
+      </div>
+
+      {/* Errors list */}
       {errors.length > 0 && (
-        <ResultList tone="error" icon={AlertCircle} title="الْأَخْطَاءُ الْإِمْلَائِيَّةُ الْمُكْتَشَفَةُ">
-          <ul className="space-y-2">
+        <div className="p-4 border-b border-gray-100">
+          <p className="font-bold text-red-700 mb-3">❌ الأَخْطَاءُ الإِمْلَائِيَّةُ الْمُكْتَشَفَةُ:</p>
+          <div className="space-y-2">
             {errors.map((err: any, i: number) => (
-              <li key={i} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-surface-subtle px-3.5 py-2.5">
-                <span className="flex items-center gap-2 font-semibold">
-                  <span className="text-error line-through decoration-2">{err.wrong}</span>
-                  <ArrowLeft size={14} className="text-text-muted" aria-hidden />
-                  <span className="text-success">{err.correct}</span>
-                </span>
-                <span className="t-small text-text-secondary">{err.explanation}</span>
-              </li>
+              <div key={i} className="flex items-center justify-between bg-red-50 rounded-lg px-3 py-2 border border-red-100">
+                <p className="text-xs text-gray-500">{err.explanation}</p>
+                <div className="flex items-center gap-2 text-sm font-bold">
+                  <span className="text-green-600">{err.correct}</span>
+                  <span className="text-gray-400">←</span>
+                  <span className="text-red-500 line-through">{err.wrong}</span>
+                </div>
+              </div>
             ))}
-          </ul>
-        </ResultList>
+          </div>
+        </div>
       )}
 
-      <div className="grid items-start gap-4 lg:grid-cols-2">
+      {/* Strengths & improvements */}
+      <div className="p-4">
         {result.strengths?.length > 0 && (
-          <ResultList tone="success" icon={CheckCircle2} title="نِقَاطُ الْقُوَّةِ">
-            <ul className="t-body space-y-1 text-text-secondary">
-              {result.strengths.map((x: string, i: number) => <li key={i} className="flex gap-2"><CheckCircle2 size={16} className="mt-2 shrink-0 text-success" aria-hidden />{x}</li>)}
-            </ul>
-          </ResultList>
+          <div className="mb-3">
+            <p className="font-bold text-green-700 text-sm mb-2">✅ نِقَاطُ الْقُوَّةِ:</p>
+            <div className="space-y-1">
+              {result.strengths.map((s: string, i: number) => (
+                <div key={i} className="flex items-start gap-2 bg-green-50 rounded-lg px-3 py-2">
+                  <span className="text-green-500">•</span>
+                  <p className="text-sm text-gray-700">{s}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
         {result.improvements?.length > 0 && (
-          <ResultList tone="warning" icon={Lightbulb} title="اقْتِرَاحَاتُ التَّحْسِينِ">
-            <ul className="t-body space-y-1 text-text-secondary">
-              {result.improvements.map((x: string, i: number) => <li key={i} className="flex gap-2"><Lightbulb size={16} className="mt-2 shrink-0 text-warning" aria-hidden />{friendlyImprovement(x)}</li>)}
-            </ul>
-          </ResultList>
+          <div>
+            <p className="font-bold text-amber-700 text-sm mb-2">💡 اقْتِرَاحَاتُ التَّحْسِينِ:</p>
+            <div className="space-y-1">
+              {result.improvements.map((s: string, i: number) => {
+                // Convert generic "صحح N خطأ" messages to friendlier Arabic
+                const friendly = s
+                  .replace(/صحح\s*(\d+)\s*خط[أا]\s*إملائي/g, (_, n) => {
+                    const num = parseInt(n, 10);
+                    if (num === 1) return "لَدَيْكَ خَطَأٌ إِمْلَائِيٌّ وَاحِدٌ — اضْغَطْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِمَعْرِفَتِهِ";
+                    if (num === 2) return "لَدَيْكَ خَطَأَانِ إِمْلَائِيَّانِ — اضْغَطْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِمَعْرِفَتِهِمَا";
+                    if (num <= 10) return `لَدَيْكَ ${num} أَخْطَاءٍ إِمْلَائِيَّةٍ — اضْغَطْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِمَعْرِفَتِهَا`;
+                    return `لَدَيْكَ ${num} خَطَأً إِمْلَائِيًّا — اضْغَطْ عَلَى الْكَلِمَاتِ الْحَمْرَاءِ لِمَعْرِفَتِهَا`;
+                  })
+                  .replace(/أضف\s*(\d+)\s*كلمة/g, (_, n) => `أَضِفْ ${n} كَلِمَاتٍ عَلَى الْأَقَلِّ لِإِثْرَاءِ النَّصِّ`)
+                  .replace(/أضف\s*أدوات\s*ربط/g, "أَضِفْ أَدَوَاتِ رَبْطٍ بَيْنَ الْجُمَلِ")
+                  .replace(/استخدم\s*علامات\s*الترقيم/g, "اسْتَخْدِمْ عَلَامَاتِ التَّرْقِيمِ بِشَكْلٍ صَحِيحٍ (. ، ؟ !)")
+                  .replace(/وسّع\s*المفردات/gi, "حَاوِلْ اسْتِخْدَامَ كَلِمَاتٍ أَكْثَرَ تَنَوُّعاً وَثَرَاءً");
+                return (
+                  <div key={i} className="flex items-start gap-2 bg-amber-50 rounded-lg px-3 py-2">
+                    <span className="text-amber-500">•</span>
+                    <p className="text-sm text-gray-700">{friendly}</p>
+                  </div>
+                );
+              })}
+
+            </div>
+          </div>
+        )}
+
+        {/* اقتراحات السياق */}
+        {contextSuggestions.length > 0 && (
+          <div className="px-4 pb-4">
+            <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+              <p className="font-bold text-blue-700 text-sm mb-3">🔵 اقْتِرَاحَاتٌ أُسْلُوبِيَّةٌ:</p>
+              <div className="space-y-3">
+                {contextSuggestions.map((s, i) => (
+                  <div key={i} className="bg-white rounded-lg p-3 border border-blue-100 text-right">
+                    <div className="flex items-center gap-2 mb-1 flex-row-reverse">
+                      <span className="text-red-400 text-sm line-through">{s.original}</span>
+                      <span className="text-gray-400">←</span>
+                      <span className="text-green-600 font-bold text-sm">{s.suggested}</span>
+                    </div>
+                    <p className="text-xs text-blue-600">📌 {s.rule}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
       </div>
-
-      {/* اقتراحات السياق */}
-      {contextSuggestions.length > 0 && (
-        <ResultList tone="warning" icon={Sparkles} title="اقْتِرَاحَاتٌ أُسْلُوبِيَّةٌ">
-          <ul className="space-y-2">
-            {contextSuggestions.map((s, i) => (
-              <li key={i} className="rounded-xl bg-surface-subtle px-3.5 py-2.5">
-                <span className="flex items-center gap-2 font-semibold">
-                  <span className="text-error line-through decoration-2">{s.original}</span>
-                  <ArrowLeft size={14} className="text-text-muted" aria-hidden />
-                  <span className="text-success">{s.suggested}</span>
-                </span>
-                <span className="t-small mt-0.5 flex gap-1.5 text-text-secondary"><Pin size={14} className="mt-1.5 shrink-0" aria-hidden />{s.rule}</span>
-              </li>
-            ))}
-          </ul>
-        </ResultList>
-      )}
     </div>
   );
 }
@@ -683,93 +788,138 @@ export default function Writing() {
 
   /* Writing view */
   if (view === "writing" && selectedTopic) return (
-    <div className="page-container page-section skill-writing">
-      <PageHeader skill="writing" icon={PenLine} title={selectedTopic.title} description="اكْتُبْ نَصَّكَ ثُمَّ اضْغَطْ تَقْيِيمَ الْكِتَابَةِ."
-        back={{ label: "اخْتَرْ مَوْضُوعًا آخَرَ", onClick: () => { setView("topics"); setResult(null); setText(""); stopAll(); } }} />
-
-      <div className="grid items-start gap-6 lg:grid-cols-5">
-        {/* مساحة الكتابة */}
-        <section className="card card-pad lg:col-span-3" aria-label="مساحة الكتابة">
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <span className="badge badge-skill"><Pin size={14} aria-hidden /> اسْتَعِنْ بِهَذِهِ الْعَنَاصِرِ</span>
-            {selectedTopic.hints.map(h => <span key={h} className="badge">{h}</span>)}
-          </div>
-          <label htmlFor="writing-area" className="sr-only">نص الكتابة</label>
-          <textarea id="writing-area" value={text} onChange={(e) => setText(e.target.value)} placeholder="اكْتُبْ هُنَا..."
-            className="textarea font-reading !text-xl" style={{ minHeight: 300, lineHeight: 2.1 }} />
-          <div className="mt-3 flex items-center justify-between text-sm text-text-secondary">
-            <span>{sentenceCount} جُمَلٌ</span>
-            <span className="tabular-nums"><strong className="text-text-primary">{wordCount}</strong> / 200 كَلِمَةٌ</span>
-          </div>
-          <div className="progress mt-1.5 mb-4" aria-hidden>
-            <div className="h-full rounded-full bg-skill" style={{ width: `${Math.min(wordCount / 200 * 100, 100)}%`, transition: "width 300ms var(--ease-out)" }} />
-          </div>
-
-          {writeError && <ErrorState className="mb-3" message={writeError} onRetry={handleEvaluate} />}
-          {wordCount > 0 && wordCount < 10 && (
-            <p className="alert alert-warning mb-3 !py-2 text-sm">اكْتُبْ {10 - wordCount} كَلِمَاتٍ إِضَافِيَّةٍ عَلَى الْأَقَلِّ لِتَتَمَكَّنَ مِنَ التَّقْيِيمِ.</p>
-          )}
-          <Btn size="lg" block loading={loading} disabled={wordCount < 10} icon={ScanSearch} onClick={handleEvaluate}>
-            {loading ? "جَارٍ التَّقْيِيمُ..." : "تَقْيِيمُ الْكِتَابَةِ"}
-          </Btn>
-        </section>
-
-        {/* صورة الموضوع */}
-        {selectedTopic.image && (
-          <div className="card overflow-hidden bg-writing-soft lg:sticky lg:top-24 lg:col-span-2" style={{ aspectRatio: "16/9" }}>
-            <img src={selectedTopic.image} alt={selectedTopic.title} className="size-full object-cover"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-          </div>
-        )}
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
+      <div className="p-4" style={{ background: "linear-gradient(135deg, #b45309 0%, #d97706 100%)" }}>
+        <button onClick={() => { setView("topics"); setResult(null); setText(""); stopAll(); }} className="text-amber-100 text-sm mb-1">← اخْتَرْ مَوْضُوعًا آخَرَ</button>
+        <p className="text-white text-sm text-right font-bold">✏️ دَرْسُ الْكِتَابَةِ</p>
       </div>
+      <div className="max-w-2xl mx-auto px-4 py-4">
+        <div className="bg-white rounded-2xl p-5 shadow">
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-4xl">{selectedTopic.icon}</span>
+            <h2 className="text-xl font-bold text-right text-amber-800">{selectedTopic.title}</h2>
+          </div>
 
-      {loading && <ProcessingState className="mt-8" icon={PenLine} title="جَارٍ تَحْلِيلُ نَصِّكَ..." description="قَدْ يَسْتَغْرِقُ ذَلِكَ عِدَّةَ ثَوَانٍ." />}
-      {result && !loading && <WritingResult result={result} originalText={text} contextSuggestions={contextSuggestions} />}
+          {/* صورة الموضوع (Placeholder قابل للاستبدال) */}
+          {selectedTopic.image && (
+            <div className="rounded-xl overflow-hidden mb-3" style={{ aspectRatio: "16/9", background: "#fef3e2" }}>
+              <img src={selectedTopic.image} alt={selectedTopic.title} className="w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+            </div>
+          )}
+
+          <div className="bg-amber-50 rounded-xl p-3 mb-3 text-right border border-amber-100">
+            <p className="text-sm text-amber-700 font-semibold mb-2">📌 اسْتَعِنْ بِهَذِهِ الْعَنَاصِرِ:</p>
+            <div className="flex gap-2 flex-wrap">
+              {selectedTopic.hints.map(h => <span key={h} className="text-xs bg-white text-amber-700 px-2 py-1 rounded-full border border-amber-200">{h}</span>)}
+            </div>
+          </div>
+          <textarea value={text} onChange={(e) => setText(e.target.value)}
+            placeholder="اكْتُبْ هُنَا..."
+            className="w-full h-64 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-amber-500 focus:outline-none"
+            style={{ fontFamily: "'Cairo', sans-serif", fontSize: "16px" }} />
+          <div className="flex justify-between text-sm text-gray-500 mt-1">
+            <span>{sentenceCount} جُمَلٌ</span>
+            <span>{wordCount} / 200 كَلِمَةٌ</span>
+          </div>
+          <div className="w-full h-2 bg-gray-200 rounded-full mt-1 mb-3 overflow-hidden">
+            <div className="h-2 rounded-full transition-all" style={{ width: `${Math.min(wordCount / 200 * 100, 100)}%`, background: "#b45309" }} />
+          </div>
+
+          {/* تدقيق إملائي فوري أثناء الكتابة */}
+          {writeError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-2.5 mb-2 text-center">
+              <p className="text-red-600 text-sm">⚠️ {writeError}</p>
+            </div>
+          )}
+          {wordCount > 0 && wordCount < 10 && (
+            <p className="text-amber-600 text-xs text-center mb-2">
+              ✏️ اكْتُبْ {10 - wordCount} كَلِمَاتٍ إِضَافِيَّةٍ عَلَى الْأَقَلِّ لِتَتَمَكَّنَ مِنَ التَّقْيِيمِ
+            </p>
+          )}
+          <button onClick={handleEvaluate} disabled={loading || wordCount < 10}
+            className="w-full py-3 rounded-xl text-white font-bold text-lg transition-all hover:opacity-90 disabled:opacity-50"
+            style={{ background: "linear-gradient(135deg, #b45309 0%, #d97706 100%)" }}>
+            {loading ? "⏳ جَارٍ التَّقْيِيمُ..." : "🏛️ تَقْيِيمُ الْكِتَابَةِ"}
+          </button>
+        </div>
+        {loading && <ResultSkeleton label="جَارٍ تَحْلِيلُ نَصِّكَ..." />}
+        {result && !loading && <WritingResult result={result} originalText={text} contextSuggestions={contextSuggestions} />}
+      </div>
     </div>
   );
 
   /* Topics view (default) */
   return (
-    <div className="page-container page-section skill-writing">
-      <PageHeader skill="writing" icon={PenLine} title="مَهَارَةُ الْكِتَابَةِ" description="طَوِّرْ أُسْلُوبَكَ الْكِتَابِيَّ وَإِبْدَاعَكَ اللُّغَوِيَّ."
-        back={{ label: "الْمَهَارَاتُ", to: "/skills" }} />
-
-      <SectionHeader title="أَلْعَابٌ تَفَاعُلِيَّةٌ" description="تَدَرَّبْ عَلَى الْإِمْلَاءِ وَالْهَمْزَةِ بِطَرِيقَةٍ مُمْتِعَةٍ." />
-      <div className="mb-8 grid gap-4 md:grid-cols-2">
-        <button type="button" onClick={() => setLocation("/writing-games")}
-          className="card card-interactive card-pad stagger-in group flex items-center gap-4 text-right">
-          <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-learning-soft text-learning transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105"><Gamepad2 size={28} strokeWidth={1.75} /></span>
-          <span className="flex-1">
-            <span className="mb-1 flex items-center gap-2"><h3 className="t-card-title text-text-primary">أَلْعَابُ الْهَمْزَةِ</h3></span>
-            <span className="t-small block text-text-secondary">هَمْزَةٌ مُتَوَسِّطَةٌ • هَمْزَةٌ مُتَطَرِّفَةٌ • تَحَدِّي سَرِيعٌ</span>
-          </span>
-          <ArrowLeft size={18} className="shrink-0 text-text-muted transition-transform group-hover:-translate-x-1" aria-hidden />
-        </button>
-        <button type="button" onClick={() => setView("dictation")} style={{ ["--i" as string]: 1 }}
-          className="card card-interactive card-pad stagger-in group flex items-center gap-4 text-right">
-          <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-writing-soft text-writing transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105"><Dices size={28} strokeWidth={1.75} /></span>
-          <span className="flex-1">
-            <h3 className="t-card-title text-text-primary">رِحْلَةُ الْإِمْلَاءِ</h3>
-            <span className="t-small block text-text-secondary">أَدِرِ الْفَجَلَةَ وَاخْتَرِ الْكِتَابَةَ الصَّحِيحَةَ لِلْكَلِمَاتِ</span>
-          </span>
-          <ArrowLeft size={18} className="shrink-0 text-text-muted transition-transform group-hover:-translate-x-1" aria-hidden />
-        </button>
+    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
+      <div className="p-4" style={{ background: "linear-gradient(135deg, #b45309 0%, #d97706 100%)" }}>
+        <div className="flex items-center gap-2 mb-2">
+          <button onClick={() => setLocation("/skills")} className="text-amber-100 text-sm">← الْمَهَارَاتُ</button>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <h1 className="text-2xl font-bold text-white">مَهَارَةُ الْكِتَابَةِ</h1>
+            <p className="text-amber-100 text-sm">طَوِّرْ أُسْلُوبَكَ الْكِتَابِيَّ وَإِبْدَاعَكَ اللُّغَوِيَّ</p>
+          </div>
+          <span className="text-3xl p-2 bg-amber-800 rounded-xl">✏️</span>
+        </div>
       </div>
 
-      <SectionHeader title="مَوَاضِيعُ الْكِتَابَةِ" description="اخْتَرْ مَوْضُوعًا وَاكْتُبْ حَتَّى 200 كَلِمَةٍ." />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {topics.map((t, i) => (
-          <button key={t.id} type="button" style={{ ["--i" as string]: i }}
-            onClick={() => { setSelectedTopic(t); setView("writing"); }}
-            className="card card-interactive card-pad stagger-in group flex flex-col gap-3 text-right">
-            <div className="flex items-start justify-between gap-3">
-              <span className="grid size-14 place-items-center rounded-2xl bg-skill-soft text-3xl transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105">{t.icon}</span>
-              <span className="badge badge-skill">حَتَّى 200 كَلِمَةٍ</span>
-            </div>
-            <h3 className="t-card-title flex-1 text-text-primary">{t.title}</h3>
-            <ul className="flex flex-wrap gap-1.5">{t.hints.map(h => <li key={h} className="badge">{h}</li>)}</ul>
-          </button>
-        ))}
+      <div className="max-w-2xl mx-auto px-4 py-5">
+        {/* Mascot welcome */}
+        <div className="bg-white rounded-xl p-3 mb-4 flex items-center gap-3 shadow">
+          <img src="/assets/omani-boy.png" alt="" className="w-10 h-10 object-contain" />
+          <p className="font-bold text-sm text-right">اخْتَرْ نَشَاطَ الْكِتَابَةِ وَابْدَأْ إِبْدَاعَكَ! ✏️</p>
+        </div>
+
+        {/* Writing Games card */}
+        <button onClick={() => setLocation("/writing-games")}
+          className="w-full p-5 rounded-2xl text-right shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all mb-3 flex justify-between items-center"
+          style={{ background: "linear-gradient(135deg, #ede9f5, #ddd6fe)", border: "2px solid #c4b5fd" }}>
+          <div className="flex items-center gap-2">
+            <span className="text-xs bg-purple-700 text-white px-2 py-1 rounded-full font-bold">أَلْعَابٌ تَفَاعُلِيَّةٌ</span>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-purple-800">🎮 أَلْعَابُ الْهَمْزَةِ</h2>
+            <p className="text-purple-600 text-sm">هَمْزَةٌ مُتَوَسِّطَةٌ • هَمْزَةٌ مُتَطَرِّفَةٌ • تَحَدِّي سَرِيعٌ</p>
+          </div>
+          <span className="text-4xl">🎮</span>
+        </button>
+
+        {/* Dictation Journey card */}
+        <button onClick={() => setView("dictation")}
+          className="w-full p-5 rounded-2xl text-right shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all mb-3 flex justify-between items-center"
+          style={{ background: "linear-gradient(135deg, #fef3e2, #fde68a)", border: "2px solid #fcd34d" }}>
+          <div className="flex items-center gap-2">
+            <span className="text-xs bg-amber-700 text-white px-2 py-1 rounded-full font-bold">لُعْبَةٌ تَفَاعُلِيَّةٌ</span>
+            <span className="text-amber-600 text-sm font-bold">←</span>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-amber-800">🎡 رِحْلَةُ الإِمْلَاءِ</h2>
+            <p className="text-amber-600 text-sm">أَدِرِ الْفَجَلَةَ وَاخْتَرِ الْكِتَابَةَ الصَّحِيحَةَ لِلْكَلِمَاتِ</p>
+          </div>
+          <span className="text-4xl">🎡</span>
+        </button>
+
+        {/* Writing topics */}
+        <h2 className="text-right font-bold text-lg mb-3 text-amber-800">✏️ مَوَاضِيعُ الْكِتَابَةِ</h2>
+        <div className="flex flex-col gap-3">
+          {topics.map((t) => (
+            <button key={t.id} onClick={() => { setSelectedTopic(t); setView("writing"); }}
+              className="p-5 bg-white rounded-2xl shadow text-right hover:shadow-md hover:-translate-y-0.5 transition-all flex justify-between items-center">
+              <div>
+                <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">حَتَّى 200 كَلِمَةٍ</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-amber-800">{t.title}</h3>
+                <div className="flex gap-1 flex-wrap justify-end mt-1">
+                  {t.hints.map(h => <span key={h} className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">{h}</span>)}
+                </div>
+              </div>
+              <span className="text-4xl">{t.icon}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
