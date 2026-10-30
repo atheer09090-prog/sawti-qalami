@@ -10,7 +10,7 @@ const STEPS: Step[] = [
   {
     emoji: "👋",
     title: "مَرْحَبًا بِكَ فِي صَوْتِي قَلَمِي",
-    body: "مِنَصَّةٌ تُسَاعِدُكَ عَلَى تَطْوِيرِ مَهَارَتَيِ التَّحَدُّثِ وَالْكِتَابَةِ بِاللُّغَةِ الْعَرَبِيَّةِ. جَوْلَةٌ سَرِيعَةٌ فِي 5 خُطُوَاتٍ فَقَطْ لِتَتَعَرَّفَ عَلَى أَهَمِّ أَجْزَائِهَا.",
+    body: "بَرْنَامَجٌ يُسَاعِدُكَ عَلَى تَطْوِيرِ مَهَارَتَيِ التَّحَدُّثِ وَالْكِتَابَةِ بِاللُّغَةِ الْعَرَبِيَّةِ. جَوْلَةٌ سَرِيعَةٌ فِي 5 خُطُوَاتٍ فَقَطْ لِتَتَعَرَّفَ عَلَى أَهَمِّ أَجْزَائِهِ.",
   },
   {
     emoji: "🎙️",
@@ -46,11 +46,11 @@ export function OnboardingTour({ onFinish }: { onFinish: () => void }) {
       style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(2px)" }}
     >
       <div
-        className="bg-white rounded-3xl p-6 text-center shadow-2xl w-full"
-        style={{ maxWidth: 360, fontFamily: "'Cairo', sans-serif" }}
+        className="program-dialog bg-white rounded-3xl p-6 text-center shadow-2xl w-full"
+        style={{ maxWidth: 360, fontFamily: "var(--font-brand)" }}
       >
         <div className="text-6xl mb-3">{step.emoji}</div>
-        <h2 style={{ fontFamily: "'Amiri', serif", color: "#1a5c2a", fontSize: "1.4rem", fontWeight: 700 }}>
+        <h2 style={{ fontFamily: "var(--font-brand)", color: "#355e43", fontSize: "1.4rem", fontWeight: 700 }}>
           {step.title}
         </h2>
         <p className="text-gray-500 text-sm leading-relaxed mt-3 mb-5">{step.body}</p>
@@ -63,7 +63,7 @@ export function OnboardingTour({ onFinish }: { onFinish: () => void }) {
               className="rounded-full transition-all"
               style={{
                 width: idx === i ? 20 : 7, height: 7,
-                background: idx === i ? "#1a5c2a" : "#d1d5db",
+                background: idx === i ? "#355e43" : "#d1d5db",
               }}
             />
           ))}
@@ -82,7 +82,7 @@ export function OnboardingTour({ onFinish }: { onFinish: () => void }) {
           <button
             onClick={() => (isLast ? onFinish() : setI((v) => v + 1))}
             className="flex-1 py-3 rounded-xl text-white font-bold text-sm"
-            style={{ background: "linear-gradient(135deg, #1a5c2a, #2d7a3e)" }}
+            style={{ background: "linear-gradient(135deg, #355e43, #2d7a3e)" }}
           >
             {isLast ? "لِنَبْدَأْ! 🚀" : "التَّالِي"}
           </button>

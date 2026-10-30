@@ -1,0 +1,38 @@
+
+> sawti-qalami@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v7.1.9 building for production...
+(node:18664) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+transforming...
+✓ 2262 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                               0.82 kB │ gzip:   0.49 kB
+../dist/public/assets/index-sgpFiR7R.css              153.00 kB │ gzip:  25.50 kB
+../dist/public/assets/skeleton-Cmfs9TJi.js              0.20 kB │ gzip:   0.18 kB
+../dist/public/assets/Skills-47qYg2uG.js                0.42 kB │ gzip:   0.33 kB
+../dist/public/assets/ResultSkeleton-lPouu6zf.js        0.96 kB │ gzip:   0.48 kB
+../dist/public/assets/ClassSelection-DpkiWYDZ.js        2.41 kB │ gzip:   1.03 kB
+../dist/public/assets/NotFound-Dd8UgHZl.js              4.07 kB │ gzip:   1.80 kB
+../dist/public/assets/Assessments-B_NBfm5l.js           4.14 kB │ gzip:   1.72 kB
+../dist/public/assets/AudioWaveform-CXav7fFm.js         4.88 kB │ gzip:   2.19 kB
+../dist/public/assets/dictation-data-pjeki6Mb.js        5.52 kB │ gzip:   1.04 kB
+../dist/public/assets/game-widgets-BP0i6vRs.js          7.49 kB │ gzip:   2.63 kB
+../dist/public/assets/Dashboard-B111YAoC.js            14.58 kB │ gzip:   5.12 kB
+../dist/public/assets/BalloonHamzaLesson-Bp7KSyXe.js   20.81 kB │ gzip:   6.48 kB
+../dist/public/assets/TreasureMapLesson-uHb2QI0E.js    20.86 kB │ gzip:   6.72 kB
+../dist/public/assets/DiverPearlLesson-OwutYw9D.js     21.40 kB │ gzip:   6.59 kB
+../dist/public/assets/Speaking-BDiXIxRp.js             32.77 kB │ gzip:   9.14 kB
+../dist/public/assets/Writing-DkQdGpP7.js              38.82 kB │ gzip:   9.47 kB
+../dist/public/assets/SelfLearning-b6N7kJEy.js         49.55 kB │ gzip:  11.95 kB
+../dist/public/assets/WritingGames-Vfw2_hL4.js         52.96 kB │ gzip:   9.80 kB
+../dist/public/assets/Teacher-DmK97I5I.js              80.50 kB │ gzip:  18.75 kB
+../dist/public/assets/index-Cp2uBL3w.js               351.24 kB │ gzip: 110.59 kB
+../dist/public/assets/BarChart-CtKGPYcO.js            375.75 kB │ gzip: 103.52 kB
+✓ built in 11.71s
+
+  dist/index.js  788b
+
+⚡ Done in 17ms

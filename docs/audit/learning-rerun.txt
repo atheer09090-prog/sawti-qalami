@@ -1,0 +1,8 @@
+PASS treasure game: full video, wrong answer, all stages and results
+FAILED diver game: full video, all stages and results locator.evaluate: Error: Video did not end
+    at eval (eval at evaluate (:370:30), <anonymous>:1:331)
+PASS balloon game: full video, all stages and results
+PASS self learning: all quiz answers including final answer score 100%
+PASS self learning: teacher configured fill answer is used
+PASS microphone denial shows actionable error
+PASS no uncaught JavaScript errors

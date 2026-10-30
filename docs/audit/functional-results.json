@@ -1,0 +1,51 @@
+{
+  "base": "http://127.0.0.1:3002",
+  "results": [
+    {
+      "name": "real registration and authenticated dashboard",
+      "status": "PASS",
+      "detail": "UI → local API → real isolated PostgreSQL"
+    },
+    {
+      "name": "writing evaluation and persisted progress",
+      "status": "PASS",
+      "detail": "Real writing scorer and database roundtrip"
+    },
+    {
+      "name": "recording captures playable audio and stops all tracks",
+      "status": "PASS",
+      "detail": "Native MediaRecorder with real educational WAV through Chrome capture device; playback decoded"
+    },
+    {
+      "name": "speech failure is explicit and never awards fake progress",
+      "status": "PASS",
+      "detail": "Actual local backend has no Groq key; verifies real error path, not AI success"
+    },
+    {
+      "name": "leaving speaking via SPA navigation releases microphone",
+      "status": "PASS",
+      "detail": "Verified without document reload"
+    },
+    {
+      "name": "AI assistant opens, sends and displays service failure",
+      "status": "PASS",
+      "detail": "No fabricated AI answer; retry input preserved"
+    },
+    {
+      "name": "all routes and game entry screens render",
+      "status": "PASS",
+      "detail": "10 real route entry screens; full game completion is separate"
+    },
+    {
+      "name": "teacher authentication, search, report download and logout",
+      "status": "PASS",
+      "detail": "Real teacher JWT, live local DB search, PDF bytes and logout"
+    },
+    {
+      "name": "no uncaught JavaScript errors",
+      "status": "PASS",
+      "detail": "pageerror listener across all scenarios"
+    }
+  ],
+  "errors": []
+}

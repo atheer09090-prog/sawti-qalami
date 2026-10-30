@@ -1,0 +1,14 @@
+[
+  {
+    "case": "speaking edit → API → real database roundtrip",
+    "status": "PASS"
+  },
+  {
+    "case": "writing edit → API → real database roundtrip",
+    "status": "PASS"
+  },
+  {
+    "case": "save HTTP 503 keeps modal open and displays actual error",
+    "status": "PASS"
+  }
+]

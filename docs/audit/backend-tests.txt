@@ -1,0 +1,30 @@
+........................................................................ [ 54%]
+.............................................................            [100%]
+=============================== warnings summary ===============================
+test/test_accounts.py::test_register_then_login
+  /private/tmp/sawti-audit-venv/lib/python3.11/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+test/test_lessons_storage.py::test_teacher_edits_persist_in_db_not_on_disk
+  /Users/Atheer/Documents/ChatGPT/Sawti qalmi/Sawti/sawti-backend/test/../app/routers/lessons.py:119: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.14/migration/
+    data["speaking"].append(lesson.dict())
+
+test/test_lessons_storage.py::test_teacher_edits_persist_in_db_not_on_disk
+  /Users/Atheer/Documents/ChatGPT/Sawti qalmi/Sawti/sawti-backend/test/../app/routers/lessons.py:137: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.14/migration/
+    data["speaking"][i] = lesson.dict()
+
+test/test_lessons_storage.py::test_every_content_type_roundtrips_through_db
+test/test_lessons_storage.py::test_default_dicts_in_code_are_not_mutated_by_edits
+  /Users/Atheer/Documents/ChatGPT/Sawti qalmi/Sawti/sawti-backend/test/../app/routers/lessons.py:211: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.14/migration/
+    data["quiz"].append(q.dict())
+
+test/test_lessons_storage.py::test_every_content_type_roundtrips_through_db
+  /Users/Atheer/Documents/ChatGPT/Sawti qalmi/Sawti/sawti-backend/test/../app/routers/lessons.py:393: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.14/migration/
+    data["quick_quiz"].append(q.dict())
+
+test/test_lessons_storage.py: 21 warnings
+  /Users/Atheer/Documents/ChatGPT/Sawti qalmi/Sawti/sawti-backend/test/../app/routers/lessons.py:453: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.14/migration/
+    data.append(q.dict())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+133 passed, 27 warnings in 28.97s

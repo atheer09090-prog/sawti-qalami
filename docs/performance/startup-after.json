@@ -1,0 +1,23 @@
+[
+  {
+    "scenario": "slow-session-api",
+    "formVisibleWithin2500ms": true,
+    "formMs": 504,
+    "bodyText": "مساحة لصوتك وإبداع لقلمك\n\nبَرْنَامَجٌ تَفَاعُلِيٌّ لِتَعْلِيمِ اللُّغَةِ الْعَرَبِيَّةِ لِطُلَّابِ الصَّفِّ السَّادِسِ\n\n",
+    "errors": []
+  },
+  {
+    "scenario": "unavailable-font-host",
+    "formVisibleWithin2500ms": true,
+    "formMs": 377,
+    "bodyText": "مساحة لصوتك وإبداع لقلمك\n\nبَرْنَامَجٌ تَفَاعُلِيٌّ لِتَعْلِيمِ اللُّغَةِ الْعَرَبِيَّةِ لِطُلَّابِ الصَّفِّ السَّادِسِ\n\n",
+    "errors": []
+  },
+  {
+    "scenario": "new-visitor",
+    "formVisibleWithin2500ms": true,
+    "formMs": 348,
+    "bodyText": "مساحة لصوتك وإبداع لقلمك\n\nبَرْنَامَجٌ تَفَاعُلِيٌّ لِتَعْلِيمِ اللُّغَةِ الْعَرَبِيَّةِ لِطُلَّابِ الصَّفِّ السَّادِسِ\n\n",
+    "errors": []
+  }
+]

@@ -1,3 +1,6 @@
+import { ActivityHeader } from "@/components/ActivityUI";
+import { Brand } from "@/components/ProductUI";
+import { BookOpen } from "lucide-react";
 import { useLocation } from "wouter";
 
 /**
@@ -8,18 +11,12 @@ export default function Home() {
   const [, setLocation] = useLocation();
 
   return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-      <div className="p-4" style={{ background: "linear-gradient(135deg, #1a5c2a 0%, #2d7a3e 100%)" }}>
-        <button onClick={() => setLocation("/")} className="text-green-200 text-sm mb-2">← تسجيل الدخول</button>
-        <div className="flex items-center gap-2">
-          <img src="/assets/logo.png" alt="" className="w-9 h-9 object-contain" />
-          <h1 className="text-2xl font-bold text-white">عَنِ الْبَرْنَامَجِ</h1>
-        </div>
-      </div>
-
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-        <section className="bg-white rounded-2xl p-5 shadow text-right">
-          <h2 className="font-bold text-lg mb-2" style={{ color: "#1a5c2a" }}>ما هو برنامج "صوتي قلمي"؟</h2>
+    <div dir="rtl" className="activity-page about-page">
+      <div className="public-brand page-container"><Brand /></div>
+      <ActivityHeader title="عَنِ الْبَرْنَامَجِ" description="تعرّف على صوتي قلمي، وخذ خطوتك الأولى في رحلة العربية." eyebrow="مساحة لصوتك وإبداع لقلمك" onBack={()=>setLocation("/")} backLabel="تسجيل الدخول" icon={BookOpen} />
+      <div className="page-container about-sections">
+        <section className="surface-card bg-white rounded-2xl p-5 shadow text-right">
+          <h2 className="font-bold text-lg mb-2" style={{ color: "#075348" }}>ما هو برنامج "صوتي قلمي"؟</h2>
           <p className="text-gray-600 text-sm leading-loose">
             "صوتي قلمي" برنامج تعليمي إلكتروني موجّه لطلاب الصف السادس، يهدف إلى مساعدة الطالب على
             تطوير مهارتَي التحدّث والكتابة باللغة العربية الفصحى من خلال أنشطة تفاعلية وتغذية راجعة فورية،
@@ -27,8 +24,8 @@ export default function Home() {
           </p>
         </section>
 
-        <section className="bg-white rounded-2xl p-5 shadow text-right">
-          <h2 className="font-bold text-lg mb-2" style={{ color: "#1a5c2a" }}>كيف يساعدني البرنامج؟</h2>
+        <section className="surface-card bg-white rounded-2xl p-5 shadow text-right">
+          <h2 className="font-bold text-lg mb-2" style={{ color: "#075348" }}>كيف يساعدني البرنامج؟</h2>
           <ul className="text-gray-600 text-sm space-y-2 leading-loose">
             <li>🎙️ <strong>مهارة التحدث:</strong> تسجّل صوتك وأنت تتحدث عن موضوع معيّن، ويحلَّل تسجيلك تلقائيًا لتقييم تحدّثك: وضوح الكلام وبناء الجمل وترابط الأفكار.</li>
             <li>✏️ <strong>مهارة الكتابة:</strong> تكتب نصًّا حول موضوع، وتحصل على تصحيح وتقييم للأخطاء الإملائية والنحوية وترتيب الأفكار.</li>
@@ -37,8 +34,8 @@ export default function Home() {
           </ul>
         </section>
 
-        <section className="bg-white rounded-2xl p-5 shadow text-right">
-          <h2 className="font-bold text-lg mb-2" style={{ color: "#1a5c2a" }}>كيف يتم التقييم؟</h2>
+        <section className="surface-card bg-white rounded-2xl p-5 shadow text-right">
+          <h2 className="font-bold text-lg mb-2" style={{ color: "#075348" }}>كيف يتم التقييم؟</h2>
           <p className="text-gray-600 text-sm leading-loose">
             بعد تسجيل صوتك أو كتابة نصّك، يحلّل النظام إجابتك آليًا وفق معايير لغوية محددة (مثل وضوح الكلام،
             بناء الجملة، تنوّع المفردات، وترابط الأفكار)، ثم يعرض لك نتيجة كل معيار على حدة إلى جانب النتيجة
@@ -50,7 +47,7 @@ export default function Home() {
         <button
           onClick={() => setLocation("/")}
           className="w-full py-3 rounded-xl text-white font-bold"
-          style={{ background: "linear-gradient(135deg, #1a5c2a, #2d7a3e)" }}
+          style={{ background: "var(--primary)" }}
         >
           فهمت، لنبدأ 🚀
         </button>

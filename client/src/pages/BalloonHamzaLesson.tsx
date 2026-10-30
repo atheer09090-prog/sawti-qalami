@@ -1,3 +1,4 @@
+import { GameBackButton, GameMapHint } from "@/components/GameNavigation";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { playEffect, audioFile } from "@/lib/audio";
@@ -94,8 +95,8 @@ const DEFAULT_CONTENT = {
 
 function TopBar({ stars, fuel, onBack }: { stars: number; fuel: number; onBack: () => void }) {
   return (
-    <div className="flex items-center justify-between px-5 py-3" style={{ background: "rgba(15,23,42,0.4)" }}>
-      <button onClick={onBack} className="text-blue-100 text-base">← الْمَهَامُّ</button>
+    <div className="game-toolbar flex items-center justify-between px-5 py-3 pointer-events-auto">
+      <GameBackButton onBack={onBack} />
       <div className="flex items-center gap-4">
         <span className="flex items-center gap-1 bg-slate-900/50 text-orange-200 px-3 py-1 rounded-full text-base font-bold">⛽ {fuel}</span>
         <span className="flex items-center gap-1 bg-slate-900/50 text-yellow-300 px-3 py-1 rounded-full text-base font-bold">⭐ {stars}</span>
@@ -109,42 +110,38 @@ function SkyBackdrop({ phase, interactive, onActivate, reaction, reactKey }: { p
   return (
     <div className="absolute inset-0 overflow-hidden">
       <div className="absolute inset-0" style={{
-        background: "linear-gradient(180deg, #7dd3fc 0%, #38bdf8 30%, #60a5fa 65%, #93c5fd 100%)"
+        background: "linear-gradient(180deg, #eef0df 0%, #e3e9d4 30%, #cddabd 65%, #b6c9a3 100%)"
       }} />
       {/* غيوم متحركة زخرفية */}
       {[...Array(8)].map((_, i) => (
         <div key={i} className="absolute text-5xl opacity-70" style={{ left: `${(i * 29) % 100}%`, top: `${8 + (i * 17) % 70}%` }}>☁️</div>
       ))}
       <svg className="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <path d="M8,85 Q20,70 38,55 T66,50 T92,18" fill="none" stroke="#1e3a8a" strokeWidth="0.8" strokeDasharray="2,2" />
+        <path d="M8,85 Q20,70 38,55 T66,50 T92,18" fill="none" stroke="#293e32" strokeWidth="0.8" strokeDasharray="2,2" />
       </svg>
       {(["intro", "video", "cloud1", "cloud2", "cloud3", "cloud4", "island"] as Phase[]).map((p, i) => {
         const done = PHASES.indexOf(phase) > PHASES.indexOf(p);
         const active = phase === p;
         const clickable = active && interactive;
         return (
-          <div key={p} onClick={clickable ? onActivate : undefined}
+          <button type="button" key={p} aria-label={active ? "متابعة المرحلة الحالية" : `المرحلة ${i + 1}`} disabled={!clickable} onClick={clickable ? onActivate : undefined}
             className={`absolute flex items-center justify-center rounded-full shadow-lg transition-all ${clickable ? "target-active-pulse cursor-pointer" : ""}`}
             style={{
               left: `${PATH_POS[p].x}%`, top: `${PATH_POS[p].y}%`,
               width: active ? 42 : 28, height: active ? 42 : 28,
               transform: "translate(-50%, -50%)",
               background: done ? "#059669" : "rgba(255,255,255,0.25)",
-              border: `2px dashed ${done ? "rgba(255,255,255,0.8)" : active ? "#ea580c" : "#1e3a8a"}`,
+              border: `2px dashed ${done ? "rgba(255,255,255,0.8)" : active ? "#ea580c" : "#293e32"}`,
               fontSize: active ? 18 : 12,
             }}>
             {i === 6 ? "🏆" : done ? "✅" : "🎯"}
-          </div>
+          </button>
         );
       })}
-      {interactive && (
-        <div className="absolute whitespace-nowrap text-center pointer-events-none" style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: "translate(-50%, -170%)", animation: "hintBob3 1s ease-in-out infinite" }}>
-          <span className="px-3 py-1.5 rounded-full font-bold text-sm shadow-lg" style={{ background: "#f8fafc", color: "#1e3a8a", border: "2px solid #1e40af" }}>👆 اضْغَطْ هُنَا</span>
-        </div>
-      )}
+      {interactive && <GameMapHint x={pos.x} y={pos.y} onActivate={onActivate} />}
       <style>{`
         @keyframes targetActivePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(234,88,12,0.6); } 50% { box-shadow: 0 0 0 10px rgba(234,88,12,0); } }
-        @keyframes hintBob3 { 0%,100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -6px); } }
+
         .target-active-pulse { animation: targetActivePulse 1.1s ease-in-out infinite; }
       `}</style>
       <div key={reactKey} className={`absolute text-5xl transition-all duration-500 ease-out ${reaction === "correct" ? "char-bounce-correct" : reaction === "wrong" ? "char-shake-wrong" : ""}`}
@@ -152,7 +149,7 @@ function SkyBackdrop({ phase, interactive, onActivate, reaction, reactKey }: { p
         {reaction === "correct" ? "🎈😄" : reaction === "wrong" ? "🎈😟" : "🎈"}
       </div>
       {interactive && (
-        <div onClick={onActivate} className="absolute cursor-pointer z-20" style={{
+        <div onClick={onActivate} className={`absolute z-20 ${interactive ? "cursor-pointer" : "pointer-events-none"}`} style={{
           left: `${pos.x}%`, top: `${pos.y}%`, transform: "translate(-50%, -60%)",
           width: 160, height: 220,
         }} />
@@ -163,7 +160,7 @@ function SkyBackdrop({ phase, interactive, onActivate, reaction, reactKey }: { p
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative z-10 max-w-3xl w-full mx-4 rounded-3xl p-8 shadow-2xl" style={{ background: "rgba(248,250,252,0.72)", border: "3px solid #1e40af", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}>
+    <div className="game-stage-card relative z-10 max-w-3xl w-full mx-4">
       {children}
     </div>
   );
@@ -199,14 +196,15 @@ function TargetOption({ label, index, status, wide, onClick }: {
   const cls = status === "hit" ? "target-hit" : status === "miss" ? "target-miss" : "target-idle";
   return (
     <button
+      aria-label={label}
       onClick={onClick}
       disabled={status === "hit"}
-      className={`${cls} flex items-center justify-center text-center font-bold active:scale-95 transition-colors`}
+      className={`${cls} flex items-center justify-center text-center font-bold active:scale-[0.98] transition-colors`}
       style={{
         animationDelay: `${(index % 3) * 0.4}s`,
-        background: "repeating-radial-gradient(circle, #eff6ff 0 14px, #bfdbfe 14px 22px, #eff6ff 22px 30px)",
-        border: "3px dashed #1d4ed8",
-        color: "#1e3a8a",
+        background: "repeating-radial-gradient(circle, #f1f5e9 0 14px, #d3dfc2 14px 22px, #f1f5e9 22px 30px)",
+        border: "3px dashed #436444",
+        color: "#293e32",
         borderRadius: wide ? "999px" : "50%",
         width: wide ? "auto" : 100,
         height: wide ? "auto" : 100,
@@ -256,10 +254,10 @@ export default function BalloonHamzaLesson() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoDone, setVideoDone] = useState(false);
 
-  const cloud1Options = useMemo(() => shuffle(content.cloud1Options), [round]);
-  const cloud2Options = useMemo(() => shuffle(content.cloud2Options), [round]);
-  const cloud3Options = useMemo(() => shuffle(content.cloud3Options), [round]);
-  const cloud4Options = useMemo(() => shuffle(content.cloud4Options), [round]);
+  const cloud1Options = useMemo(() => shuffle(content.cloud1Options), [round, content.cloud1Options]);
+  const cloud2Options = useMemo(() => shuffle(content.cloud2Options), [round, content.cloud2Options]);
+  const cloud3Options = useMemo(() => shuffle(content.cloud3Options), [round, content.cloud3Options]);
+  const cloud4Options = useMemo(() => shuffle(content.cloud4Options), [round, content.cloud4Options]);
 
   function goNext(nextPhase: Phase, gainedStars = 0, gainedFuel = false) {
     if (gainedStars) setStars(s => s + gainedStars);
@@ -360,17 +358,17 @@ export default function BalloonHamzaLesson() {
       case "intro":
         return (
           <Card>
-            <h1 className="text-3xl font-bold text-center mb-1" style={{ color: "#1e3a8a", fontFamily: "'Amiri', serif" }}>🎈 قَائِدُ الْمِنْطَادِ</h1>
-            <p className="text-center text-blue-700 text-base mb-5">الْهَمْزَةُ الْمُتَطَرِّفَةُ</p>
-            <div className="bg-blue-50 rounded-2xl p-4 mb-5 border border-blue-200">
-              <p className="font-bold text-blue-900 mb-2 text-base">🎯 أَهْدَافُ رِحْلَتِنَا الْجَوِّيَّةِ الْيَوْمَ:</p>
-              <ul className="text-blue-800 text-lg font-semibold space-y-2 leading-relaxed">
+            <h1 className="text-3xl font-bold text-center mb-1" style={{ color: "#293e32", fontFamily: "var(--font-brand)" }}>🎈 قَائِدُ الْمِنْطَادِ</h1>
+            <p className="text-center text-[#436444] text-base mb-5">الْهَمْزَةُ الْمُتَطَرِّفَةُ</p>
+            <div className="bg-[#f1f5e9] rounded-2xl p-4 mb-5 border border-[#d3dfc2]">
+              <p className="font-bold text-[#293e32] mb-2 text-base">🎯 أَهْدَافُ رِحْلَتِنَا الْجَوِّيَّةِ الْيَوْمَ:</p>
+              <ul className="text-[#35533b] text-lg font-semibold space-y-2 leading-relaxed">
                 <li>١. تَحْدِيدُ مَفْهُومِ الْهَمْزَةِ الْمُتَطَرِّفَةِ وَمَوْقِعِهَا (فِي نِهَايَةِ الْكَلِمَةِ).</li>
                 <li>٢. تَعْلِيلُ سَبَبِ كِتَابَتِهَا بِنَاءً عَلَى حَرَكَةِ الْحَرْفِ الَّذِي يَسْبِقُهَا.</li>
                 <li>٣. تَطْبِيقُ الْقَاعِدَةِ وَكِتَابَةُ كَلِمَاتٍ صَحِيحَةٍ إِمْلَائِيًّا.</li>
               </ul>
             </div>
-            <button onClick={() => goNext("video")} className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-95 transition-all" style={{ background: "#1d4ed8" }}>
+            <button onClick={() => goNext("video")} className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-[0.98] transition-all" style={{ background: "#436444" }}>
               🚀 شَغِّلِ الْمُحَرِّكَ وَحَلِّقْ
             </button>
           </Card>
@@ -379,15 +377,15 @@ export default function BalloonHamzaLesson() {
       case "video":
         return (
           <Card>
-            <h2 className="text-2xl font-bold text-center mb-4" style={{ color: "#1e3a8a" }}>📺 مَحَطَّةُ الْأَرْصَادِ الْمَعْرِفِيَّةِ</h2>
+            <h2 className="text-2xl font-bold text-center mb-4" style={{ color: "#293e32" }}>📺 مَحَطَّةُ الْأَرْصَادِ الْمَعْرِفِيَّةِ</h2>
             <div className="rounded-2xl overflow-hidden bg-black mb-4" style={{ aspectRatio: "16/9" }}>
               <video ref={videoRef} controls className="w-full h-full" onEnded={() => setVideoDone(true)} src="/videos/hamza-mutatarrifa.mp4">
                 متصفحك لا يدعم عرض الفيديو.
               </video>
             </div>
-            {!videoDone && <p className="text-center text-blue-600 text-sm mb-3">🔒 شَاهِدِ الْفِيدِيُو كَامِلاً لِلتَّوَجُّهِ نَحْوَ الْجَزِيرَةِ</p>}
+            {!videoDone && <p className="text-center text-[#52744e] text-sm mb-3">🔒 شَاهِدِ الْفِيدِيُو كَامِلاً لِلتَّوَجُّهِ نَحْوَ الْجَزِيرَةِ</p>}
             <button onClick={() => goNext("cloud1")} disabled={!videoDone}
-              className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-95 transition-all disabled:opacity-40" style={{ background: "#1d4ed8" }}>
+              className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-[0.98] transition-all disabled:opacity-40" style={{ background: "#436444" }}>
               ☁️ تَوَجَّهْ نَحْوَ جَزِيرَةِ الْكَنْزِ
             </button>
           </Card>
@@ -396,8 +394,8 @@ export default function BalloonHamzaLesson() {
       case "cloud1":
         return (
           <Card>
-            <p className="text-sm text-blue-500 mb-1">☁️ الْغَيْمَةُ الْأُولَى — تَحَدِّي الْمَفْهُومِ</p>
-            <h2 className="text-2xl font-bold mb-5" style={{ color: "#1e3a8a" }}>أَهْلًا بِكَ يَا قَائِدَ الْمِنْطَادِ! صَوِّبْ نَحْوَ الْهَدَفِ الصَّحِيحِ: أَيْنَ تَسْكُنُ الْهَمْزَةُ الْمُتَطَرِّفَةُ دَائِمًا فِي الْكَلِمَةِ؟</h2>
+            <p className="text-sm text-[#536344] mb-1">☁️ الْغَيْمَةُ الْأُولَى — تَحَدِّي الْمَفْهُومِ</p>
+            <h2 className="text-2xl font-bold mb-5" style={{ color: "#293e32" }}>أَهْلًا بِكَ يَا قَائِدَ الْمِنْطَادِ! صَوِّبْ نَحْوَ الْهَدَفِ الصَّحِيحِ: أَيْنَ تَسْكُنُ الْهَمْزَةُ الْمُتَطَرِّفَةُ دَائِمًا فِي الْكَلِمَةِ؟</h2>
             <TargetField>
               {cloud1Options.map((o, i) => (
                 <TargetOption key={i} index={i} label={o.text} wide
@@ -412,11 +410,11 @@ export default function BalloonHamzaLesson() {
       case "cloud2":
         return (
           <Card>
-            <p className="text-sm text-blue-500 mb-1">☁️ الْغَيْمَةُ الثَّانِيَةُ — حَرَكَةُ الْحَرْفِ السَّابِقِ</p>
-            <h2 className="text-2xl font-bold mb-3" style={{ color: "#1e3a8a" }}>
+            <p className="text-sm text-[#536344] mb-1">☁️ الْغَيْمَةُ الثَّانِيَةُ — حَرَكَةُ الْحَرْفِ السَّابِقِ</p>
+            <h2 className="text-2xl font-bold mb-3" style={{ color: "#293e32" }}>
               الْهَمْزَةُ الْمُتَطَرِّفَةُ شَخْصِيَّةٌ حَسَّاسَةٌ، يَتَغَيَّرُ كُرْسِيُّهَا بِحَسَبِ حَرَكَةِ الْحَرْفِ الَّذِي يَسْبِقُهَا! انْظُرْ لِكَلِمَةِ (شاطِئ)، مَا حَرَكَةُ حَرْفِ الطَّاءِ؟
             </h2>
-            <p className="text-center text-4xl font-bold mb-5 p-3 rounded-2xl" style={{ background: "#eff6ff", color: "#1e3a8a", fontFamily: "'Amiri', serif" }}>
+            <p className="text-center text-4xl font-bold mb-5 p-3 rounded-2xl" style={{ background: "#f1f5e9", color: "#293e32", fontFamily: "var(--font-brand)" }}>
               شَا<span className="underline decoration-wavy decoration-blue-600">طِ</span>ئ
             </p>
             <TargetField>
@@ -433,8 +431,8 @@ export default function BalloonHamzaLesson() {
       case "cloud3":
         return (
           <Card>
-            <p className="text-sm text-blue-500 mb-1">☁️ الْغَيْمَةُ الثَّالِثَةُ — تَعْلِيلُ الْكَرَاسِيِّ الْأَرْبَعَةِ</p>
-            <h2 className="text-2xl font-bold mb-5" style={{ color: "#1e3a8a", fontFamily: "'Amiri', serif" }}>لِمَاذَا كُتِبَتِ الْهَمْزَةُ الْمُتَطَرِّفَةُ عَلَى وَاوٍ فِي كَلِمَةِ (يَجْرُؤ)؟ صَوِّبْ نَحْوَ الْهَدَفِ الصَّحِيحِ:</h2>
+            <p className="text-sm text-[#536344] mb-1">☁️ الْغَيْمَةُ الثَّالِثَةُ — تَعْلِيلُ الْكَرَاسِيِّ الْأَرْبَعَةِ</p>
+            <h2 className="text-2xl font-bold mb-5" style={{ color: "#293e32", fontFamily: "var(--font-brand)" }}>لِمَاذَا كُتِبَتِ الْهَمْزَةُ الْمُتَطَرِّفَةُ عَلَى وَاوٍ فِي كَلِمَةِ (يَجْرُؤ)؟ صَوِّبْ نَحْوَ الْهَدَفِ الصَّحِيحِ:</h2>
             <TargetField>
               {cloud3Options.map((o, i) => (
                 <TargetOption key={i} index={i} label={`${i + 1}. ${o.text}`} wide
@@ -449,9 +447,9 @@ export default function BalloonHamzaLesson() {
       case "cloud4":
         return (
           <Card>
-            <p className="text-sm text-blue-500 mb-1">☁️ الْغَيْمَةُ الرَّابِعَةُ — تَجَاوُزُ الْعَاصِفَةِ</p>
-            <h2 className="text-2xl font-bold mb-3" style={{ color: "#1e3a8a" }}>هُنَاكَ عَاصِفَةٌ إِمْلَائِيَّةٌ أَفْسَدَتِ الْكَلِمَةَ الْأَخِيرَةَ! صَوِّبْ نَحْوَ الْهَدَفِ الَّذِي يَحْمِلُ الشَّكْلَ الصَّحِيحَ لِتَصِلَ إِلَى بَرِّ الْأَمَانِ:</h2>
-            <p className="text-center text-3xl font-bold mb-5 p-4 rounded-2xl" style={{ background: "#eff6ff", color: "#1e3a8a", fontFamily: "'Amiri', serif" }}>
+            <p className="text-sm text-[#536344] mb-1">☁️ الْغَيْمَةُ الرَّابِعَةُ — تَجَاوُزُ الْعَاصِفَةِ</p>
+            <h2 className="text-2xl font-bold mb-3" style={{ color: "#293e32" }}>هُنَاكَ عَاصِفَةٌ إِمْلَائِيَّةٌ أَفْسَدَتِ الْكَلِمَةَ الْأَخِيرَةَ! صَوِّبْ نَحْوَ الْهَدَفِ الَّذِي يَحْمِلُ الشَّكْلَ الصَّحِيحَ لِتَصِلَ إِلَى بَرِّ الْأَمَانِ:</h2>
+            <p className="text-center text-3xl font-bold mb-5 p-4 rounded-2xl" style={{ background: "#f1f5e9", color: "#293e32", fontFamily: "var(--font-brand)" }}>
               الْجَوُّ بَارِدٌ وَأَشْعُرُ بِالـ <span className="text-red-500 underline decoration-wavy">دَفُو</span>
             </p>
             <TargetField>
@@ -470,23 +468,23 @@ export default function BalloonHamzaLesson() {
           <Card>
             {!islandOpened ? (
               <div className="text-center">
-                <div className="text-7xl mb-4 animate-bounce">🏝️📦</div>
-                <h2 className="text-2xl font-bold mb-2" style={{ color: "#1e3a8a" }}>هَبَطْتَ بِسَلَامٍ عَلَى جَزِيرَةِ الْكَنْزِ الطَّائِرَةِ!</h2>
-                <p className="text-blue-700 text-base mb-5">اسْتَخْدِمْ مِفْتَاحَيِ الْوَقُودِ لِفَتْحِ الصُّنْدُوقِ ({fuel}/2 ⛽)</p>
+                <div className="text-7xl mb-4 animate-pulse">🏝️📦</div>
+                <h2 className="text-2xl font-bold mb-2" style={{ color: "#293e32" }}>هَبَطْتَ بِسَلَامٍ عَلَى جَزِيرَةِ الْكَنْزِ الطَّائِرَةِ!</h2>
+                <p className="text-[#436444] text-base mb-5">اسْتَخْدِمْ مِفْتَاحَيِ الْوَقُودِ لِفَتْحِ الصُّنْدُوقِ ({fuel}/2 ⛽)</p>
                 <button onClick={() => setIslandOpened(true)} disabled={fuel < 2}
-                  className="py-3.5 px-8 rounded-2xl text-white font-bold text-xl active:scale-95 transition-all disabled:opacity-40" style={{ background: "#ea580c" }}>
+                  className="py-3.5 px-8 rounded-2xl text-white font-bold text-xl active:scale-[0.98] transition-all disabled:opacity-40" style={{ background: "#c2410c" }}>
                   🔓 افْتَحِ الصُّنْدُوقَ
                 </button>
               </div>
             ) : (
               <div>
                 <div className="text-6xl text-center mb-3">✨🏆🎈</div>
-                <h2 className="text-2xl font-bold text-center mb-4" style={{ color: "#1e3a8a" }}>الْقَاعِدَةُ الذَّهَبِيَّةُ لِلْهَمْزَةِ الْمُتَطَرِّفَةِ</h2>
-                <div className="rounded-2xl p-4 mb-5" style={{ background: "#eff6ff", border: "2px solid #1d4ed8" }}>
-                  <p className="text-blue-900 leading-relaxed text-lg font-semibold mb-2">
+                <h2 className="text-2xl font-bold text-center mb-4" style={{ color: "#293e32" }}>الْقَاعِدَةُ الذَّهَبِيَّةُ لِلْهَمْزَةِ الْمُتَطَرِّفَةِ</h2>
+                <div className="rounded-2xl p-4 mb-5" style={{ background: "#f1f5e9", border: "2px solid #436444" }}>
+                  <p className="text-[#293e32] leading-relaxed text-lg font-semibold mb-2">
                     الْهَمْزَةُ الْمُتَطَرِّفَةُ هِيَ الَّتِي تَأْتِي فِي آخِرِ الْكَلِمَةِ، وَتُكْتَبُ بِحَسَبِ حَرَكَةِ الْحَرْفِ الَّذِي قَبْلَهَا:
                   </p>
-                  <ul className="space-y-1 text-blue-800 text-base">
+                  <ul className="space-y-1 text-[#35533b] text-base">
                     <li>• عَلَى (أَلِف) إِذَا كَانَ مَا قَبْلَهَا مَفْتُوحًا (مِثْلَ: قَرَأ).</li>
                     <li>• عَلَى (وَاو) إِذَا كَانَ مَا قَبْلَهَا مَضْمُومًا (مِثْلَ: لُؤْلُؤ).</li>
                     <li>• عَلَى (يَاءٍ غَيْرِ مَنْقُوطَةٍ) إِذَا كَانَ مَا قَبْلَهَا مَكْسُورًا (مِثْلَ: شاطِئ).</li>
@@ -494,7 +492,7 @@ export default function BalloonHamzaLesson() {
                   </ul>
                 </div>
                 <button onClick={() => setPhase("results")}
-                  className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-95 transition-all" style={{ background: "#1d4ed8" }}>
+                  className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-[0.98] transition-all" style={{ background: "#436444" }}>
                   عَرْضُ النَّتِيجَةِ 🎉
                 </button>
               </div>
@@ -517,10 +515,10 @@ export default function BalloonHamzaLesson() {
               achievements={achievements}
             >
               <div className="flex gap-3">
-                <button onClick={resetAll} className="flex-1 py-3 rounded-2xl font-bold" style={{ background: "#eff6ff", color: "#1e3a8a", border: "2px solid #bfdbfe" }}>
+                <button onClick={resetAll} className="flex-1 py-3 rounded-2xl font-bold" style={{ background: "#f1f5e9", color: "#293e32", border: "2px solid #d3dfc2" }}>
                   🔄 إِعَادَةُ اللَّعِبِ
                 </button>
-                <button onClick={() => setLocation("/writing-games")} className="flex-1 py-3 rounded-2xl text-white font-bold" style={{ background: "#1d4ed8" }}>
+                <button onClick={() => setLocation("/writing-games")} className="flex-1 py-3 rounded-2xl text-white font-bold" style={{ background: "#436444" }}>
                   الْمَقَرُّ الرَّئِيسِيُّ ←
                 </button>
               </div>
@@ -533,15 +531,15 @@ export default function BalloonHamzaLesson() {
   }
 
   return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", minHeight: "100vh" }} className="relative">
+    <div dir="rtl" style={{ fontFamily: "var(--font-brand)", minHeight: "100vh" }} className="relative game-world">
       <TargetStyles />
       <GameFeelStyles />
-      <ComboIndicator combo={combo} pulseKey={pulseKey} accent="#1d4ed8" />
+      <ComboIndicator combo={combo} pulseKey={pulseKey} accent="#436444" />
       <SkyBackdrop phase={phase} interactive={!cardVisible} onActivate={() => setCardVisible(true)} reaction={reaction} reactKey={reactKey} />
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col min-h-screen pointer-events-none">
         <TopBar stars={stars} fuel={fuel} onBack={() => setLocation("/writing-games")} />
         <div className="flex-1 flex items-start justify-center pt-6 pb-8 overflow-y-auto">
-          {cardVisible && <div key={phase} className="fade-in-up w-full flex justify-center">{renderScreen()}</div>}
+          {cardVisible && <div key={phase} className="fade-in-up w-full flex justify-center pointer-events-auto">{renderScreen()}</div>}
         </div>
       </div>
     </div>

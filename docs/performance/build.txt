@@ -1,0 +1,39 @@
+
+> sawti-qalami@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v7.1.9 building for production...
+(node:36693) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+transforming...
+✓ 2265 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                               0.67 kB │ gzip:   0.43 kB
+../dist/public/assets/index-CG6wtuL8.css              177.72 kB │ gzip:  30.38 kB
+../dist/public/assets/skeleton-DSQzraHr.js              0.20 kB │ gzip:   0.18 kB
+../dist/public/assets/Skills-B4hoKvni.js                0.67 kB │ gzip:   0.42 kB
+../dist/public/assets/ResultSkeleton-B686bh2m.js        0.96 kB │ gzip:   0.48 kB
+../dist/public/assets/SkillLibraryHeader-Cpdx-waQ.js    1.29 kB │ gzip:   0.70 kB
+../dist/public/assets/ClassSelection-DL0zHWMP.js        2.41 kB │ gzip:   1.03 kB
+../dist/public/assets/NotFound-CF5VnkRy.js              4.07 kB │ gzip:   1.80 kB
+../dist/public/assets/Assessments-CM78RsEc.js           4.14 kB │ gzip:   1.72 kB
+../dist/public/assets/AudioWaveform-Cy608QEv.js         4.88 kB │ gzip:   2.19 kB
+../dist/public/assets/dictation-data-pjeki6Mb.js        5.52 kB │ gzip:   1.04 kB
+../dist/public/assets/game-widgets-BO2K08FN.js          7.49 kB │ gzip:   2.63 kB
+../dist/public/assets/Dashboard-DcSP2eBw.js            15.48 kB │ gzip:   5.33 kB
+../dist/public/assets/BalloonHamzaLesson-BYIR5kcE.js   21.09 kB │ gzip:   6.57 kB
+../dist/public/assets/TreasureMapLesson-DDNBsxK1.js    21.15 kB │ gzip:   6.83 kB
+../dist/public/assets/DiverPearlLesson-BysIvzU5.js     21.72 kB │ gzip:   6.69 kB
+../dist/public/assets/Speaking-uGtu-elg.js             37.65 kB │ gzip:  11.23 kB
+../dist/public/assets/Writing-mTp1Z5s7.js              38.17 kB │ gzip:   9.99 kB
+../dist/public/assets/WritingGames-B3TKboP1.js         52.89 kB │ gzip:   9.74 kB
+../dist/public/assets/SelfLearning-CJ4G-oPp.js         52.94 kB │ gzip:  13.53 kB
+../dist/public/assets/Teacher-Bip2C9GD.js              80.51 kB │ gzip:  18.76 kB
+../dist/public/assets/index-BhmWwC4c.js               357.79 kB │ gzip: 112.92 kB
+../dist/public/assets/BarChart-CeDWdpA6.js            375.75 kB │ gzip: 103.52 kB
+✓ built in 5.22s
+
+  dist/index.js  788b
+
+⚡ Done in 3ms

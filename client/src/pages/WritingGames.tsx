@@ -1,7 +1,9 @@
+import { ArrowLeft, Map } from "lucide-react";
+import { ActivityHeader, JourneyCover } from "@/components/ActivityUI";
 import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { playEffect, stopAll, audioFile } from "@/lib/audio";
-import { getGames } from "@/lib/api";
+import { API_BASE, getGames } from "@/lib/api";
 
 /* ══════════════════════════════════════════════════════
    UTIL — shuffle (Fisher–Yates) so option order/correct
@@ -23,7 +25,7 @@ function shuffle<T>(arr: T[]): T[] {
 function ContinueButton({ onClick, color }: { onClick: () => void; color: string }) {
   return (
     <button onClick={onClick}
-      className="w-full mt-3 py-3 rounded-2xl text-white font-bold active:scale-95 transition-all"
+      className="w-full mt-3 py-3 rounded-2xl text-white font-bold active:scale-[0.98] transition-all"
       style={{ background: color }}>
       اسْتَمِرَّ ←
     </button>
@@ -37,7 +39,7 @@ function Confetti({ trigger }: { trigger: number }) {
   const [pieces, setPieces] = useState<Array<{ id: number; x: number; color: string; delay: number }>>([]);
   useEffect(() => {
     if (trigger === 0) return;
-    const colors = ["#1a5c2a","#f5c842","#1d4ed8","#dc2626","#7c3aed","#d97706"];
+    const colors = ["#075348","#c6a260","#436444","#dc2626","#887247","#a08b55"];
     const newPieces = Array.from({ length: 20 }, (_, i) => ({
       id: Date.now() + i, x: 5 + Math.random() * 90,
       color: colors[i % colors.length], delay: Math.random() * 0.4,
@@ -133,9 +135,9 @@ function Lesson1({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
   const [phase, setPhase] = useState(0);
   const [confetti, setConfetti] = useState(0);
 
-  const gateSource = (apiData?.l1_gate?.length ? apiData.l1_gate : L1_GATE_WORDS);
-  const crossSource = (apiData?.l1_cross?.length ? apiData.l1_cross : L1_CROSSWORD);
-  const fixSource   = (apiData?.l1_fix?.length   ? apiData.l1_fix   : L1_FIX);
+  const gateSource : typeof L1_GATE_WORDS = (apiData?.l1_gate?.length ? apiData.l1_gate : L1_GATE_WORDS);
+  const crossSource : typeof L1_CROSSWORD = (apiData?.l1_cross?.length ? apiData.l1_cross : L1_CROSSWORD);
+  const fixSource : typeof L1_FIX   = (apiData?.l1_fix?.length   ? apiData.l1_fix   : L1_FIX);
 
   const [gateWords] = useState(() => [...gateSource].sort(() => Math.random() - 0.5));
   const [gateIdx, setGateIdx] = useState(0);
@@ -215,7 +217,7 @@ function Lesson1({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
   const accent = "#059669";
 
   return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
+    <div dir="rtl" style={{ fontFamily: "var(--font-brand)", background: "#f7f7f2", minHeight: "100vh" }}>
       <Confetti trigger={confetti} />
       <div className="p-4" style={{ background: "linear-gradient(135deg,#064e3b,#065f46)" }}>
         <button onClick={onBack} className="text-emerald-200 text-sm mb-2">← قَائِمَةُ الدُّرُوسِ</button>
@@ -241,7 +243,7 @@ function Lesson1({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
         {phase === 0 && (
           <div className="space-y-4">
             <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-5 text-right text-gray-800">
-              <h2 className="text-2xl font-bold mb-5 text-center" style={{ color: "#b45309" }}>🎯 مَاذَا سَتَتَعَلَّمُ؟</h2>
+              <h2 className="text-2xl font-bold mb-5 text-center" style={{ color: "#8a7247" }}>🎯 مَاذَا سَتَتَعَلَّمُ؟</h2>
               {[
                 "تَعْرِفُ مَتَى تُكْتَبُ الْهَمْزَةُ عَلَى نَبْرَةٍ (ياء)",
                 "تُعَلِّلُ سَبَبَ كِتَابَتِهَا بِمُقَارَنَةِ الْحَرَكَاتِ",
@@ -257,7 +259,7 @@ function Lesson1({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
               <p>⏱️ الْوَقْتُ الْمُتَوَقَّعُ: ١٠ دَقَائِقَ &nbsp;|&nbsp; ٥ مَرَاحِلَ</p>
             </div>
             <button onClick={() => setPhase(1)}
-              className="w-full py-4 rounded-2xl text-white text-lg font-bold transition-all active:scale-95"
+              className="w-full py-4 rounded-2xl text-white text-lg font-bold transition-all active:scale-[0.98]"
               style={{ background: `linear-gradient(135deg,${accent},#047857)` }}>
               هَيَّا نَبْدَأ! 🚀
             </button>
@@ -270,7 +272,7 @@ function Lesson1({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
             <PhaseHeader phase={2} total={5} title="التَّمْهِيدُ — مَعْرَكَةُ الْحَرَكَاتِ!" color={accent} />
             <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-5 text-right text-gray-800">
               <div className="text-center text-4xl mb-4">⚔️</div>
-              <h3 className="font-bold text-lg mb-3" style={{ color: "#b45309" }}>مَعْرَكَةُ الْحَرَكَاتِ!</h3>
+              <h3 className="font-bold text-lg mb-3" style={{ color: "#8a7247" }}>مَعْرَكَةُ الْحَرَكَاتِ!</h3>
               <p className="text-sm leading-loose mb-4">
                 فِي مَمْلَكَةِ الْكَلِمَاتِ، نَشَبَتْ مَعْرَكَةٌ بَيْنَ الْحَرَكَاتِ الثَّلَاثِ:
               </p>
@@ -283,23 +285,23 @@ function Lesson1({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                   <div key={i} className="bg-white shadow-sm border border-gray-100 rounded-xl p-3 text-center">
                     <div className="text-2xl mb-1">{h.icon}</div>
                     <p className="text-xs font-bold text-gray-700">{h.h}</p>
-                    <p className="text-xs" style={{ color: i === 2 ? "#b45309" : "#9ca3af" }}>{h.power}</p>
+                    <p className="text-xs" style={{ color: i === 2 ? "#8a7247" : "#9ca3af" }}>{h.power}</p>
                   </div>
                 ))}
               </div>
               <div className="bg-yellow-500/20 rounded-xl p-3 text-center">
-                <p className="text-sm font-bold" style={{ color: "#b45309" }}>
+                <p className="text-sm font-bold" style={{ color: "#8a7247" }}>
                   📌 الْقَاعِدَةُ الذَّهَبِيَّةُ: إِذَا وُجِدَتِ الْكَسْرَةُ (قَبْلَ الْهَمْزَةِ أَوْ بَعْدَهَا) → الْهَمْزَةُ عَلَى نَبْرَةٍ ئ
                 </p>
               </div>
             </div>
             <div className="bg-white shadow-sm border border-gray-100 rounded-2xl p-4 text-right text-gray-800">
               <p className="text-sm font-bold mb-3" style={{ color: "#15803d" }}>مثال تفاعلي:</p>
-              <p className="text-lg font-bold text-center mb-2" style={{ fontFamily: "'Amiri', serif" }}>سُ + ئ + ل = سُئِلَ</p>
+              <p className="text-lg font-bold text-center mb-2" style={{ fontFamily: "var(--font-brand)" }}>سُ + ئ + ل = سُئِلَ</p>
               <p className="text-xs text-center text-gray-500">الكسرة بعد الهمزة → تكتب على نبرة ✅</p>
             </div>
             <button onClick={() => setPhase(2)}
-              className="w-full py-4 rounded-2xl text-white font-bold active:scale-95"
+              className="w-full py-4 rounded-2xl text-white font-bold active:scale-[0.98]"
               style={{ background: `linear-gradient(135deg,${accent},#047857)` }}>
               إِلَى الْمَرْحَلَةِ الأُولَى! 🔓
             </button>
@@ -319,7 +321,7 @@ function Lesson1({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                 <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-6 text-center mb-5">
                   <p className="text-gray-500 text-sm mb-1">الْكَلِمَةُ التَّالِيَةُ مَكْتُوبَةٌ بِشَكْلٍ صَحِيحٍ. صَنِّفْهَا:</p>
                   <p className="text-gray-400 text-xs mb-3">هَلْ هَمْزَتُهَا مِنْ نَوْعِ "عَلَى نَبْرَةٍ" (ئ)؟</p>
-                  <p className="font-bold text-gray-800 mb-4 text-center" style={{ fontFamily: "'Amiri', serif", fontSize: "clamp(1.8rem, 8vw, 3.5rem)", lineHeight: "1.6", wordBreak: "break-word" }}>{gateWords[gateIdx].word}</p>
+                  <p className="font-bold text-gray-800 mb-4 text-center" style={{ fontFamily: "var(--font-brand)", fontSize: "clamp(1.8rem, 8vw, 3.5rem)", lineHeight: "1.6", wordBreak: "break-word" }}>{gateWords[gateIdx].word}</p>
                   {gateFeedback && (
                     <div className={`text-sm font-bold rounded-xl px-4 py-2 ${gateFeedback === "correct" ? "bg-green-500/30 text-green-200" : "bg-red-500/30 text-red-200"}`}>
                       {gateFeedback === "correct" ? "✅ صَحِيحٌ!" : `❌ ${gateWords[gateIdx].reason}`}
@@ -328,10 +330,10 @@ function Lesson1({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                 </div>
                 <div className="flex gap-4">
                   <button onClick={() => gateAnswer(false)} disabled={!!gateFeedback}
-                    className="flex-1 py-4 rounded-2xl text-white font-bold text-xl active:scale-95 disabled:opacity-50"
+                    className="flex-1 py-4 rounded-2xl text-white font-bold text-xl active:scale-[0.98] disabled:opacity-50"
                     style={{ background: "linear-gradient(135deg,#dc2626,#b91c1c)" }}>❌ لَا</button>
                   <button onClick={() => gateAnswer(true)} disabled={!!gateFeedback}
-                    className="flex-1 py-4 rounded-2xl text-white font-bold text-xl active:scale-95 disabled:opacity-50"
+                    className="flex-1 py-4 rounded-2xl text-white font-bold text-xl active:scale-[0.98] disabled:opacity-50"
                     style={{ background: `linear-gradient(135deg,${accent},#047857)` }}>✅ نَعَمْ</button>
                 </div>
                 {gateFeedback === "wrong" && <ContinueButton onClick={advanceGate} color={accent} />}
@@ -373,8 +375,8 @@ function Lesson1({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                     if (crossSelected) { bg = isCorrect ? "#059669" : isSelected ? "#dc2626" : "#fdf6ec"; textColor = (isCorrect || isSelected) ? "#ffffff" : "#374151"; }
                     return (
                       <button key={opt} onClick={() => crossAnswer(opt)} disabled={!!crossSelected}
-                        className="py-4 rounded-2xl font-bold text-xl transition-all active:scale-95 disabled:opacity-90"
-                        style={{ background: bg, color: textColor, fontFamily: "'Amiri', serif", border: isSelected ? "2px solid " + (textColor === "#ffffff" ? "white" : "#d1d5db") : "2px solid transparent" }}>
+                        className="py-4 rounded-2xl font-bold text-xl transition-all active:scale-[0.98] disabled:opacity-90"
+                        style={{ background: bg, color: textColor, fontFamily: "var(--font-brand)", border: isSelected ? "2px solid " + (textColor === "#ffffff" ? "white" : "#d1d5db") : "2px solid transparent" }}>
                         {opt}
                       </button>
                     );
@@ -402,13 +404,13 @@ function Lesson1({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
             {!fixDone ? (
               <>
                 <div className="w-full h-2 bg-white shadow-sm border border-gray-100 rounded-full mb-3">
-                  <div className="h-2 rounded-full transition-all" style={{ width: `${(fixIdx/L1_FIX.length)*100}%`, background: "#f5c842" }} />
+                  <div className="h-2 rounded-full transition-all" style={{ width: `${(fixIdx/L1_FIX.length)*100}%`, background: "#c6a260" }} />
                 </div>
                 <p className="text-gray-400 text-xs text-center mb-4">{fixIdx+1} / {L1_FIX.length}</p>
                 <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-5 text-center mb-4">
                   <p className="text-gray-500 text-sm mb-2">🔑 اخْتَرِ الْكِتَابَةَ الصَّحِيحَةَ لِفَتْحِ الْكَنْزِ</p>
-                  <p className="text-3xl line-through text-red-400 font-bold mb-1" style={{ fontFamily: "'Amiri', serif" }}>{L1_FIX[fixIdx].wrong}</p>
-                  <p className="text-xs text-amber-700">💡 {L1_FIX[fixIdx].rule}</p>
+                  <p className="text-3xl line-through text-red-400 font-bold mb-1" style={{ fontFamily: "var(--font-brand)" }}>{L1_FIX[fixIdx].wrong}</p>
+                  <p className="text-xs text-[#8a7247]">💡 {L1_FIX[fixIdx].rule}</p>
                   {fixFeedback && (
                     <div className={`mt-3 text-sm font-bold rounded-xl px-4 py-2 ${fixFeedback === "correct" ? "bg-green-500/30 text-green-200" : "bg-red-500/30 text-red-200"}`}>
                       {fixFeedback === "correct" ? "✅ مِفْتَاحٌ صَحِيحٌ!" : `❌ الصَّوَابُ: ${L1_FIX[fixIdx].correct}`}
@@ -425,19 +427,19 @@ function Lesson1({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                     if (fixFeedback) { bg = isCorrect ? "#059669" : isSelected ? "#dc2626" : "#fdf6ec"; textColor = (isCorrect || isSelected) ? "#ffffff" : "#374151"; }
                     return (
                       <button key={opt} onClick={() => fixAnswer(opt)} disabled={!!fixFeedback}
-                        className="py-4 rounded-2xl font-bold text-xl transition-all active:scale-95 disabled:opacity-90"
-                        style={{ background: bg, color: textColor, fontFamily: "'Amiri', serif" }}>
+                        className="py-4 rounded-2xl font-bold text-xl transition-all active:scale-[0.98] disabled:opacity-90"
+                        style={{ background: bg, color: textColor, fontFamily: "var(--font-brand)" }}>
                         {opt}
                       </button>
                     );
                   })}
                 </div>
-                {fixFeedback === "wrong" && <ContinueButton onClick={advanceFix} color="#f5c842" />}
+                {fixFeedback === "wrong" && <ContinueButton onClick={advanceFix} color="#c6a260" />}
               </>
             ) : (
               <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-6 text-center text-gray-800">
                 <div className="text-6xl mb-3">🏆</div>
-                <h3 className="text-2xl font-bold mb-2" style={{ color: "#b45309" }}>فَتَحْتَ صَنْدُوقَ الْكَنْزِ!</h3>
+                <h3 className="text-2xl font-bold mb-2" style={{ color: "#8a7247" }}>فَتَحْتَ صَنْدُوقَ الْكَنْزِ!</h3>
                 <p className="text-emerald-600 mb-2">أَصَبْتَ {fixScore} مِنْ {L1_FIX.length}</p>
                 <p className="text-gray-500 text-sm mb-5">أَتْقَنْتَ الْهَمْزَةَ الْمُتَوَسِّطَةَ عَلَى نَبْرَةٍ! 🎉</p>
                 <button onClick={onBack} className="w-full py-3 rounded-2xl text-white font-bold" style={{ background: accent }}>
@@ -524,9 +526,9 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
   const [phase, setPhase] = useState(0);
   const [confetti, setConfetti] = useState(0);
 
-  const riverSource = (apiData?.l2_river?.length ? apiData.l2_river : L2_RIVER_WORDS);
-  const crossSource2 = (apiData?.l2_cross?.length ? apiData.l2_cross : L2_CROSSWORD);
-  const fillSource  = (apiData?.l2_fill?.length  ? apiData.l2_fill  : L2_FILL);
+  const riverSource : typeof L2_RIVER_WORDS = (apiData?.l2_river?.length ? apiData.l2_river : L2_RIVER_WORDS);
+  const crossSource2 : typeof L2_CROSSWORD = (apiData?.l2_cross?.length ? apiData.l2_cross : L2_CROSSWORD);
+  const fillSource : typeof L2_FILL  = (apiData?.l2_fill?.length  ? apiData.l2_fill  : L2_FILL);
 
   const [riverWords] = useState(() => [...riverSource].sort(() => Math.random() - 0.5));
   const [riverIdx, setRiverIdx] = useState(0);
@@ -600,23 +602,23 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
     }
   }
 
-  const bg = "linear-gradient(180deg,#1e40af,#2563eb)";
-  const accent = "#1d4ed8";
+  const bg = "linear-gradient(180deg,#35533b,#52744e)";
+  const accent = "#436444";
 
   return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
+    <div dir="rtl" style={{ fontFamily: "var(--font-brand)", background: "#f7f7f2", minHeight: "100vh" }}>
       <Confetti trigger={confetti} />
-      <div className="p-4" style={{ background: "linear-gradient(135deg,#1e3a8a,#1d4ed8)" }}>
-        <button onClick={onBack} className="text-blue-200 text-sm mb-2">← قَائِمَةُ الدُّرُوسِ</button>
+      <div className="p-4" style={{ background: "linear-gradient(135deg,#293e32,#436444)" }}>
+        <button onClick={onBack} className="text-[#d3dfc2] text-sm mb-2">← قَائِمَةُ الدُّرُوسِ</button>
         <div className="flex justify-between items-center">
-          <span className="text-xs px-3 py-1 rounded-full text-white font-bold bg-blue-600">الدَّرْسُ الثَّانِي</span>
+          <span className="text-xs px-3 py-1 rounded-full text-white font-bold bg-[#52744e]">الدَّرْسُ الثَّانِي</span>
           <h1 className="text-xl font-bold text-white text-right">الْهَمْزَةُ عَلَى السَّطْرِ</h1>
         </div>
         <div className="flex gap-1 mt-3">
           {["🎯","🎬","🌊","🔤","🏆"].map((icon, i) => (
             <div key={i} onClick={() => i < phase && setPhase(i)}
               className="flex-1 h-8 rounded-lg flex items-center justify-center text-sm transition-all"
-              style={{ background: i === phase ? accent : i < phase ? "#1e40af" : "#fdf6ec", cursor: i < phase ? "pointer" : "default" }}>
+              style={{ background: i === phase ? accent : i < phase ? "#35533b" : "#fdf6ec", cursor: i < phase ? "pointer" : "default" }}>
               {icon}
             </div>
           ))}
@@ -628,7 +630,7 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
         {phase === 0 && (
           <div className="space-y-4">
             <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-5 text-right text-gray-800">
-              <h2 className="text-2xl font-bold mb-5 text-center" style={{ color: "#1d4ed8" }}>🎯 مَاذَا سَتَتَعَلَّمُ؟</h2>
+              <h2 className="text-2xl font-bold mb-5 text-center" style={{ color: "#436444" }}>🎯 مَاذَا سَتَتَعَلَّمُ؟</h2>
               {[
                 "تَسْتَنْتِجُ مَتَى تُكْتَبُ الْهَمْزَةُ الْمُتَوَسِّطَةُ عَلَى السَّطْرِ",
                 "تُوَضِّحُ سَبَبَ كِتَابَتِهَا فِي كَلِمَاتٍ مُخْتَلِفَةٍ",
@@ -640,7 +642,7 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                 </div>
               ))}
             </div>
-            <button onClick={() => setPhase(1)} className="w-full py-4 rounded-2xl text-white text-lg font-bold active:scale-95" style={{ background: `linear-gradient(135deg,${accent},#1e40af)` }}>
+            <button onClick={() => setPhase(1)} className="w-full py-4 rounded-2xl text-white text-lg font-bold active:scale-[0.98]" style={{ background: `linear-gradient(135deg,${accent},#35533b)` }}>
               هَيَّا نَبْدَأ! 🚀
             </button>
           </div>
@@ -651,9 +653,9 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
             <PhaseHeader phase={2} total={5} title="التَّمْهِيدُ — الْمُحَقِّقُ وَالْهَمْزَةُ الْهَارِبَةُ!" color={accent} />
             <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-5 text-right text-gray-800">
               <div className="text-center text-4xl mb-4">🔍</div>
-              <h3 className="font-bold text-lg mb-3" style={{ color: "#1d4ed8" }}>الْمُحَقِّقُ وَالْهَمْزَةُ الْهَارِبَةُ!</h3>
+              <h3 className="font-bold text-lg mb-3" style={{ color: "#436444" }}>الْمُحَقِّقُ وَالْهَمْزَةُ الْهَارِبَةُ!</h3>
               <p className="text-sm leading-loose mb-3">اخْتَفَتِ الْهَمْزَةُ مِنْ كُرْسِيِّهَا! تَرَكَتْ رِسَالَةً:</p>
-              <div className="bg-blue-900/50 rounded-xl p-3 text-center mb-4 italic">
+              <div className="bg-[#293e32]/50 rounded-xl p-3 text-center mb-4 italic">
                 <p className="text-sm">"لَنْ أَجْلِسَ عَلَى أَيِّ كُرْسِيٍّ إِذَا كَانَ مَا قَبْلِي حَرْفَ مَدٍّ سَاكِنٌ (ألف أو واو)!"</p>
               </div>
               <div className="grid grid-cols-2 gap-2 mb-4">
@@ -669,10 +671,10 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                 </div>
               </div>
               <div className="bg-yellow-500/20 rounded-xl p-3 text-center">
-                <p className="text-sm font-bold" style={{ color: "#b45309" }}>📌 بَعْدَ أَلِفٍ أَوْ وَاوٍ سَاكِنَةٍ → الْهَمْزَةُ عَلَى السَّطْرِ ء</p>
+                <p className="text-sm font-bold" style={{ color: "#8a7247" }}>📌 بَعْدَ أَلِفٍ أَوْ وَاوٍ سَاكِنَةٍ → الْهَمْزَةُ عَلَى السَّطْرِ ء</p>
               </div>
             </div>
-            <button onClick={() => setPhase(2)} className="w-full py-4 rounded-2xl text-white font-bold active:scale-95" style={{ background: `linear-gradient(135deg,${accent},#1e40af)` }}>
+            <button onClick={() => setPhase(2)} className="w-full py-4 rounded-2xl text-white font-bold active:scale-[0.98]" style={{ background: `linear-gradient(135deg,${accent},#35533b)` }}>
               إِلَى الْمَرْحَلَةِ الأُولَى! 🌊
             </button>
           </div>
@@ -690,7 +692,7 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                 <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-6 text-center mb-5">
                   <p className="text-gray-500 text-sm mb-1">الْكَلِمَةُ التَّالِيَةُ مَكْتُوبَةٌ بِشَكْلٍ صَحِيحٍ. صَنِّفْهَا:</p>
                   <p className="text-gray-400 text-xs mb-3">هَلْ هَمْزَتُهَا مِنْ نَوْعِ "عَلَى السَّطْرِ" (ء)؟</p>
-                  <p className="font-bold text-gray-800 mb-4 text-center" style={{ fontFamily: "'Amiri', serif", fontSize: "clamp(1.8rem, 8vw, 3.5rem)", lineHeight: "1.6", wordBreak: "break-word" }}>{riverWords[riverIdx].word}</p>
+                  <p className="font-bold text-gray-800 mb-4 text-center" style={{ fontFamily: "var(--font-brand)", fontSize: "clamp(1.8rem, 8vw, 3.5rem)", lineHeight: "1.6", wordBreak: "break-word" }}>{riverWords[riverIdx].word}</p>
                   {riverFeedback && (
                     <div className={`text-sm font-bold rounded-xl px-4 py-2 ${riverFeedback === "correct" ? "bg-green-500/30 text-green-200" : "bg-red-500/30 text-red-200"}`}>
                       {riverFeedback === "correct" ? "✅ حَجَرٌ صَحِيحٌ!" : `❌ ${riverWords[riverIdx].reason}`}
@@ -698,8 +700,8 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                   )}
                 </div>
                 <div className="flex gap-4">
-                  <button onClick={() => riverAnswer(false)} disabled={!!riverFeedback} className="flex-1 py-4 rounded-2xl text-white font-bold text-xl active:scale-95 disabled:opacity-50" style={{ background: "linear-gradient(135deg,#dc2626,#b91c1c)" }}>❌ لَا</button>
-                  <button onClick={() => riverAnswer(true)} disabled={!!riverFeedback} className="flex-1 py-4 rounded-2xl text-white font-bold text-xl active:scale-95 disabled:opacity-50" style={{ background: `linear-gradient(135deg,${accent},#1e40af)` }}>✅ نَعَمْ</button>
+                  <button onClick={() => riverAnswer(false)} disabled={!!riverFeedback} className="flex-1 py-4 rounded-2xl text-white font-bold text-xl active:scale-[0.98] disabled:opacity-50" style={{ background: "linear-gradient(135deg,#dc2626,#b91c1c)" }}>❌ لَا</button>
+                  <button onClick={() => riverAnswer(true)} disabled={!!riverFeedback} className="flex-1 py-4 rounded-2xl text-white font-bold text-xl active:scale-[0.98] disabled:opacity-50" style={{ background: `linear-gradient(135deg,${accent},#35533b)` }}>✅ نَعَمْ</button>
                 </div>
                 {riverFeedback === "wrong" && <ContinueButton onClick={advanceRiver} color={accent} />}
               </>
@@ -707,7 +709,7 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
               <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-6 text-center text-gray-800">
                 <div className="text-5xl mb-3">{riverScore >= 7 ? "🌊" : "💧"}</div>
                 <h3 className="text-xl font-bold mb-2">{riverScore >= 7 ? "عَبَرْتَ النَّهَرَ!" : "حَاوِلْ مَرَّةً أُخْرَى"}</h3>
-                <p className="text-blue-600 mb-5">أَصَبْتَ {riverScore} مِنْ {riverWords.length}</p>
+                <p className="text-[#52744e] mb-5">أَصَبْتَ {riverScore} مِنْ {riverWords.length}</p>
                 {riverScore >= 7
                   ? <button onClick={() => setPhase(3)} className="w-full py-3 rounded-2xl text-white font-bold" style={{ background: accent }}>التَّالِي → 🔤</button>
                   : <button onClick={() => { setRiverIdx(0); setRiverScore(0); setRiverDone(false); }} className="w-full py-3 rounded-2xl text-gray-700 font-bold bg-gray-100">إِعَادَةٌ 🔄</button>
@@ -727,7 +729,7 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                 </div>
                 <p className="text-gray-400 text-xs text-center mb-4">{crossIdx+1} / {crossSource2.length}</p>
                 <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-5 text-center mb-4">
-                  <p className="text-blue-600 text-sm mb-2">🔍 مَا هَذِهِ الْكَلِمَةُ؟</p>
+                  <p className="text-[#52744e] text-sm mb-2">🔍 مَا هَذِهِ الْكَلِمَةُ؟</p>
                   <p className="text-gray-800 font-bold text-base">{crossSource2[crossIdx]?.clue}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -739,8 +741,8 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                     if (crossSelected) { bg = isCorrect ? "#059669" : isSelected ? "#dc2626" : "#fdf6ec"; textColor = (isCorrect || isSelected) ? "#ffffff" : "#374151"; }
                     return (
                       <button key={opt} onClick={() => crossAnswer(opt)} disabled={!!crossSelected}
-                        className="py-4 rounded-2xl font-bold text-xl transition-all active:scale-95 disabled:opacity-90"
-                        style={{ background: bg, color: textColor, fontFamily: "'Amiri', serif" }}>
+                        className="py-4 rounded-2xl font-bold text-xl transition-all active:scale-[0.98] disabled:opacity-90"
+                        style={{ background: bg, color: textColor, fontFamily: "var(--font-brand)" }}>
                         {opt}
                       </button>
                     );
@@ -753,7 +755,7 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
             ) : (
               <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-6 text-center text-gray-800">
                 <div className="text-5xl mb-3">🔤</div>
-                <p className="text-blue-600 mb-5">أَصَبْتَ {crossScore} مِنْ {L2_CROSSWORD.length}</p>
+                <p className="text-[#52744e] mb-5">أَصَبْتَ {crossScore} مِنْ {L2_CROSSWORD.length}</p>
                 <button onClick={() => setPhase(4)} className="w-full py-3 rounded-2xl text-white font-bold" style={{ background: accent }}>التَّالِي → 🏆</button>
               </div>
             )}
@@ -766,12 +768,12 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
             {!fillDone ? (
               <>
                 <div className="w-full h-2 bg-white shadow-sm border border-gray-100 rounded-full mb-3">
-                  <div className="h-2 rounded-full transition-all" style={{ width: `${(fillIdx/L2_FILL.length)*100}%`, background: "#f5c842" }} />
+                  <div className="h-2 rounded-full transition-all" style={{ width: `${(fillIdx/L2_FILL.length)*100}%`, background: "#c6a260" }} />
                 </div>
                 <p className="text-gray-400 text-xs text-center mb-4">{fillIdx+1} / {L2_FILL.length}</p>
                 <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-5 text-center mb-4">
                   <p className="text-gray-500 text-sm mb-3">🔑 اخْتَرِ الْكَلِمَةَ الصَّحِيحَةَ لِإِكْمَالِ الْجُمْلَةِ</p>
-                  <p className="text-gray-800 text-base leading-loose" style={{ fontFamily: "'Amiri', serif" }}>{L2_FILL[fillIdx].sentence}</p>
+                  <p className="text-gray-800 text-base leading-loose" style={{ fontFamily: "var(--font-brand)" }}>{L2_FILL[fillIdx].sentence}</p>
                   {fillFeedback && (
                     <div className={`mt-3 text-sm font-bold rounded-xl px-4 py-2 ${fillFeedback === "correct" ? "bg-green-500/30 text-green-200" : "bg-red-500/30 text-red-200"}`}>
                       {fillFeedback === "correct" ? "✅ صَحِيحٌ!" : `❌ الصَّوَابُ: ${L2_FILL[fillIdx].answer}`}
@@ -787,20 +789,20 @@ function Lesson2({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                     if (fillFeedback) { bg = isCorrect ? "#059669" : isSelected ? "#dc2626" : "#fdf6ec"; textColor = (isCorrect || isSelected) ? "#ffffff" : "#374151"; }
                     return (
                       <button key={opt} onClick={() => fillAnswer(opt)} disabled={!!fillFeedback}
-                        className="py-4 rounded-2xl font-bold text-xl transition-all active:scale-95 disabled:opacity-90"
-                        style={{ background: bg, color: textColor, fontFamily: "'Amiri', serif" }}>
+                        className="py-4 rounded-2xl font-bold text-xl transition-all active:scale-[0.98] disabled:opacity-90"
+                        style={{ background: bg, color: textColor, fontFamily: "var(--font-brand)" }}>
                         {opt}
                       </button>
                     );
                   })}
                 </div>
-                {fillFeedback === "wrong" && <ContinueButton onClick={advanceFill} color="#f5c842" />}
+                {fillFeedback === "wrong" && <ContinueButton onClick={advanceFill} color="#c6a260" />}
               </>
             ) : (
               <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-6 text-center text-gray-800">
                 <div className="text-6xl mb-3">🏆</div>
-                <h3 className="text-2xl font-bold mb-2" style={{ color: "#b45309" }}>مُمْتَازٌ!</h3>
-                <p className="text-blue-600 mb-5">أَتْقَنْتَ الْهَمْزَةَ الْمُتَوَسِّطَةَ عَلَى السَّطْرِ! 🎉</p>
+                <h3 className="text-2xl font-bold mb-2" style={{ color: "#8a7247" }}>مُمْتَازٌ!</h3>
+                <p className="text-[#52744e] mb-5">أَتْقَنْتَ الْهَمْزَةَ الْمُتَوَسِّطَةَ عَلَى السَّطْرِ! 🎉</p>
                 <button onClick={onBack} className="w-full py-3 rounded-2xl text-white font-bold" style={{ background: accent }}>الْعَوْدَةُ إِلَى الدُّرُوسِ</button>
               </div>
             )}
@@ -832,14 +834,14 @@ const L3_MOUNTAIN_WORDS = [
   { word: "مَلْجَأٌ",   chair: "أ",  reason: "ما قبلها مفتوح (جَـ)",    color: "#059669" },
   { word: "نَشَأَ",     chair: "أ",  reason: "ما قبلها مفتوح (شَـ)",    color: "#059669" },
   // على واو — ما قبلها مضموم
-  { word: "يَجْرُؤُ",  chair: "ؤ",  reason: "ما قبلها مضموم (رُـ)",    color: "#1d4ed8" },
-  { word: "تَبُؤُ",    chair: "ؤ",  reason: "ما قبلها مضموم (بُـ)",    color: "#1d4ed8" },
+  { word: "يَجْرُؤُ",  chair: "ؤ",  reason: "ما قبلها مضموم (رُـ)",    color: "#436444" },
+  { word: "تَبُؤُ",    chair: "ؤ",  reason: "ما قبلها مضموم (بُـ)",    color: "#436444" },
   // على ياء — ما قبلها مكسور
-  { word: "شَاطِئٌ",   chair: "ئ",  reason: "ما قبلها مكسور (طِـ)",    color: "#7c3aed" },
-  { word: "مَنَاشِئُ", chair: "ئ",  reason: "ما قبلها مكسور (شِـ)",    color: "#7c3aed" },
+  { word: "شَاطِئٌ",   chair: "ئ",  reason: "ما قبلها مكسور (طِـ)",    color: "#887247" },
+  { word: "مَنَاشِئُ", chair: "ئ",  reason: "ما قبلها مكسور (شِـ)",    color: "#887247" },
   // على السطر — ما قبلها ساكن
-  { word: "دِفْءٌ",    chair: "ء",  reason: "ما قبلها ساكن (فْـ)",     color: "#b45309" },
-  { word: "شَيْءٌ",    chair: "ء",  reason: "ما قبلها ساكن (يْـ)",     color: "#b45309" },
+  { word: "دِفْءٌ",    chair: "ء",  reason: "ما قبلها ساكن (فْـ)",     color: "#8a7247" },
+  { word: "شَيْءٌ",    chair: "ء",  reason: "ما قبلها ساكن (يْـ)",     color: "#8a7247" },
 ];
 
 /*
@@ -872,18 +874,18 @@ const L3_CHAIR_QUIZ_WORDS = [
 ];
 
 const L3_CHAIRS = [
-  { id: "أ", label: "مَفْتُوحٌ قَبْلَهَا", color: "#059669", bg: "#dcf5e7" },
-  { id: "ؤ", label: "مَضْمُومٌ قَبْلَهَا", color: "#1d4ed8", bg: "#dbeafe" },
-  { id: "ئ", label: "مَكْسُورٌ قَبْلَهَا", color: "#7c3aed", bg: "#f3e8ff" },
-  { id: "ء", label: "سَاكِنٌ قَبْلَهَا",   color: "#b45309", bg: "#fef3e2" },
+  { id: "أ", label: "مَفْتُوحٌ قَبْلَهَا", color: "#059669", bg: "#e9f0df" },
+  { id: "ؤ", label: "مَضْمُومٌ قَبْلَهَا", color: "#436444", bg: "#e6eddc" },
+  { id: "ئ", label: "مَكْسُورٌ قَبْلَهَا", color: "#887247", bg: "#f3e8ff" },
+  { id: "ء", label: "سَاكِنٌ قَبْلَهَا",   color: "#8a7247", bg: "#fef3e2" },
 ];
 
 function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
   const [phase, setPhase] = useState(0);
   const [confetti, setConfetti] = useState(0);
 
-  const mtnSource    = apiData?.l3_mountain?.length ? apiData.l3_mountain : L3_MOUNTAIN_WORDS;
-  const crossSource3 = apiData?.l3_cross?.length    ? apiData.l3_cross    : L3_CROSSWORD;
+  const mtnSource : typeof L3_MOUNTAIN_WORDS    = apiData?.l3_mountain?.length ? apiData.l3_mountain : L3_MOUNTAIN_WORDS;
+  const crossSource3 : typeof L3_CROSSWORD = apiData?.l3_cross?.length    ? apiData.l3_cross    : L3_CROSSWORD;
 
   const [mtnWords] = useState(() => [...mtnSource].sort(() => Math.random() - 0.5));
   const [mtnIdx, setMtnIdx] = useState(0);
@@ -968,23 +970,23 @@ function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
     }
   }
 
-  const bg = "linear-gradient(180deg,#92400e,#b45309)";
-  const accent = "#b45309";
+  const bg = "linear-gradient(180deg,#73603b,#8a7247)";
+  const accent = "#8a7247";
 
   return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
+    <div dir="rtl" style={{ fontFamily: "var(--font-brand)", background: "#f7f7f2", minHeight: "100vh" }}>
       <Confetti trigger={confetti} />
-      <div className="p-4" style={{ background: "linear-gradient(135deg,#78350f,#b45309)" }}>
-        <button onClick={onBack} className="text-amber-100 text-sm mb-2">← قَائِمَةُ الدُّرُوسِ</button>
+      <div className="p-4" style={{ background: "linear-gradient(135deg,#5e5136,#8a7247)" }}>
+        <button onClick={onBack} className="text-[#f3ecd5] text-sm mb-2">← قَائِمَةُ الدُّرُوسِ</button>
         <div className="flex justify-between items-center">
-          <span className="text-xs px-3 py-1 rounded-full text-white font-bold bg-amber-700">الدَّرْسُ الثَّالِثُ</span>
+          <span className="text-xs px-3 py-1 rounded-full text-white font-bold bg-[#8a7247]">الدَّرْسُ الثَّالِثُ</span>
           <h1 className="text-xl font-bold text-white text-right">الْهَمْزَةُ الْمُتَطَرِّفَةُ</h1>
         </div>
         <div className="flex gap-1 mt-3">
           {["🎯","🎬","🏔️","🔤","🏆"].map((icon, i) => (
             <div key={i} onClick={() => i < phase && setPhase(i)}
               className="flex-1 h-8 rounded-lg flex items-center justify-center text-sm transition-all"
-              style={{ background: i === phase ? accent : i < phase ? "#92400e" : "#fdf6ec", cursor: i < phase ? "pointer" : "default" }}>
+              style={{ background: i === phase ? accent : i < phase ? "#73603b" : "#fdf6ec", cursor: i < phase ? "pointer" : "default" }}>
               {icon}
             </div>
           ))}
@@ -996,7 +998,7 @@ function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
         {phase === 0 && (
           <div className="space-y-4">
             <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-5 text-right text-gray-800">
-              <h2 className="text-2xl font-bold mb-5 text-center" style={{ color: "#b45309" }}>🎯 مَاذَا سَتَتَعَلَّمُ؟</h2>
+              <h2 className="text-2xl font-bold mb-5 text-center" style={{ color: "#8a7247" }}>🎯 مَاذَا سَتَتَعَلَّمُ؟</h2>
               {[
                 "تُحَدِّدُ الْهَمْزَةَ الْمُتَطَرِّفَةَ وَمَوْقِعَهَا فِي الْكَلِمَةِ",
                 "تُعَلِّلُ سَبَبَ كِتَابَتِهَا عَلَى الألف أو الواو أو الياء أو السطر",
@@ -1008,7 +1010,7 @@ function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                 </div>
               ))}
             </div>
-            <button onClick={() => setPhase(1)} className="w-full py-4 rounded-2xl text-white text-lg font-bold active:scale-95" style={{ background: `linear-gradient(135deg,${accent},#92400e)` }}>
+            <button onClick={() => setPhase(1)} className="w-full py-4 rounded-2xl text-white text-lg font-bold active:scale-[0.98]" style={{ background: `linear-gradient(135deg,${accent},#73603b)` }}>
               هَيَّا نَبْدَأ! 🚀
             </button>
           </div>
@@ -1019,8 +1021,8 @@ function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
             <PhaseHeader phase={2} total={5} title="التَّمْهِيدُ — الْحِرْبَاءُ اللُّغَوِيَّةُ!" color={accent} />
             <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-5 text-right text-gray-800">
               <div className="text-center text-4xl mb-3">🦎</div>
-              <h3 className="font-bold text-lg mb-3" style={{ color: "#b45309" }}>قِصَّةُ الْحِرْبَاءِ اللُّغَوِيَّةِ!</h3>
-              <p className="text-sm leading-loose mb-4">فِي غَابَةِ الْكَلِمَاتِ تَعِيشُ حِرْبَاءُ سِحْرِيَّةٌ. هِيَ دَائِمًا فِي <strong style={{ color: "#b45309" }}>آخِرِ الْكَلِمَةِ</strong>. لَوْنُهَا يَتَغَيَّرُ بِحَسَبِ الْحَرْفِ الَّذِي يَسْبِقُهَا:</p>
+              <h3 className="font-bold text-lg mb-3" style={{ color: "#8a7247" }}>قِصَّةُ الْحِرْبَاءِ اللُّغَوِيَّةِ!</h3>
+              <p className="text-sm leading-loose mb-4">فِي غَابَةِ الْكَلِمَاتِ تَعِيشُ حِرْبَاءُ سِحْرِيَّةٌ. هِيَ دَائِمًا فِي <strong style={{ color: "#8a7247" }}>آخِرِ الْكَلِمَةِ</strong>. لَوْنُهَا يَتَغَيَّرُ بِحَسَبِ الْحَرْفِ الَّذِي يَسْبِقُهَا:</p>
               <div className="grid grid-cols-2 gap-2 mb-4">
                 {L3_CHAIRS.map(c => (
                   <div key={c.id} className="rounded-xl p-3 text-center" style={{ background: c.bg }}>
@@ -1030,10 +1032,10 @@ function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                 ))}
               </div>
               <div className="bg-yellow-500/20 rounded-xl p-3 text-center">
-                <p className="text-xs" style={{ color: "#b45309" }}>📌 انْظُرْ إِلَى الْحَرَكَةِ عَلَى الْحَرْفِ الَّذِي قَبْلَ الْهَمْزَةِ فَقَطْ!</p>
+                <p className="text-xs" style={{ color: "#8a7247" }}>📌 انْظُرْ إِلَى الْحَرَكَةِ عَلَى الْحَرْفِ الَّذِي قَبْلَ الْهَمْزَةِ فَقَطْ!</p>
               </div>
             </div>
-            <button onClick={() => setPhase(2)} className="w-full py-4 rounded-2xl text-white font-bold active:scale-95" style={{ background: `linear-gradient(135deg,${accent},#92400e)` }}>
+            <button onClick={() => setPhase(2)} className="w-full py-4 rounded-2xl text-white font-bold active:scale-[0.98]" style={{ background: `linear-gradient(135deg,${accent},#73603b)` }}>
               إِلَى الْمَرْحَلَةِ الأُولَى! 🏔️
             </button>
           </div>
@@ -1050,7 +1052,7 @@ function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                 <p className="text-gray-400 text-xs text-center mb-3">{mtnIdx+1} / {mtnWords.length}</p>
                 <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-5 text-center mb-4">
                   <p className="text-gray-500 text-sm mb-2">عَلَى أَيِّ كُرْسِيٍّ تَجْلِسُ الْهَمْزَةُ فِي:</p>
-                  <p className="font-bold text-gray-800 mb-3 text-center" style={{ fontFamily: "'Amiri', serif", fontSize: "clamp(1.8rem, 8vw, 3.5rem)", lineHeight: "1.6", wordBreak: "break-word" }}>{mtnWords[mtnIdx].word}</p>
+                  <p className="font-bold text-gray-800 mb-3 text-center" style={{ fontFamily: "var(--font-brand)", fontSize: "clamp(1.8rem, 8vw, 3.5rem)", lineHeight: "1.6", wordBreak: "break-word" }}>{mtnWords[mtnIdx].word}</p>
                   {mtnFeedback && (
                     <div className={`text-sm font-bold rounded-xl px-4 py-2 ${mtnFeedback === "correct" ? "bg-green-500/30 text-green-200" : "bg-red-500/30 text-red-200"}`}>
                       {mtnFeedback === "correct" ? `✅ صَحِيحٌ! ${mtnWords[mtnIdx].reason}` : `❌ الصَّوَابُ: ${mtnWords[mtnIdx].chair} — ${mtnWords[mtnIdx].reason}`}
@@ -1063,11 +1065,11 @@ function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                     const isRight = mtnFeedback ? c.id === mtnWords[mtnIdx].chair : null;
                     return (
                       <button key={c.id} onClick={() => mtnAnswer(c.id)} disabled={!!mtnFeedback}
-                        className="py-4 rounded-2xl font-bold text-2xl transition-all active:scale-95 disabled:opacity-90"
+                        className="py-4 rounded-2xl font-bold text-2xl transition-all active:scale-[0.98] disabled:opacity-90"
                         style={{
                           background: mtnFeedback ? (isRight ? "#059669" : isSel ? "#dc2626" : c.bg) : (isSel ? c.color : c.bg),
                           color: mtnFeedback ? (isRight || isSel ? "#ffffff" : c.color) : (isSel ? "#ffffff" : c.color),
-                          fontFamily: "'Amiri', serif"
+                          fontFamily: "var(--font-brand)"
                         }}>
                         {c.id}
                       </button>
@@ -1085,7 +1087,7 @@ function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
               <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-6 text-center text-gray-800">
                 <div className="text-5xl mb-3">{mtnScore >= 6 ? "🏔️" : "⛰️"}</div>
                 <h3 className="text-xl font-bold mb-2">{mtnScore >= 6 ? "وَصَلْتَ الْقِمَّةَ!" : "حَاوِلْ مَرَّةً أُخْرَى"}</h3>
-                <p className="text-amber-700 mb-5">أَصَبْتَ {mtnScore} مِنْ {mtnWords.length}</p>
+                <p className="text-[#8a7247] mb-5">أَصَبْتَ {mtnScore} مِنْ {mtnWords.length}</p>
                 {mtnScore >= 6
                   ? <button onClick={() => setPhase(3)} className="w-full py-3 rounded-2xl text-white font-bold" style={{ background: accent }}>التَّالِي → 🔤</button>
                   : <button onClick={() => { setMtnIdx(0); setMtnScore(0); setMtnDone(false); }} className="w-full py-3 rounded-2xl text-gray-700 font-bold bg-gray-100">إِعَادَةٌ 🔄</button>
@@ -1105,7 +1107,7 @@ function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                 </div>
                 <p className="text-gray-400 text-xs text-center mb-4">{crossIdx+1} / {crossSource3.length}</p>
                 <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-5 text-center mb-4">
-                  <p className="text-amber-700 text-sm mb-2">🔍 مَا هَذِهِ الْكَلِمَةُ؟</p>
+                  <p className="text-[#8a7247] text-sm mb-2">🔍 مَا هَذِهِ الْكَلِمَةُ؟</p>
                   <p className="text-gray-800 font-bold text-base">{crossSource3[crossIdx]?.clue}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -1117,8 +1119,8 @@ function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                     if (crossSelected) { bg = isCorrect ? "#059669" : isSelected ? "#dc2626" : "#fdf6ec"; textColor = (isCorrect || isSelected) ? "#ffffff" : "#374151"; }
                     return (
                       <button key={opt} onClick={() => crossAnswer(opt)} disabled={!!crossSelected}
-                        className="py-4 rounded-2xl font-bold text-xl transition-all active:scale-95 disabled:opacity-90"
-                        style={{ background: bg, color: textColor, fontFamily: "'Amiri', serif" }}>
+                        className="py-4 rounded-2xl font-bold text-xl transition-all active:scale-[0.98] disabled:opacity-90"
+                        style={{ background: bg, color: textColor, fontFamily: "var(--font-brand)" }}>
                         {opt}
                       </button>
                     );
@@ -1131,7 +1133,7 @@ function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
             ) : (
               <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-6 text-center text-gray-800">
                 <div className="text-5xl mb-3">🔤</div>
-                <p className="text-amber-700 mb-5">أَصَبْتَ {crossScore} مِنْ {crossSource3.length}</p>
+                <p className="text-[#8a7247] mb-5">أَصَبْتَ {crossScore} مِنْ {crossSource3.length}</p>
                 <button onClick={() => setPhase(4)} className="w-full py-3 rounded-2xl text-white font-bold" style={{ background: accent }}>التَّالِي → 🏆</button>
               </div>
             )}
@@ -1144,7 +1146,7 @@ function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
             {!chairDone ? (
               <>
                 <div className="w-full h-2 bg-white shadow-sm border border-gray-100 rounded-full mb-3">
-                  <div className="h-2 rounded-full transition-all" style={{ width: `${(chairIdx/chairQuiz.length)*100}%`, background: "#f5c842" }} />
+                  <div className="h-2 rounded-full transition-all" style={{ width: `${(chairIdx/chairQuiz.length)*100}%`, background: "#c6a260" }} />
                 </div>
                 <p className="text-gray-400 text-xs text-center mb-4">{chairIdx+1} / {chairQuiz.length}</p>
                 <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-5 text-center mb-4">
@@ -1161,24 +1163,24 @@ function Lesson3({ onBack, apiData }: { onBack: () => void; apiData?: any }) {
                     const isRight = chairFeedback ? c.id === chairQuiz[chairIdx].answer : null;
                     return (
                       <button key={c.id} onClick={() => chairAnswer(c.id)} disabled={!!chairFeedback}
-                        className="py-4 rounded-2xl font-bold text-2xl transition-all active:scale-95 disabled:opacity-90"
+                        className="py-4 rounded-2xl font-bold text-2xl transition-all active:scale-[0.98] disabled:opacity-90"
                         style={{
                           background: chairFeedback ? (isRight ? "#059669" : isSel ? "#dc2626" : c.bg) : (isSel ? c.color : c.bg),
                           color: chairFeedback ? (isRight || isSel ? "#ffffff" : c.color) : (isSel ? "#ffffff" : c.color),
-                          fontFamily: "'Amiri', serif"
+                          fontFamily: "var(--font-brand)"
                         }}>
                         {c.id}
                       </button>
                     );
                   })}
                 </div>
-                {chairFeedback === "wrong" && <ContinueButton onClick={advanceChair} color="#f5c842" />}
+                {chairFeedback === "wrong" && <ContinueButton onClick={advanceChair} color="#c6a260" />}
               </>
             ) : (
               <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-6 text-center text-gray-800">
                 <div className="text-6xl mb-3">🏆</div>
-                <h3 className="text-2xl font-bold mb-2" style={{ color: "#b45309" }}>الْمُسْتَكْشِفُ اللُّغَوِيُّ الْكَبِيرُ!</h3>
-                <p className="text-amber-700 mb-2">أَصَبْتَ {chairScore} مِنْ {chairQuiz.length}</p>
+                <h3 className="text-2xl font-bold mb-2" style={{ color: "#8a7247" }}>الْمُسْتَكْشِفُ اللُّغَوِيُّ الْكَبِيرُ!</h3>
+                <p className="text-[#8a7247] mb-2">أَصَبْتَ {chairScore} مِنْ {chairQuiz.length}</p>
                 <p className="text-gray-500 text-sm mb-5">أَتْقَنْتَ الْهَمْزَةَ الْمُتَطَرِّفَةَ بِجَمِيعِ حَالَاتِهَا! 🎉</p>
                 <button onClick={onBack} className="w-full py-3 rounded-2xl text-white font-bold" style={{ background: accent }}>الْعَوْدَةُ إِلَى الدُّرُوسِ</button>
               </div>
@@ -1203,7 +1205,7 @@ export default function WritingGames() {
   const [apiData, setApiData] = useState<any>(null);
 
   useEffect(() => {
-    const API = (import.meta as any).env?.VITE_API_URL || "https://sawti-0k3n.onrender.com/api";
+    const API = API_BASE;
     fetch(`${API}/lessons/hamza-games`).then(r => r.ok ? r.json() : null).then(d => { if (d) setApiData(d); }).catch(() => {});
   }, []);
 
@@ -1211,66 +1213,15 @@ export default function WritingGames() {
   if (activeLesson === "l2") return <Lesson2 onBack={() => setActiveLesson("menu")} apiData={apiData} />;
   if (activeLesson === "l3") return <Lesson3 onBack={() => setActiveLesson("menu")} apiData={apiData} />;
 
-  const lessons = [
-    { id: "l1", num: "١", title: "الْهَمْزَةُ الْمُتَوَسِّطَةُ عَلَى نَبْرَةٍ", sub: "الْيَاءُ — قَاعِدَةُ الْكَسْرَةِ", icon: "🔓", color: "#059669", bg: "linear-gradient(135deg,#064e3b,#059669)", phases: ["🎯 أَهْدَاف","🎬 تَمْهِيد","🔓 فَرْزُ الْبَوَّابَةِ","🔤 اخْتَرِ الصَّحِيحَ","🏆 صَنْدُوقُ الْكَنْزِ"] },
-    { id: "l2", num: "٢", title: "الْهَمْزَةُ الْمُتَوَسِّطَةُ عَلَى السَّطْرِ", sub: "بَعْدَ حُرُوفِ الْمَدِّ السَّاكِنَةِ", icon: "🌊", color: "#1d4ed8", bg: "linear-gradient(135deg,#1e3a8a,#1d4ed8)", phases: ["🎯 أَهْدَاف","🎬 تَمْهِيد","🌊 عُبُورُ النَّهَرِ","🔤 اخْتَرِ الصَّحِيحَ","🏆 أَكْمِلِ الْجُمْلَةَ"] },
-    { id: "l3", num: "٣", title: "الْهَمْزَةُ الْمُتَطَرِّفَةُ", sub: "أَلِف — وَاو — يَاء — السَّطْر", icon: "🏔️", color: "#b45309", bg: "linear-gradient(135deg,#78350f,#b45309)", phases: ["🎯 أَهْدَاف","🎬 الْحِرْبَاءُ","🏔️ تَسَلُّقُ الْجَبَلِ","🔤 اخْتَرِ الصَّحِيحَ","🏆 تَحَدِّي الْكُرْسِيِّ"] },
+  const journeys = [
+    {kind:"treasure" as const, path:"treasure-map", title:"رِحْلَةُ الْمُسْتَكْشِفِ", rule:"الهمزة على نبرة", description:"خريطة، ومفاتيح، وكنز ينتظر اكتشافك."},
+    {kind:"diver" as const, path:"diver-pearl", title:"الْغَوَّاصُ وَصَائِدُ اللَّآلِئِ", rule:"الهمزة على السطر", description:"اغص في المعرفة، واجمع لآلئ الكلمات."},
+    {kind:"balloon" as const, path:"balloon", title:"قَائِدُ الْمِنْطَادِ", rule:"الهمزة المتطرفة", description:"حلّق بين الغيوم، واختر الحروف الصحيحة."},
   ];
-
-  return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-      {/* Header */}
-      <div className="p-4" style={{ background: "linear-gradient(135deg,#1a1a2e,#16213e)" }}>
-        <button onClick={() => setLocation("/skills/writing")} className="text-purple-300 text-sm mb-3">← مَهَارَةُ الْكِتَابَةِ</button>
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <h1 className="text-2xl font-bold text-white">أَلْعَابُ الْهَمْزَةِ</h1>
-            <p className="text-purple-300 text-sm">٣ دُرُوسٌ × ٥ مَرَاحِلَ</p>
-          </div>
-          <span className="text-3xl">🎮</span>
-        </div>
-      </div>
-
-      <div className="max-w-xl mx-auto px-4 py-6 space-y-4">
-        <button onClick={() => setLocation("/writing-games/treasure-map")}
-          className="w-full rounded-3xl overflow-hidden text-right transition-all active:scale-98 hover:scale-101 shadow-xl relative"
-          style={{ background: "linear-gradient(135deg,#78350f,#d97706)" }}>
-          <div className="p-5 flex items-center gap-4">
-            <span className="text-5xl">🗺️</span>
-            <div>
-              <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-white/25 text-white mb-1">✨ تَجْرِبَةٌ جَدِيدَةٌ</span>
-              <h2 className="text-white font-bold text-lg leading-snug">رِحْلَةُ الْمُسْتَكْشِفِ التَّفَاعُلِيَّةُ</h2>
-              <p className="text-white/70 text-sm mt-1">الْهَمْزَةُ عَلَى نَبْرَةٍ — مَسَارٌ عَبْرَ خَرِيطَةِ كَنْزٍ</p>
-            </div>
-          </div>
-        </button>
-
-        <button onClick={() => setLocation("/writing-games/diver-pearl")}
-          className="w-full rounded-3xl overflow-hidden text-right transition-all active:scale-98 hover:scale-101 shadow-xl relative"
-          style={{ background: "linear-gradient(135deg,#0c4a6e,#0891b2)" }}>
-          <div className="p-5 flex items-center gap-4">
-            <span className="text-5xl">🤿</span>
-            <div>
-              <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-white/25 text-white mb-1">✨ تَجْرِبَةٌ جَدِيدَةٌ</span>
-              <h2 className="text-white font-bold text-lg leading-snug">الْغَوَّاصُ وَصَائِدُ اللَّآلِئِ</h2>
-              <p className="text-white/70 text-sm mt-1">الْهَمْزَةُ عَلَى السَّطْرِ — رِحْلَةٌ فِي أَعْمَاقِ الْبَحْرِ</p>
-            </div>
-          </div>
-        </button>
-
-        <button onClick={() => setLocation("/writing-games/balloon")}
-          className="w-full rounded-3xl overflow-hidden text-right transition-all active:scale-98 hover:scale-101 shadow-xl relative"
-          style={{ background: "linear-gradient(135deg,#1e3a8a,#3b82f6)" }}>
-          <div className="p-5 flex items-center gap-4">
-            <span className="text-5xl">🎈</span>
-            <div>
-              <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-white/25 text-white mb-1">✨ تَجْرِبَةٌ جَدِيدَةٌ</span>
-              <h2 className="text-white font-bold text-lg leading-snug">قَائِدُ الْمِنْطَادِ وَجَزِيرَةُ الْكَنْزِ</h2>
-              <p className="text-white/70 text-sm mt-1">الْهَمْزَةُ الْمُتَطَرِّفَةُ — رِحْلَةٌ فِي السَّمَاءِ</p>
-            </div>
-          </div>
-        </button>
-      </div>
-    </div>
-  );
+  return <div className="activity-page games-library" dir="rtl">
+    <ActivityHeader title="أَلْعَابُ الْهَمْزَةِ" eyebrow="تعلّم بالتجربة" description="اختر مغامرتك. شاهد الشرح، واكتشف القاعدة، وتقدّم خطوة بخطوة." backLabel="مهارة الكتابة" onBack={()=>setLocation("/skills/writing")} icon={Map} />
+    <div className="page-container games-library-grid">{journeys.map(j=><button key={j.path} className="game-journey-card" onClick={()=>setLocation(`/writing-games/${j.path}`)}>
+      <div className="game-journey-cover"><JourneyCover kind={j.kind} /><span>{j.rule}</span></div><div className="game-journey-copy"><h2>{j.title}</h2><p>{j.description}</p><span className="speaking-lesson-action">اكتشف الرحلة <ArrowLeft size={18} aria-hidden="true" /></span></div>
+    </button>)}</div><p className="game-library-note page-container">كل إجابة فرصة للفهم. خذ وقتك، وحاول من جديد.</p>
+  </div>;
 }

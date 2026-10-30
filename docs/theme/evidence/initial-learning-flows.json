@@ -1,0 +1,43 @@
+[
+  {
+    "name": "treasure game: full video, wrong answer, all stages and results",
+    "status": "PASS",
+    "detail": {
+      "duration": 333.76,
+      "ended": true
+    }
+  },
+  {
+    "name": "diver game: full video, all stages and results",
+    "status": "FAILED",
+    "error": "Missing button سكون (مد); visible: [\"المرحلة 1\",\"المرحلة 2\",\"متابعة المرحلة الحالية\",\"المرحلة 4\",\"المرحلة 5\",\"المرحلة 6\",\"المرحلة 7\",\"← المهام\",\"مروءة\",\"مروءة\"]"
+  },
+  {
+    "name": "balloon game: full video, all stages and results",
+    "status": "PASS",
+    "detail": {
+      "duration": 219.48,
+      "ended": true
+    }
+  },
+  {
+    "name": "self learning: all quiz answers including final answer score 100%",
+    "status": "PASS",
+    "detail": "Actual configured quiz; no lost final-point update"
+  },
+  {
+    "name": "self learning: teacher configured fill answer is used",
+    "status": "PASS",
+    "detail": "Real teacher edit → fresh student content → correct grading"
+  },
+  {
+    "name": "microphone denial shows actionable error",
+    "status": "PASS",
+    "detail": "Real browser permission denial, no getUserMedia stub"
+  },
+  {
+    "name": "no uncaught JavaScript errors",
+    "status": "PASS",
+    "detail": "Monitored throughout games and activities"
+  }
+]

@@ -1,0 +1,107 @@
+[
+  {
+    "route": "/dashboard",
+    "width": 390,
+    "status": "PASS"
+  },
+  {
+    "route": "/skills",
+    "width": 390,
+    "status": "PASS"
+  },
+  {
+    "route": "/skills/speaking",
+    "width": 390,
+    "status": "PASS"
+  },
+  {
+    "route": "/skills/writing",
+    "width": 390,
+    "status": "PASS"
+  },
+  {
+    "route": "/skills/self-learning",
+    "width": 390,
+    "status": "PASS"
+  },
+  {
+    "route": "/writing-games",
+    "width": 390,
+    "status": "PASS"
+  },
+  {
+    "feature": "assistant input visible and usable",
+    "width": 390,
+    "status": "PASS"
+  },
+  {
+    "route": "/dashboard",
+    "width": 768,
+    "status": "PASS"
+  },
+  {
+    "route": "/skills",
+    "width": 768,
+    "status": "PASS"
+  },
+  {
+    "route": "/skills/speaking",
+    "width": 768,
+    "status": "PASS"
+  },
+  {
+    "route": "/skills/writing",
+    "width": 768,
+    "status": "PASS"
+  },
+  {
+    "route": "/skills/self-learning",
+    "width": 768,
+    "status": "PASS"
+  },
+  {
+    "route": "/writing-games",
+    "width": 768,
+    "status": "PASS"
+  },
+  {
+    "feature": "assistant input visible and usable",
+    "width": 768,
+    "status": "PASS"
+  },
+  {
+    "route": "/dashboard",
+    "width": 1440,
+    "status": "PASS"
+  },
+  {
+    "route": "/skills",
+    "width": 1440,
+    "status": "PASS"
+  },
+  {
+    "route": "/skills/speaking",
+    "width": 1440,
+    "status": "PASS"
+  },
+  {
+    "route": "/skills/writing",
+    "width": 1440,
+    "status": "PASS"
+  },
+  {
+    "route": "/skills/self-learning",
+    "width": 1440,
+    "status": "PASS"
+  },
+  {
+    "route": "/writing-games",
+    "width": 1440,
+    "status": "PASS"
+  },
+  {
+    "feature": "assistant input visible and usable",
+    "width": 1440,
+    "status": "PASS"
+  }
+]

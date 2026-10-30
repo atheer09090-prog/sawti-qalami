@@ -1,89 +1,18 @@
 import { useLocation } from "wouter";
+import { ArrowLeft, AudioLines, BookOpen, ChartNoAxesCombined, PenLine, Star } from "lucide-react";
+import { ActivityHeader, StudentAvatar } from "@/components/ActivityUI";
+import { ProgressMeter, EmptyState } from "@/components/ProductUI";
 import { getState } from "@/lib/store";
-
 export default function Assessments() {
-  const [, setLocation] = useLocation();
-  const student = getState();
-
-  function getGrade(v: number) {
-    if (v >= 90) return { label: "مُمْتَازٌ", color: "#1a5c2a" };
-    if (v >= 80) return { label: "جَيِّدٌ جِدًّا", color: "#2563eb" };
-    if (v >= 70) return { label: "جَيِّدٌ", color: "#d97706" };
-    if (v >= 60) return { label: "مَقْبُولٌ", color: "#ea580c" };
-    return { label: "يَحْتَاجُ تَطْوِيرًا", color: "#dc2626" };
-  }
-
-  const skills = [
-    { name: "التَّحَدُّثُ", value: student.speakingProgress, icon: "🎙️", color: "#1a5c2a" },
-    { name: "الْكِتَابَةُ", value: student.writingProgress, icon: "✏️", color: "#b45309" },
-    { name: "التَّعَلُّمُ الذَّاتِيُّ", value: student.selfLearningProgress, icon: "📚", color: "#1d4ed8" },
-  ];
-
-  return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-      <div className="p-4" style={{ background: "linear-gradient(135deg, #1a5c2a 0%, #2d7a3e 100%)" }}>
-        <button onClick={() => setLocation("/dashboard")} className="text-green-200 text-sm mb-2">← الرَّئِيسِيَّةُ</button>
-        <h1 className="text-2xl font-bold text-white text-right">📊 تَقْيِيمَاتِي</h1>
-        <p className="text-green-200 text-sm text-right">نَتَائِجُكَ وَتَقَدُّمُكَ</p>
-      </div>
-
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-2xl p-5 shadow mb-4 text-right">
-          <div className="flex items-center gap-3 mb-4">
-            <img
-              src={`/assets/${student.avatar === "boy1" || student.avatar === "boy2" ? "omani-boy" : student.avatar === "girl1" ? "omani-girl" : "omani-girl2"}.png`}
-              alt="" className="w-14 h-14 object-contain rounded-full border-2" style={{ borderColor: "#1a5c2a" }}
-            />
-            <div>
-              <h2 className="font-bold text-xl">{student.name || "الطَّالِبُ"}</h2>
-              <p className="text-gray-500 text-sm">{student.grade}</p>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-yellow-500">{student.stars} ⭐</p>
-              <p className="text-xs text-gray-500">النُّجُومُ</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">{student.points}</p>
-              <p className="text-xs text-gray-500">النُّقَاطُ</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4 text-right">
-          <p className="text-xs text-blue-800 leading-relaxed">
-            💡 كُلُّ نِسْبَةٍ أَدْنَاهُ تُمَثِّلُ <strong>أَفْضَلَ نَتِيجَةٍ حَقَّقْتَهَا</strong> فِي هَذِهِ الْمَهَارَةِ حَتَّى الْآنَ (وَلَيْسَتْ مُتَوَسِّطَ كُلِّ مُحَاوَلَاتِكَ)،
-            حَتَّى تَتَشَجَّعَ عَلَى إِعَادَةِ الْمُحَاوَلَةِ دُونَ خَوْفٍ مِنْ خَفْضِ نَتِيجَتِكَ.
-          </p>
-        </div>
-
-        {skills.map((s) => {
-          const grade = getGrade(s.value);
-          return (
-            <div key={s.name} className="bg-white rounded-2xl p-5 shadow mb-3">
-              <div className="flex justify-between items-center mb-3">
-                <span style={{ color: grade.color }} className="font-bold">{grade.label}</span>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-lg">{s.name}</h3>
-                  <span className="text-2xl">{s.icon}</span>
-                </div>
-              </div>
-              <div className="w-full h-4 bg-gray-100 rounded-full">
-                <div className="h-4 rounded-full transition-all" style={{ width: `${s.value}%`, background: s.color }} />
-              </div>
-              <p className="text-left font-bold mt-1" style={{ color: s.color }}>{s.value}%</p>
-            </div>
-          );
-        })}
-
-        {student.teacherComment && (
-          <div className="bg-white rounded-2xl p-5 shadow text-right">
-            <h3 className="font-bold text-lg mb-2" style={{ color: "#1a5c2a" }}>💬 تَعْلِيقُ الْمُعَلِّمِ:</h3>
-            <p className="text-gray-600">{student.teacherComment}</p>
-          </div>
-        )}
-      </div>
+  const [, setLocation] = useLocation(); const student=getState();
+  function getGrade(v: number) { if(v>=90)return "ممتاز";if(v>=80)return "جيد جدًا";if(v>=70)return "جيد";if(v>=60)return "مقبول";return v===0?"بانتظار محاولتك":"تابع التدريب"; }
+  const skills=[{name:"التَّحَدُّثُ",value:student.speakingProgress,icon:AudioLines,to:"/skills/speaking"},{name:"الْكِتَابَةُ",value:student.writingProgress,icon:PenLine,to:"/skills/writing"},{name:"التَّعَلُّمُ الذَّاتِيُّ",value:student.selfLearningProgress,icon:BookOpen,to:"/skills/self-learning"}];
+  return <div className="activity-page results-page" dir="rtl"><ActivityHeader title="كل محاولة، خطوة إلى الأمام." eyebrow="تقدمي ونتائجي" description="شاهد أثر تدريبك، واختر المهارة التي تريد مواصلة تطويرها." backLabel="الرئيسية" onBack={()=>setLocation("/dashboard")} icon={ChartNoAxesCombined} />
+    <div className="page-container results-content"><section className="results-identity"><div className="student-identity"><StudentAvatar avatar={student.avatar} /><div><h2>{student.name||"الطالب"}</h2><p>{student.grade}</p></div></div><div className="result-rewards"><span><Star size={19} aria-hidden="true" /><strong>{student.stars}</strong> نجوم</span><span><strong>{student.points}</strong> نقطة</span><span><strong>{student.completedLessons.length}</strong> دروس مكتملة</span></div></section>
+      {skills.every(s=>s.value===0)&&student.completedLessons.length===0&&<EmptyState title="ابدأ أول تدريب لك" description="ستظهر هنا نتائج محاولاتك، خطوة بخطوة."><button className="sawti-btn-primary mt-4" onClick={()=>setLocation("/skills")}>استكشف المهارات</button></EmptyState>}
+      <p className="results-explainer">كل نسبة تمثّل <strong>أفضل نتيجة حققتها</strong> في المهارة حتى الآن. يمكنك إعادة المحاولة دون أن تنخفض أفضل نتائجك.</p>
+      <div className="result-skills-grid">{skills.map(({icon:Icon,...skill})=><section key={skill.to} className="result-skill"><span className="result-skill-icon"><Icon size={27} strokeWidth={1.4} aria-hidden="true" /></span><span className="result-grade">{getGrade(skill.value)}</span><h2>{skill.name}</h2><strong className="result-skill-value">{skill.value}<small>%</small></strong><ProgressMeter value={skill.value} label="أفضل نتيجة" /><button onClick={()=>setLocation(skill.to)} className="speaking-lesson-action">تابع تدريبك <ArrowLeft size={18} /></button></section>)}</div>
+      {student.teacherComment&&<section className="teacher-note"><p className="studio-eyebrow">معلمك يواكب رحلتك</p><h2>ملاحظة معلمك</h2><p>{student.teacherComment}</p></section>}
     </div>
-  );
+  </div>;
 }

@@ -1,10 +1,25 @@
+import { ActivityHeader } from "@/components/ActivityUI";
+import { ArrowLeft, AudioLines, FilePenLine, GraduationCap, Layers3, MessagesSquare, Target, TextCursorInput } from "lucide-react";
+import { SkillLibraryHeader } from "@/components/SkillLibraryHeader";
+import { exerciseAnswerMatches } from "@/lib/exercise-answer";
+import { toast } from "sonner";
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { getState, setState, StudentData } from "@/lib/store";
-import { getSelfLearning, askSmartTeacher, evaluateWriting, evaluateSpeech, describeError } from "@/lib/api";
+import { getSelfLearning, askSmartTeacher, evaluateWriting, evaluateSpeech, describeError, getToken } from "@/lib/api";
 import { classifyMicError, checkMicSupport, type MicErrorInfo } from "@/lib/mic";
 import { MicPermissionCard } from "@/components/MicPermissionCard";
 import { AudioWaveform } from "@/components/AudioWaveform";
+
+const SELF_ACTIVITIES = [
+  { id: "quiz", group: "practice", icon: Target, title: "اخْتَبِرْ مَعْلُومَاتِكَ", desc: "أسئلة قصيرة تكتشف بها ما تعرفه." },
+  { id: "order", group: "practice", icon: Layers3, title: "رَتِّبِ الْكَلِمَاتِ", desc: "اجمع الكلمات لتصنع جملة صحيحة." },
+  { id: "fill", group: "practice", icon: TextCursorInput, title: "أَكْمِلِ الْجُمْلَةَ", desc: "ابحث عن الكلمة التي تكمل المعنى." },
+  { id: "ask", group: "explore", icon: MessagesSquare, title: "اسْأَلْ بِذَكَاءٍ", desc: "صغ سؤالك، وناقش المعلم الذكي." },
+  { id: "teacher", group: "explore", icon: GraduationCap, title: "أَنَا الْمُعَلِّمُ", desc: "راجع إجابة المعلم، وصححها إن لزم." },
+  { id: "improve", group: "explore", icon: FilePenLine, title: "اكْتُبْ ثُمَّ حَسِّنْ", desc: "اكتب فقرتك، وارجع إليها بعين جديدة." },
+  { id: "speak", group: "explore", icon: AudioLines, title: "تَحَدَّثْ ثُمَّ قَيِّمْ نَفْسَكَ", desc: "استمع لنفسك، وتأمل ما يمكنك تحسينه." },
+];
 
 /* ══════════════════════════════════════════════════════════════
    رِحْلَةُ التَّعَلُّمِ الذَّاتِيِّ — تِسْعُ مَرَاحِلَ
@@ -208,9 +223,9 @@ export default function SelfLearning() {
   useEffect(() => {
     getSelfLearning().then(d => {
       if (!d) return;
-      if (d.quiz?.length) setQuiz(d.quiz);
-      if (d.word_order?.length) setWordOrder(d.word_order);
-      if (d.fill_in?.length) setFillIn(d.fill_in);
+      if (Array.isArray(d.quiz)) setQuiz(d.quiz);
+      if (Array.isArray(d.word_order)) setWordOrder(d.word_order);
+      if (Array.isArray(d.fill_in)) setFillIn(d.fill_in);
     });
   }, []);
   const [quizIdx, setQuizIdx] = useState(0);
@@ -266,10 +281,29 @@ export default function SelfLearning() {
   const [speakError, setSpeakError] = useState("");
   const [micError, setMicError] = useState<MicErrorInfo | null>(null);
   const mediaRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
+  const speakSessionRef = useRef(0);
+  const micPendingRef = useRef(false);
+  const quizAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const speakTimerRef = useRef<any>(null);
 
+  useEffect(() => () => {
+    speakSessionRef.current += 1;
+    clearInterval(speakTimerRef.current);
+    if (quizAdvanceRef.current) clearTimeout(quizAdvanceRef.current);
+    const recorder = mediaRef.current;
+    mediaRef.current = null;
+    if (recorder) {
+      recorder.onstop = null; recorder.ondataavailable = null; recorder.onerror = null;
+      if (recorder.state !== "inactive") recorder.stop();
+      recorder.stream.getTracks().forEach(track => track.stop());
+    }
+  }, [activity]);
+
   function startActivity(id: string) {
+    if ((id === "quiz" && !quiz.length) || (id === "order" && !wordOrder.length) || (id === "fill" && !fillIn.length)) {
+      toast.info("لم يضف المعلم أسئلة لهذا النشاط بعد.");
+      return;
+    }
     setActivity(id);
     setFlowStep("goal");
     setGoal(null); setCustomGoal("");
@@ -330,7 +364,7 @@ export default function SelfLearning() {
   }
 
   function checkOrderAnswer() {
-    const correct = wordAnswer.trim() === wordOrder[0].answer;
+    const correct = exerciseAnswerMatches(wordAnswer, wordOrder[0].answer);
     setChecked(true);
     if (correct) {
       recordActivity("تَرْتِيبُ الأَفْكَارِ");
@@ -340,7 +374,7 @@ export default function SelfLearning() {
   }
 
   function checkFillAnswer() {
-    const correct = fillAnswer.trim().includes("جميل");
+    const correct = exerciseAnswerMatches(fillAnswer, fillIn[0].answer);
     setChecked(true);
     if (correct) {
       recordActivity("الْمُفْرَدَاتُ وَالإِمْلَاءُ");
@@ -356,7 +390,7 @@ export default function SelfLearning() {
         <div className="mt-3 bg-green-50 rounded-xl p-3 text-center">
           <p className="font-bold text-green-700">✅ صَحِيحٌ! أَحْسَنْتَ!</p>
           <button onClick={() => setFlowStep("reflect")}
-            className="mt-2 text-sm px-4 py-2 rounded-lg bg-blue-700 text-white font-bold">
+            className="mt-2 text-sm px-4 py-2 rounded-lg bg-[#436444] text-white font-bold">
             التَّالِي: أَتَأَمَّلُ فِي تَعَلُّمِي 🪞
           </button>
         </div>
@@ -376,7 +410,7 @@ export default function SelfLearning() {
               </button>
               {wrongCount >= 2 && (
                 <button onClick={() => setShowAssistMenu(true)}
-                  className="flex-1 py-2 rounded-lg bg-amber-500 text-white font-bold text-sm">
+                  className="flex-1 py-2 rounded-lg bg-[#73603b] text-white font-bold text-sm">
                   🎚️ سَاعِدْنِي
                 </button>
               )}
@@ -385,38 +419,38 @@ export default function SelfLearning() {
         )}
 
         {showAssistMenu && (
-          <div className="bg-amber-50 rounded-xl p-3 text-right">
-            <p className="font-bold text-amber-800 text-sm mb-2">كَيْفَ تُرِيدُ أَنْ أُسَاعِدَكَ؟</p>
+          <div className="bg-[#faf6e9] rounded-xl p-3 text-right">
+            <p className="font-bold text-[#73603b] text-sm mb-2">كَيْفَ تُرِيدُ أَنْ أُسَاعِدَكَ؟</p>
             <div className="flex flex-col gap-1.5">
-              <button onClick={() => chooseAssist(1)} className="p-2 rounded-lg bg-white text-right text-sm border border-amber-200">🧠 سَأُحَاوِلُ وَحْدِي</button>
-              <button onClick={() => chooseAssist(2)} className="p-2 rounded-lg bg-white text-right text-sm border border-amber-200">💡 أَعْطِنِي تَلْمِيحًا</button>
-              <button onClick={() => chooseAssist(3)} className="p-2 rounded-lg bg-white text-right text-sm border border-amber-200">📝 أَعْطِنِي مِثَالًا مُشَابِهًا</button>
-              <button onClick={() => chooseAssist(4)} className="p-2 rounded-lg bg-white text-right text-sm border border-amber-200">📚 اشْرَحْ لِي الْقَاعِدَةَ</button>
-              <button onClick={() => chooseAssist(5)} className="p-2 rounded-lg bg-white text-right text-sm border border-amber-200">✅ أَرِنِي الْحَلَّ مَعَ التَّفْسِيرِ</button>
+              <button onClick={() => chooseAssist(1)} className="p-2 rounded-lg bg-white text-right text-sm border border-[#e8dbb7]">🧠 سَأُحَاوِلُ وَحْدِي</button>
+              <button onClick={() => chooseAssist(2)} className="p-2 rounded-lg bg-white text-right text-sm border border-[#e8dbb7]">💡 أَعْطِنِي تَلْمِيحًا</button>
+              <button onClick={() => chooseAssist(3)} className="p-2 rounded-lg bg-white text-right text-sm border border-[#e8dbb7]">📝 أَعْطِنِي مِثَالًا مُشَابِهًا</button>
+              <button onClick={() => chooseAssist(4)} className="p-2 rounded-lg bg-white text-right text-sm border border-[#e8dbb7]">📚 اشْرَحْ لِي الْقَاعِدَةَ</button>
+              <button onClick={() => chooseAssist(5)} className="p-2 rounded-lg bg-white text-right text-sm border border-[#e8dbb7]">✅ أَرِنِي الْحَلَّ مَعَ التَّفْسِيرِ</button>
             </div>
           </div>
         )}
 
         {assistReveal && (
-          <div className="bg-blue-50 rounded-xl p-3 text-right">
-            {assistReveal === "hint" && <p className="text-blue-800 text-sm">💡 {assistContent.hint}</p>}
-            {assistReveal === "example" && <p className="text-blue-800 text-sm">📝 {assistContent.example}</p>}
-            {assistReveal === "rule" && <p className="text-blue-800 text-sm">📚 {assistContent.rule}</p>}
+          <div className="bg-[#f1f5e9] rounded-xl p-3 text-right">
+            {assistReveal === "hint" && <p className="text-[#35533b] text-sm">💡 {assistContent.hint}</p>}
+            {assistReveal === "example" && <p className="text-[#35533b] text-sm">📝 {assistContent.example}</p>}
+            {assistReveal === "rule" && <p className="text-[#35533b] text-sm">📚 {assistContent.rule}</p>}
             {assistReveal === "solution" && (
               <div>
-                <p className="text-blue-800 text-sm font-bold mb-1">✅ الْحَلُّ: {correctAnswerText}</p>
-                <p className="text-blue-700 text-xs">{assistContent.rule}</p>
+                <p className="text-[#35533b] text-sm font-bold mb-1">✅ الْحَلُّ: {correctAnswerText}</p>
+                <p className="text-[#436444] text-xs">{assistContent.rule}</p>
               </div>
             )}
             <div className="flex gap-2 mt-2">
               {assistReveal !== "solution" ? (
                 <button onClick={() => { setChecked(false); setAssistReveal(null); }}
-                  className="text-xs px-3 py-1.5 rounded-lg bg-blue-700 text-white font-bold">
+                  className="text-xs px-3 py-1.5 rounded-lg bg-[#436444] text-white font-bold">
                   🔄 حَاوِلْ مَرَّةً أُخْرَى
                 </button>
               ) : (
                 <button onClick={() => setFlowStep("reflect")}
-                  className="text-xs px-3 py-1.5 rounded-lg bg-blue-700 text-white font-bold">
+                  className="text-xs px-3 py-1.5 rounded-lg bg-[#436444] text-white font-bold">
                   التَّالِي: أَتَأَمَّلُ فِي تَعَلُّمِي 🪞
                 </button>
               )}
@@ -429,9 +463,12 @@ export default function SelfLearning() {
 
   // ── 🤖 اسأل بذكاء ──
   async function askQuestion() {
+    const session = speakSessionRef.current;
+    const owner = getToken();
     if (!question.trim() || asking) return;
     setAsking(true);
     const res = await askSmartTeacher(question.trim());
+    if (session !== speakSessionRef.current || owner !== getToken()) return;
     setAsking(false);
     if (!res.ok) {
       // فشل الطلب: نُبقي سؤال الطالب كما كتبه ولا نحتسب نشاطًا ولا عدّادًا
@@ -457,11 +494,14 @@ export default function SelfLearning() {
 
   // ── ✍️ اكتب ثم حسّن ──
   async function submitDraft1() {
+    const session = speakSessionRef.current;
+    const owner = getToken();
     if (draft1.trim().length < 10 || improveLoading) return;
     setImproveLoading(true);
     setImproveError("");
     try {
       const res = await evaluateWriting(draft1.trim());
+    if (session !== speakSessionRef.current || owner !== getToken()) return;
       setDraft1Result(res);
       setImproveStage("feedback1");
     } catch (e) {
@@ -470,11 +510,14 @@ export default function SelfLearning() {
     setImproveLoading(false);
   }
   async function submitDraft2() {
+    const session = speakSessionRef.current;
+    const owner = getToken();
     if (draft2.trim().length < 10 || improveLoading) return;
     setImproveLoading(true);
     setImproveError("");
     try {
       const res = await evaluateWriting(draft2.trim());
+    if (session !== speakSessionRef.current || owner !== getToken()) return;
       setDraft2Result(res);
       setImproveStage("compare");
       recordActivity("الْكِتَابَةُ وَالْمُرَاجَعَةُ الذَّاتِيَّةُ");
@@ -488,24 +531,34 @@ export default function SelfLearning() {
 
   // ── 🎙️ تحدث ثم قيّم نفسك ──
   async function startSpeakRecording() {
+    if (micPendingRef.current || recording || speakLoading) return;
     setSpeakError(""); setSpeakResult(null); setAudioBlobState(null); setMicError(null);
     const supportIssue = checkMicSupport();
     if (supportIssue) { setMicError(supportIssue); return; }
+    micPendingRef.current = true;
+    const session = ++speakSessionRef.current;
+    let stream: MediaStream | null = null;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, sampleRate: 16000 },
       });
+      if (session !== speakSessionRef.current) { stream.getTracks().forEach(track => track.stop()); return; }
+      const capturedStream = stream;
       const preferredMimeTypes = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
       const supportedMimeType = preferredMimeTypes.find(
         (t) => typeof MediaRecorder.isTypeSupported === "function" && MediaRecorder.isTypeSupported(t)
       );
       const mr = supportedMimeType ? new MediaRecorder(stream, { mimeType: supportedMimeType }) : new MediaRecorder(stream);
       const actualMimeType = mr.mimeType || supportedMimeType || "audio/webm";
-      chunksRef.current = [];
-      mr.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      const chunks: Blob[] = [];
+      mr.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
       mr.onstop = () => {
-        stream.getTracks().forEach(t => t.stop());
-        const blob = new Blob(chunksRef.current, { type: actualMimeType });
+        capturedStream.getTracks().forEach(t => t.stop());
+        clearInterval(speakTimerRef.current);
+        if (session !== speakSessionRef.current) return;
+        setRecording(false);
+        const blob = new Blob(chunks, { type: actualMimeType });
+        if (blob.size < 1000) { setSpeakError("التسجيل قصير جدًا أو فارغ. سجّل مرة أخرى."); return; }
         setAudioBlobState(blob);
       };
       mr.start(1000);
@@ -515,8 +568,9 @@ export default function SelfLearning() {
         setSpeakTimer(t => { if (t >= 60) { stopSpeakRecording(); return t; } return t + 1; });
       }, 1000);
     } catch (err) {
-      setMicError(classifyMicError(err));
-    }
+      stream?.getTracks().forEach(track => track.stop());
+      if (session === speakSessionRef.current) setMicError(classifyMicError(err));
+    } finally { micPendingRef.current = false; }
   }
   function stopSpeakRecording() {
     if (mediaRef.current?.state === "recording") mediaRef.current.stop();
@@ -528,15 +582,19 @@ export default function SelfLearning() {
     setSelfRatings(prev => ({ ...prev, [key]: value }));
   }
   async function submitSelfRatingThenAI() {
+    const session = speakSessionRef.current;
+    const owner = getToken();
+    if (!audioBlobState || speakLoading) return;
     setSelfRatingSubmitted(true);
-    if (!audioBlobState) return;
     setSpeakLoading(true);
     try {
       const res = await evaluateSpeech(audioBlobState, SPEAK_PROMPT, 0, "self-learning-speak");
+    if (session !== speakSessionRef.current || owner !== getToken()) return;
       setSpeakResult(res);
       recordActivity("التَّحَدُّثُ وَالتَّقْيِيمُ الذَّاتِيُّ");
       setStudent(getState());
     } catch (e) {
+      setSelfRatingSubmitted(false);
       setSpeakError(describeError(e, "تَعَذَّرَ تَقْيِيمُ التَّسْجِيلِ. تَحَقَّقْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ."));
     }
     setSpeakLoading(false);
@@ -544,13 +602,15 @@ export default function SelfLearning() {
   const speakFmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   function handleQuizAnswer(idx: number) {
+    if (selected !== null) return;
     setSelected(idx);
-    if (idx === quiz[quizIdx].correct) setScore(s => s + 1);
-    setTimeout(() => {
+    const nextScore = score + (idx === quiz[quizIdx].correct ? 1 : 0);
+    setScore(nextScore);
+    quizAdvanceRef.current = setTimeout(() => {
       if (quizIdx < quiz.length - 1) { setQuizIdx(q => q + 1); setSelected(null); }
       else {
         setDone(true);
-        setState(prev => ({ ...prev, selfLearningProgress: Math.max(prev.selfLearningProgress, Math.round(score / quiz.length * 100)) }));
+        setState(prev => ({ ...prev, selfLearningProgress: Math.max(prev.selfLearningProgress, Math.round(nextScore / quiz.length * 100)) }));
         recordActivity("الْمُفْرَدَاتُ وَتَرَاكِيبُ الْجُمْلَةِ");
         setStudent(getState());
       }
@@ -562,55 +622,29 @@ export default function SelfLearning() {
     const independence = computeIndependence(sl);
 
     return (
-      <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-        <div className="p-4" style={{ background: "linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)" }}>
-          <button onClick={() => setLocation("/skills")} className="text-blue-200 text-sm mb-2">← الْمَهَارَاتُ</button>
-          <div className="flex justify-between items-center">
-            <div className="text-right">
-              <h1 className="text-2xl font-bold text-white">مَهَارَةُ التَّعَلُّمِ الذَّاتِيِّ</h1>
-              <p className="text-blue-200 text-sm">اكْتَشِفْ وَتَعَلَّمْ بِاسْتِقْلَالِيَّةٍ وَإِبْدَاعٍ</p>
-            </div>
-            <span className="text-3xl p-2 bg-blue-800 rounded-xl">📚</span>
-          </div>
-        </div>
-
-        <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-          {/* ── بطاقة موجزة: ترحيب + تقدم ── */}
-          <div className="rounded-2xl p-5 text-right shadow"
-            style={{ background: "linear-gradient(135deg,#ecfdf5,#d1fae5)", border: "1px solid #a7f3d0" }}>
-            <h2 className="font-bold text-lg text-emerald-800">
-              مَرْحَبًا{student.name ? ` يَا ${student.name}` : ""}! أَنْتَ مَنْ يَقُودُ تَعَلُّمَكَ هُنَا 🌱
-            </h2>
-
-            <div className="w-full h-2.5 bg-white/60 rounded-full mt-3 mb-1 overflow-hidden">
-              <div className="h-2.5 rounded-full transition-all"
-                style={{ width: `${student.selfLearningProgress}%`, background: "linear-gradient(90deg,#059669,#10b981)" }} />
-            </div>
-
-            <div className="flex justify-between items-center mt-3">
-              <div className="flex gap-4">
-                <span className="text-sm text-emerald-800"><b>{sl.completedActivities}</b> أَنْشِطَةٌ</span>
-                <span className="text-sm text-emerald-800">🌱 <b>{independence === null ? "—" : `${independence}%`}</b></span>
-                <span className="text-sm text-emerald-800">🪪 <b>{BADGES.filter(b => b.check(sl)).length}</b>/{BADGES.length}</span>
-              </div>
-              <button onClick={() => setShowDetails(v => !v)} className="text-xs text-emerald-700 font-bold underline">
-                {showDetails ? "إِخْفَاءُ التَّفَاصِيلِ ▲" : "تَفَاصِيلُ رِحْلَتِي ▼"}
-              </button>
-            </div>
-          </div>
+      <div className="page-container self-library" dir="rtl">
+        <SkillLibraryHeader kind="self" onBack={() => setLocation("/skills")} />
+        <div className="self-library-content">
+          <section className="self-journey-summary" aria-label="ملخص رحلتي">
+            <div className="self-summary-progress"><span>أثر محاولاتك</span><strong>{student.selfLearningProgress}%</strong><div className="self-summary-track" role="progressbar" aria-label="التقدم في التعلم الذاتي" aria-valuenow={student.selfLearningProgress} aria-valuemin={0} aria-valuemax={100}><span style={{width:`${Math.max(0,Math.min(100,student.selfLearningProgress))}%`}} /></div></div>
+            <div className="self-summary-stat"><strong>{sl.completedActivities}</strong><span>أنشطة مكتملة</span></div>
+            <div className="self-summary-stat"><strong>{independence === null ? "—" : `${independence}%`}</strong><span>مؤشر الاستقلالية</span></div>
+            <div className="self-summary-stat"><strong dir="ltr">{BADGES.filter(b => b.check(sl)).length}<small> / {BADGES.length}</small></strong><span>شارات مكتسبة</span></div>
+            <button onClick={() => setShowDetails(v => !v)} aria-expanded={showDetails} className="self-details-toggle">{showDetails ? "إخفاء التفاصيل" : "تفاصيل رحلتي"}<span aria-hidden="true">{showDetails ? "−" : "+"}</span></button>
+          </section>
 
           {/* ── تفاصيل إضافية (اختيارية، مطويّة افتراضيًا) ── */}
           {showDetails && (
             <div className="rounded-2xl p-5 shadow bg-white space-y-5">
               {/* شارات */}
               <div>
-                <h3 className="font-bold text-blue-800 text-right text-sm mb-3">🪪 جَوَازُ التَّعَلُّمِ الذَّاتِيِّ</h3>
+                <h3 className="font-bold text-[#35533b] text-right text-sm mb-3">🪪 جَوَازُ التَّعَلُّمِ الذَّاتِيِّ</h3>
                 <div className="grid grid-cols-3 gap-2">
                   {BADGES.map(b => {
                     const earned = b.check(sl);
                     return (
                       <div key={b.id} title={b.desc} className="rounded-xl p-2 text-center"
-                        style={{ background: earned ? "#fffbeb" : "#f9fafb", border: `1px solid ${earned ? "#fde68a" : "#e5e7eb"}`, opacity: earned ? 1 : 0.5 }}>
+                        style={{ background: earned ? "#fffbeb" : "#f9fafb", border: `1px solid ${earned ? "#dfd0a5" : "#e5e7eb"}`, opacity: earned ? 1 : 0.5 }}>
                         <p className="text-xl">{earned ? b.icon : "🔒"}</p>
                         <p className="text-[10px] font-bold text-gray-600 leading-tight mt-0.5">{b.title}</p>
                       </div>
@@ -621,7 +655,7 @@ export default function SelfLearning() {
 
               {/* مسار الرحلة */}
               <div className="pt-4 border-t border-gray-100">
-                <h3 className="font-bold text-blue-800 text-right text-sm mb-3">🧭 رِحْلَةُ تَعَلُّمِي</h3>
+                <h3 className="font-bold text-[#35533b] text-right text-sm mb-3">🧭 رِحْلَةُ تَعَلُّمِي</h3>
                 <div className="flex overflow-x-auto gap-1 pb-2 -mx-1 px-1" style={{ scrollbarWidth: "thin" }}>
                   {JOURNEY_STAGES.map((stage, i) => {
                     const done = i < sl.journeyStageReached;
@@ -629,12 +663,12 @@ export default function SelfLearning() {
                     return (
                       <div key={i} className="flex items-center shrink-0">
                         <button onClick={() => setActiveStage(activeStage === i ? null : i)}
-                          className="flex flex-col items-center gap-1 px-1.5 transition-transform active:scale-95">
+                          className="flex flex-col items-center gap-1 px-1.5 transition-transform active:scale-[0.98]">
                           <span className="w-10 h-10 rounded-full flex items-center justify-center text-base shrink-0"
                             style={{
-                              background: done ? "#059669" : current ? "#1d4ed8" : "#e5e7eb",
+                              background: done ? "#059669" : current ? "#436444" : "#e5e7eb",
                               color: done || current ? "white" : "#9ca3af",
-                              boxShadow: current ? "0 0 0 3px #bfdbfe" : "none",
+                              boxShadow: current ? "0 0 0 3px #d3dfc2" : "none",
                             }}>
                             {done ? "✓" : stage.icon}
                           </span>
@@ -648,8 +682,8 @@ export default function SelfLearning() {
                   })}
                 </div>
                 {activeStage !== null && (
-                  <div className="mt-2 bg-blue-50 rounded-xl p-3 text-right">
-                    <p className="text-sm text-blue-800 leading-relaxed" style={{ fontFamily: "'Amiri',serif" }}>
+                  <div className="mt-2 bg-[#f1f5e9] rounded-xl p-3 text-right">
+                    <p className="text-sm text-[#35533b] leading-relaxed" style={{ fontFamily: "var(--font-brand)" }}>
                       {JOURNEY_STAGES[activeStage].icon} {JOURNEY_STAGES[activeStage].info}
                     </p>
                   </div>
@@ -658,10 +692,10 @@ export default function SelfLearning() {
 
               {sl.skillsImproved.length > 0 && (
                 <div className="pt-4 border-t border-gray-100">
-                  <h3 className="font-bold text-blue-800 text-right text-sm mb-2">مَهَارَاتٌ طَوَّرْتُهَا</h3>
+                  <h3 className="font-bold text-[#35533b] text-right text-sm mb-2">مَهَارَاتٌ طَوَّرْتُهَا</h3>
                   <div className="flex flex-wrap gap-1.5 justify-end">
                     {sl.skillsImproved.map(s => (
-                      <span key={s} className="text-xs bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full font-semibold">{s}</span>
+                      <span key={s} className="text-xs bg-[#f4efdf] text-[#786440] px-2.5 py-1 rounded-full font-semibold">{s}</span>
                     ))}
                   </div>
                 </div>
@@ -669,104 +703,82 @@ export default function SelfLearning() {
             </div>
           )}
 
-          {/* ── الأنشطة ── */}
-          <div id="self-learning-activities">
-            <h2 className="text-right font-bold text-lg mb-4 text-blue-800">🎯 ابْدَأْ نَشَاطَكَ الْآنَ:</h2>
-            <div className="flex flex-col gap-3">
-              {[
-                { id: "quiz", icon: "🧠", title: "اخْتَبِرْ مَعْلُومَاتِكَ", desc: "أَسْئِلَةٌ تَفَاعُلِيَّةٌ لِقِيَاسِ مُسْتَوَاكَ" },
-                { id: "order", icon: "🔤", title: "رَتِّبِ الْكَلِمَاتِ", desc: "رَتِّبِ الْكَلِمَاتِ لِتَكُونَ جُمْلَةً صَحِيحَةً" },
-                { id: "fill", icon: "✏️", title: "أَكْمِلِ الْجُمْلَةَ", desc: "أَكْمِلِ الْجُمَلَ النَّاقِصَةَ بِالْكَلِمَةِ الْمُنَاسِبَةِ" },
-                { id: "ask", icon: "🤖", title: "اسْأَلْ بِذَكَاءٍ", desc: "صِغْ سُؤَالَكَ بِنَفْسِكَ وَاسْأَلِ الْمُعَلِّمَ الذَّكِيَّ" },
-                { id: "teacher", icon: "🧠", title: "أَنَا الْمُعَلِّمُ", desc: "تَحَقَّقْ مِنْ إِجَابَةِ الْمُعَلِّمِ الذَّكِيِّ وَصَحِّحْهَا إِنْ لَزِمَ" },
-                { id: "improve", icon: "✍️", title: "اكْتُبْ ثُمَّ حَسِّنْ", desc: "اُكْتُبْ فِقْرَةً ثُمَّ حَسِّنْهَا بَعْدَ الْمُرَاجَعَةِ" },
-                { id: "speak", icon: "🎙️", title: "تَحَدَّثْ ثُمَّ قَيِّمْ نَفْسَكَ", desc: "سَجِّلْ حَدِيثًا قَصِيرًا وَقَيِّمْ نَفْسَكَ قَبْلَ تَقْيِيمِ الذَّكَاءِ الِاصْطِنَاعِيِّ" },
-              ].map(a => (
-                <button key={a.id} onClick={() => startActivity(a.id)}
-                  className="p-4 bg-white rounded-xl shadow text-right hover:shadow-md transition-all flex justify-between items-center">
-                  <div><h3 className="font-bold text-blue-800">{a.title}</h3><p className="text-gray-500 text-sm">{a.desc}</p></div>
-                  <span className="text-4xl p-2 rounded-xl" style={{ background: "#dbeafe" }}>{a.icon}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <div id="self-learning-activities">{[
+            {id:"practice", title:"جرّب ما تعرفه", label:"ابدأ بخطوة صغيرة"},
+            {id:"explore", title:"اكتشف طريقتك في التعلّم", label:"اسأل، راجع، وعبّر"},
+          ].map(group => <section className={`self-activity-group self-activity-group--${group.id}`} key={group.id}>
+            <div className="speaking-library-heading"><div><p className="studio-eyebrow">{group.label}</p><h2>{group.title}</h2></div></div>
+            <div className="self-activity-grid">{SELF_ACTIVITIES.filter(a=>a.group===group.id).map(({icon: Icon,...a})=><button key={a.id} onClick={() => startActivity(a.id)} className="self-activity-card">
+              <span className="self-activity-icon"><Icon size={28} strokeWidth={1.4} aria-hidden="true" /></span><div><h3>{a.title}</h3><p>{a.desc}</p></div><ArrowLeft className="self-activity-arrow" size={18} aria-hidden="true" />
+            </button>)}</div>
+          </section>)}</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-      <div className="p-4 bg-blue-700">
-        <button onClick={resetToHome} className="text-blue-200 text-sm">← الْعَوْدَةُ</button>
-        <h1 className="text-white font-bold text-lg text-right mt-1">مَهَارَةُ التَّعَلُّمِ الذَّاتِيِّ</h1>
-        {/* شريط مصغّر يوضح موضع الطالب داخل رحلة النشاط الحالي */}
-        <div className="flex gap-1.5 mt-2">
-          {(["goal", "plan", "task", "reflect"] as const).map(s => (
-            <div key={s} className="flex-1 h-1.5 rounded-full"
-              style={{ background: (["goal","plan","task","reflect"].indexOf(flowStep) >= ["goal","plan","task","reflect"].indexOf(s)) ? "#bfdbfe" : "rgba(255,255,255,0.25)" }} />
-          ))}
-        </div>
-      </div>
-
-      <div className="max-w-2xl mx-auto px-4 py-4">
+    <div dir="rtl" className="activity-page self-workspace-page">
+      <ActivityHeader title={SELF_ACTIVITIES.find(a=>a.id===activity)?.title || "رحلتي في التعلم"} eyebrow="مهارة التعلم الذاتي" description="خذ وقتك في كل خطوة. أنت تقود رحلة التعلّم." backLabel="العودة للأنشطة" onBack={resetToHome} icon={GraduationCap} />
+      <ol className="activity-flow-steps page-container" aria-label="مراحل النشاط">{(["goal","plan","task","reflect"] as const).map((step,i)=><li key={step} aria-current={flowStep===step?"step":undefined} data-complete={["goal","plan","task","reflect"].indexOf(flowStep)>i}><span>{i+1}</span>{["أحدد هدفي","أخطط","أنفذ","أتأمل"][i]}</li>)}</ol>
+      <div className="activity-body">
 
         {/* ── 🎯 هدفي اليوم ── */}
         {flowStep === "goal" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-1">🎯 هَدَفِي الْيَوْمَ</h2>
+          <div className="surface-card bg-white rounded-2xl p-5 shadow">
+            <h2 className="text-right font-bold text-lg text-[#35533b] mb-1">🎯 هَدَفِي الْيَوْمَ</h2>
             <p className="text-right text-sm text-gray-500 mb-4">مَا الْهَدَفُ الَّذِي تُرِيدُ تَحْقِيقَهُ الْيَوْمَ؟</p>
             <div className="flex flex-col gap-2 mb-3">
               {GOAL_OPTIONS.map(g => (
                 <button key={g} onClick={() => setGoal(g)}
-                  className={`p-3 rounded-xl text-right border-2 transition-all ${goal === g ? "border-blue-500 bg-blue-50 font-bold text-blue-800" : "border-gray-200 bg-white"}`}>
+                  className={`p-3 rounded-xl text-right border-2 transition-all ${goal === g ? "border-[#7c9567] bg-[#f1f5e9] font-bold text-[#35533b]" : "border-gray-200 bg-white"}`}>
                   {g}
                 </button>
               ))}
               <button onClick={() => setGoal("custom")}
-                className={`p-3 rounded-xl text-right border-2 transition-all ${goal === "custom" ? "border-blue-500 bg-blue-50 font-bold text-blue-800" : "border-gray-200 bg-white"}`}>
+                className={`p-3 rounded-xl text-right border-2 transition-all ${goal === "custom" ? "border-[#7c9567] bg-[#f1f5e9] font-bold text-[#35533b]" : "border-gray-200 bg-white"}`}>
                 ✏️ هَدَفٌ أَكْتُبُهُ بِنَفْسِي
               </button>
               {goal === "custom" && (
                 <input value={customGoal} onChange={e => setCustomGoal(e.target.value)} placeholder="اكْتُبْ هَدَفَكَ هُنَا..."
-                  className="w-full p-3 rounded-xl border-2 border-gray-200 text-right focus:border-blue-500 focus:outline-none"
-                  style={{ fontFamily: "'Cairo', sans-serif" }} />
+                  className="w-full p-3 rounded-xl border-2 border-gray-200 text-right focus:border-[#7c9567] focus:outline-none"
+                  style={{ fontFamily: "var(--font-brand)" }} />
               )}
             </div>
             <button onClick={confirmGoal} disabled={!goal || (goal === "custom" && !customGoal.trim())}
-              className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">التَّالِي: أُخَطِّطُ 🗺️</button>
+              className="w-full py-3 bg-[#436444] text-white rounded-xl font-bold disabled:opacity-40">التَّالِي: أُخَطِّطُ 🗺️</button>
           </div>
         )}
 
         {/* ── 🗺️ خطتي للتعلم ── */}
         {flowStep === "plan" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-1">🗺️ خُطَّتِي لِلتَّعَلُّمِ</h2>
+          <div className="surface-card bg-white rounded-2xl p-5 shadow">
+            <h2 className="text-right font-bold text-lg text-[#35533b] mb-1">🗺️ خُطَّتِي لِلتَّعَلُّمِ</h2>
             <p className="text-right text-sm text-gray-500 mb-4">رَتِّبْ خُطُوَاتِ إِنْجَازِ مَهَمَّتِكَ بِالضَّغْطِ عَلَيْهَا بِالتَّرْتِيبِ الَّذِي تَرَاهُ مُنَاسِبًا:</p>
             <div className="flex flex-col gap-2 mb-4">
               {PLAN_STEPS_CANONICAL.map(step => {
                 const idx = planSelection.indexOf(step);
                 return (
                   <button key={step} onClick={() => !planChecked && togglePlanStep(step)}
-                    className={`p-3 rounded-xl text-right border-2 flex justify-between items-center transition-all ${idx !== -1 ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white"}`}>
+                    className={`p-3 rounded-xl text-right border-2 flex justify-between items-center transition-all ${idx !== -1 ? "border-[#7c9567] bg-[#f1f5e9]" : "border-gray-200 bg-white"}`}>
                     <span>{step}</span>
-                    {idx !== -1 && <span className="w-6 h-6 shrink-0 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">{idx + 1}</span>}
+                    {idx !== -1 && <span className="w-6 h-6 shrink-0 rounded-full bg-[#52744e] text-white text-xs flex items-center justify-center">{idx + 1}</span>}
                   </button>
                 );
               })}
             </div>
             {!planChecked ? (
               <button disabled={planSelection.length < PLAN_STEPS_CANONICAL.length} onClick={confirmPlan}
-                className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">✅ تَحَقَّقْ مِنَ التَّرْتِيبِ</button>
+                className="w-full py-3 bg-[#436444] text-white rounded-xl font-bold disabled:opacity-40">✅ تَحَقَّقْ مِنَ التَّرْتِيبِ</button>
             ) : (
-              <div className="bg-blue-50 rounded-xl p-3 text-right">
-                <p className="text-sm text-blue-800 leading-relaxed">
+              <div className="bg-[#f1f5e9] rounded-xl p-3 text-right">
+                <p className="text-sm text-[#35533b] leading-relaxed">
                   {planSelection.join("|") === PLAN_STEPS_CANONICAL.join("|")
                     ? "👏 تَرْتِيبٌ مُمْتَازٌ! هَذَا بِالضَّبْطِ أَفْضَلُ أُسْلُوبٍ لِلتَّنْظِيمِ الذَّاتِيِّ."
                     : "👍 تَرْتِيبٌ مَقْبُولٌ! تَذَكَّرْ: قِرَاءَةُ السُّؤَالِ، ثُمَّ التَّفْكِيرُ، ثُمَّ الْإِجَابَةُ، ثُمَّ الْمُرَاجَعَةُ — عَادَةً مَا يُعْطِي أَفْضَلَ النَّتَائِجِ."}
                 </p>
                 <button onClick={() => setFlowStep("task")}
-                  className="mt-3 text-sm px-4 py-2 rounded-lg bg-blue-700 text-white font-bold">ابْدَأِ التَّنْفِيذَ ✍️</button>
+                  className="mt-3 text-sm px-4 py-2 rounded-lg bg-[#436444] text-white font-bold">ابْدَأِ التَّنْفِيذَ ✍️</button>
               </div>
             )}
           </div>
@@ -774,16 +786,16 @@ export default function SelfLearning() {
 
         {/* ── ✍️ أنفذ (الأنشطة الحالية) ── */}
         {flowStep === "task" && activity === "quiz" && !done && (
-          <div className="bg-white rounded-2xl p-5 shadow">
+          <div className="surface-card bg-white rounded-2xl p-5 shadow">
             <div className="w-full h-2 bg-gray-200 rounded-full mb-4">
-              <div className="h-2 rounded-full bg-blue-600 transition-all" style={{ width: `${(quizIdx / quiz.length) * 100}%` }} />
+              <div className="h-2 rounded-full bg-[#52744e] transition-all" style={{ width: `${(quizIdx / quiz.length) * 100}%` }} />
             </div>
             <p className="text-right text-sm text-gray-500 mb-3">السُّؤَالُ {quizIdx + 1} مِنْ {quiz.length}</p>
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-4">{quiz[quizIdx].q}</h2>
+            <h2 className="text-right font-bold text-lg text-[#35533b] mb-4">{quiz[quizIdx].q}</h2>
             <div className="flex flex-col gap-2">
               {quiz[quizIdx].options.map((opt, i) => (
                 <button key={i} onClick={() => selected === null && handleQuizAnswer(i)}
-                  className={`p-3 rounded-xl text-right transition-all border-2 ${selected === i ? (i === quiz[quizIdx].correct ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50") : "border-gray-200 bg-white hover:border-blue-300"}`}>
+                  className={`p-3 rounded-xl text-right transition-all border-2 ${selected === i ? (i === quiz[quizIdx].correct ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50") : "border-gray-200 bg-white hover:border-[#b4c6a2]"}`}>
                   {opt}
                 </button>
               ))}
@@ -792,64 +804,64 @@ export default function SelfLearning() {
         )}
 
         {flowStep === "task" && activity === "quiz" && done && (
-          <div className="bg-white rounded-2xl p-5 shadow text-center">
+          <div className="surface-card bg-white rounded-2xl p-5 shadow text-center">
             <p className="text-4xl mb-3">🎉</p>
-            <h2 className="font-bold text-xl text-blue-800 mb-2">أَحْسَنْتَ!</h2>
+            <h2 className="font-bold text-xl text-[#35533b] mb-2">أَحْسَنْتَ!</h2>
             <p className="text-gray-600">نَتِيجَتُكَ: {score} / {quiz.length}</p>
             <div className="flex gap-2 mt-4">
               <button onClick={() => { setQuizIdx(0); setSelected(null); setScore(0); setDone(false); }}
-                className="flex-1 py-2 border-2 border-blue-200 text-blue-700 rounded-xl font-bold">🔄 إِعَادَةُ الِاخْتِبَارِ</button>
+                className="flex-1 py-2 border-2 border-[#d3dfc2] text-[#436444] rounded-xl font-bold">🔄 إِعَادَةُ الِاخْتِبَارِ</button>
               <button onClick={() => setFlowStep("reflect")}
-                className="flex-1 py-2 bg-blue-700 text-white rounded-xl font-bold">التَّالِي: أَتَأَمَّلُ 🪞</button>
+                className="flex-1 py-2 bg-[#436444] text-white rounded-xl font-bold">التَّالِي: أَتَأَمَّلُ 🪞</button>
             </div>
           </div>
         )}
 
         {flowStep === "task" && activity === "order" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-2">🔤 رَتِّبِ الْكَلِمَاتِ</h2>
+          <div className="surface-card bg-white rounded-2xl p-5 shadow">
+            <h2 className="text-right font-bold text-lg text-[#35533b] mb-2">🔤 رَتِّبِ الْكَلِمَاتِ</h2>
             <div className="bg-green-50 rounded-xl p-3 text-right mb-4">
               <p className="text-sm font-semibold text-green-800">الْكَلِمَاتُ: «{wordOrder[0].words.join(" – ")}»</p>
             </div>
             <textarea value={wordAnswer} onChange={e => setWordAnswer(e.target.value)}
               placeholder="اكْتُبِ الْجُمْلَةَ الصَّحِيحَةَ هُنَا..."
-              className="w-full h-24 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none mb-3"
-              style={{ fontFamily: "'Cairo', sans-serif" }} />
+              className="w-full h-24 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-[#7c9567] focus:outline-none mb-3"
+              style={{ fontFamily: "var(--font-brand)" }} />
             {!checked && (
               <button onClick={checkOrderAnswer} className="w-full py-3 bg-green-700 text-white rounded-xl font-bold">✅ تَحَقَّقْ</button>
             )}
-            {checked && renderCheckResult(wordAnswer.trim() === wordOrder[0].answer, wordOrder[0].answer)}
+            {checked && renderCheckResult(exerciseAnswerMatches(wordAnswer, wordOrder[0].answer), wordOrder[0].answer)}
           </div>
         )}
 
         {flowStep === "task" && activity === "fill" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-purple-800 mb-2">✏️ أَكْمِلِ الْجُمْلَةَ</h2>
-            <div className="bg-purple-50 rounded-xl p-3 text-right mb-4">
-              <p className="font-semibold text-purple-800">«{fillIn[0].sentence}»</p>
+          <div className="surface-card bg-white rounded-2xl p-5 shadow">
+            <h2 className="text-right font-bold text-lg text-[#6d6147] mb-2">✏️ أَكْمِلِ الْجُمْلَةَ</h2>
+            <div className="bg-[#f7f3e7] rounded-xl p-3 text-right mb-4">
+              <p className="font-semibold text-[#6d6147]">«{fillIn[0].sentence}»</p>
             </div>
             <input value={fillAnswer} onChange={e => setFillAnswer(e.target.value)}
               placeholder="أَكْمِلِ الْفَرَاغَ..."
-              className="w-full p-3 rounded-xl border-2 border-gray-200 text-right focus:border-purple-500 focus:outline-none mb-3"
-              style={{ fontFamily: "'Cairo', sans-serif" }} />
+              className="w-full p-3 rounded-xl border-2 border-gray-200 text-right focus:border-[#7c9567] focus:outline-none mb-3"
+              style={{ fontFamily: "var(--font-brand)" }} />
             {!checked && (
-              <button onClick={checkFillAnswer} className="w-full py-3 bg-purple-700 text-white rounded-xl font-bold">✅ تَحَقَّقْ</button>
+              <button onClick={checkFillAnswer} className="w-full py-3 bg-[#786440] text-white rounded-xl font-bold">✅ تَحَقَّقْ</button>
             )}
-            {checked && renderCheckResult(fillAnswer.trim().includes("جميل"), fillIn[0].answer)}
+            {checked && renderCheckResult(exerciseAnswerMatches(fillAnswer, fillIn[0].answer), fillIn[0].answer)}
           </div>
         )}
 
         {/* ── 🤖 اسأل بذكاء ── */}
         {flowStep === "task" && activity === "ask" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-2">🤖 اسْأَلْ بِذَكَاءٍ</h2>
+          <div className="surface-card bg-white rounded-2xl p-5 shadow">
+            <h2 className="text-right font-bold text-lg text-[#35533b] mb-2">🤖 اسْأَلْ بِذَكَاءٍ</h2>
             <p className="text-right text-sm text-gray-500 mb-4">
               لَدَيْكَ كَلِمَةٌ أَوْ قَاعِدَةٌ لَمْ تَفْهَمْهَا؟ اكْتُبْ سُؤَالَكَ لِلْمُعَلِّمِ الذَّكِيِّ بِوُضُوحٍ:
             </p>
             <textarea value={question} onChange={e => setQuestion(e.target.value)}
               placeholder="مِثَالُ: لِمَاذَا نَكْتُبُ همزة الوصل بِدُونِ همزة فَوْقَ الْأَلِفِ؟"
-              className="w-full h-24 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none mb-3"
-              style={{ fontFamily: "'Cairo', sans-serif" }} disabled={!!aiAnswer} />
+              className="w-full h-24 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-[#7c9567] focus:outline-none mb-3"
+              style={{ fontFamily: "var(--font-brand)" }} disabled={!!aiAnswer} />
             {askError && !aiAnswer && (
               <p role="alert" className="text-right text-sm text-red-700 bg-red-50 rounded-xl p-3 mb-3">
                 {askError} سؤالك ما زال مكتوبًا، يمكنك إرساله مرة أخرى.
@@ -857,16 +869,16 @@ export default function SelfLearning() {
             )}
             {!aiAnswer && (
               <button onClick={askQuestion} disabled={!question.trim() || asking}
-                className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">
+                className="w-full py-3 bg-[#436444] text-white rounded-xl font-bold disabled:opacity-40">
                 {asking ? "جَارٍ التَّفْكِيرُ..." : askError ? "🔄 أَعِدِ الْمُحَاوَلَةَ" : "📨 أَرْسِلْ سُؤَالِي"}
               </button>
             )}
             {aiAnswer && (
-              <div className="bg-blue-50 rounded-xl p-3 text-right mt-1">
-                <p className="text-xs text-blue-500 font-bold mb-1">🤖 الْمُعَلِّمُ الذَّكِيُّ:</p>
-                <p className="text-blue-800 text-sm leading-relaxed">{aiAnswer}</p>
+              <div className="bg-[#f1f5e9] rounded-xl p-3 text-right mt-1">
+                <p className="text-xs text-[#536344] font-bold mb-1">🤖 الْمُعَلِّمُ الذَّكِيُّ:</p>
+                <p className="text-[#35533b] text-sm leading-relaxed">{aiAnswer}</p>
                 <button onClick={() => setFlowStep("reflect")}
-                  className="mt-3 text-sm px-4 py-2 rounded-lg bg-blue-700 text-white font-bold">
+                  className="mt-3 text-sm px-4 py-2 rounded-lg bg-[#436444] text-white font-bold">
                   التَّالِي: أَتَأَمَّلُ فِي تَعَلُّمِي 🪞
                 </button>
               </div>
@@ -876,14 +888,14 @@ export default function SelfLearning() {
 
         {/* ── 🧠 أنا المعلم ── */}
         {flowStep === "task" && activity === "teacher" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-2">🧠 أَنَا الْمُعَلِّمُ</h2>
+          <div className="surface-card bg-white rounded-2xl p-5 shadow">
+            <h2 className="text-right font-bold text-lg text-[#35533b] mb-2">🧠 أَنَا الْمُعَلِّمُ</h2>
             <div className="bg-gray-50 rounded-xl p-3 text-right mb-2">
               <p className="text-sm font-semibold text-gray-700">❓ {teacherItem.question}</p>
             </div>
-            <div className="bg-blue-50 rounded-xl p-3 text-right mb-4">
-              <p className="text-xs text-blue-500 font-bold mb-1">🤖 قَالَ الْمُعَلِّمُ الذَّكِيُّ:</p>
-              <p className="text-blue-800 text-sm">{teacherItem.aiAnswer}</p>
+            <div className="bg-[#f1f5e9] rounded-xl p-3 text-right mb-4">
+              <p className="text-xs text-[#536344] font-bold mb-1">🤖 قَالَ الْمُعَلِّمُ الذَّكِيُّ:</p>
+              <p className="text-[#35533b] text-sm">{teacherItem.aiAnswer}</p>
             </div>
 
             {!teacherSubmitted ? (
@@ -891,39 +903,39 @@ export default function SelfLearning() {
                 <p className="text-right text-sm font-bold text-gray-600 mb-2">هَلْ تُوَافِقُ عَلَى هَذِهِ الْإِجَابَةِ؟</p>
                 <div className="flex gap-2 mb-3">
                   <button onClick={() => setStudentAgrees(true)}
-                    className={`flex-1 py-2 rounded-xl border-2 font-bold text-sm ${studentAgrees === true ? "border-blue-500 bg-blue-50 text-blue-800" : "border-gray-200"}`}>
+                    className={`flex-1 py-2 rounded-xl border-2 font-bold text-sm ${studentAgrees === true ? "border-[#7c9567] bg-[#f1f5e9] text-[#35533b]" : "border-gray-200"}`}>
                     ✅ أُوَافِقُ
                   </button>
                   <button onClick={() => setStudentAgrees(false)}
-                    className={`flex-1 py-2 rounded-xl border-2 font-bold text-sm ${studentAgrees === false ? "border-blue-500 bg-blue-50 text-blue-800" : "border-gray-200"}`}>
+                    className={`flex-1 py-2 rounded-xl border-2 font-bold text-sm ${studentAgrees === false ? "border-[#7c9567] bg-[#f1f5e9] text-[#35533b]" : "border-gray-200"}`}>
                     ❌ لَا أُوَافِقُ
                   </button>
                 </div>
                 {studentAgrees === false && (
                   <textarea value={correction} onChange={e => setCorrection(e.target.value)}
                     placeholder="مَا الْإِجَابَةُ الصَّحِيحَةُ فِي رَأْيِكَ؟ وَلِمَاذَا؟"
-                    className="w-full h-20 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none mb-3"
-                    style={{ fontFamily: "'Cairo', sans-serif" }} />
+                    className="w-full h-20 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-[#7c9567] focus:outline-none mb-3"
+                    style={{ fontFamily: "var(--font-brand)" }} />
                 )}
                 <button onClick={submitTeacherCheck}
                   disabled={studentAgrees === null || (studentAgrees === false && !correction.trim())}
-                  className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">✅ تَأَكَّدْ</button>
+                  className="w-full py-3 bg-[#436444] text-white rounded-xl font-bold disabled:opacity-40">✅ تَأَكَّدْ</button>
               </>
             ) : (
-              <div className={`rounded-xl p-3 text-right ${studentAgrees === false ? "bg-green-50" : "bg-amber-50"}`}>
+              <div className={`rounded-xl p-3 text-right ${studentAgrees === false ? "bg-green-50" : "bg-[#faf6e9]"}`}>
                 {studentAgrees === false ? (
                   <p className="text-green-700 font-bold text-sm mb-1">
                     {teacherCorrectionMatches ? "👏 أَحْسَنْتَ! اكْتَشَفْتَ الْخَطَأَ فِعْلًا." : "👍 جَيِّدٌ أَنَّكَ لَمْ تُوَافِقْ، لَكِنَّ تَصْحِيحَكَ يَحْتَاجُ مُرَاجَعَةً."}
                   </p>
                 ) : (
-                  <p className="text-amber-700 font-bold text-sm mb-1">
+                  <p className="text-[#8a7247] font-bold text-sm mb-1">
                     🔎 فِي الْحَقِيقَةِ، إِجَابَةُ الْمُعَلِّمِ الذَّكِيِّ كَانَتْ خَاطِئَةً! لَا بَأْسَ، هَذَا تَمَامًا سَبَبُ أَهَمِّيَّةِ التَّحَقُّقِ دَائِمًا.
                   </p>
                 )}
                 <p className="text-sm text-gray-700 mt-1"><b>✅ الْإِجَابَةُ الصَّحِيحَةُ:</b> {teacherItem.correctAnswer}</p>
                 <p className="text-xs text-gray-500 mt-1">{teacherItem.explanation}</p>
                 <button onClick={() => setFlowStep("reflect")}
-                  className="mt-3 text-sm px-4 py-2 rounded-lg bg-blue-700 text-white font-bold">
+                  className="mt-3 text-sm px-4 py-2 rounded-lg bg-[#436444] text-white font-bold">
                   التَّالِي: أَتَأَمَّلُ فِي تَعَلُّمِي 🪞
                 </button>
               </div>
@@ -933,10 +945,10 @@ export default function SelfLearning() {
 
         {/* ── ✍️ اكتب ثم حسّن ── */}
         {flowStep === "task" && activity === "improve" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-2">✍️ اكْتُبْ ثُمَّ حَسِّنْ</h2>
-            <div className="bg-blue-50 rounded-xl p-3 text-right mb-4">
-              <p className="text-sm font-semibold text-blue-800">{IMPROVE_PROMPT}</p>
+          <div className="surface-card bg-white rounded-2xl p-5 shadow">
+            <h2 className="text-right font-bold text-lg text-[#35533b] mb-2">✍️ اكْتُبْ ثُمَّ حَسِّنْ</h2>
+            <div className="bg-[#f1f5e9] rounded-xl p-3 text-right mb-4">
+              <p className="text-sm font-semibold text-[#35533b]">{IMPROVE_PROMPT}</p>
             </div>
 
             {improveError && (
@@ -949,10 +961,10 @@ export default function SelfLearning() {
               <>
                 <textarea value={draft1} onChange={e => setDraft1(e.target.value)}
                   placeholder="اكْتُبْ مُحَاوَلَتَكَ الْأُولَى هُنَا..."
-                  className="w-full h-32 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none mb-3"
-                  style={{ fontFamily: "'Cairo', sans-serif" }} />
+                  className="w-full h-32 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-[#7c9567] focus:outline-none mb-3"
+                  style={{ fontFamily: "var(--font-brand)" }} />
                 <button onClick={submitDraft1} disabled={draft1.trim().length < 10 || improveLoading}
-                  className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">
+                  className="w-full py-3 bg-[#436444] text-white rounded-xl font-bold disabled:opacity-40">
                   {improveLoading ? "جَارٍ الْمُرَاجَعَةُ..." : "✅ أَرْسِلِ الْمُحَاوَلَةَ الْأُولَى"}
                 </button>
               </>
@@ -960,32 +972,32 @@ export default function SelfLearning() {
 
             {improveStage === "feedback1" && draft1Result && (
               <div className="space-y-3">
-                <div className="bg-amber-50 rounded-xl p-3 text-right">
-                  <p className="text-amber-800 font-bold text-sm mb-1">
+                <div className="bg-[#faf6e9] rounded-xl p-3 text-right">
+                  <p className="text-[#73603b] font-bold text-sm mb-1">
                     🔎 وَجَدْتُ {(draft1Result.errors?.length || 0)} مَوَاضِعَ قَدْ تَحْتَاجُ إِلَى مُرَاجَعَةٍ. حَاوِلِ اكْتِشَافَهَا بِنَفْسِكَ أَوَّلًا!
                   </p>
-                  <p className="text-xs text-amber-700">{draft1Result.feedback}</p>
+                  <p className="text-xs text-[#8a7247]">{draft1Result.feedback}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-gray-50 rounded-xl p-2 text-center">
-                    <p className="text-lg font-bold text-blue-700">{draft1Result.spelling_score}%</p>
+                    <p className="text-lg font-bold text-[#436444]">{draft1Result.spelling_score}%</p>
                     <p className="text-xs text-gray-500">الْإِمْلَاءُ</p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-2 text-center">
-                    <p className="text-lg font-bold text-blue-700">{draft1Result.structure_score}%</p>
+                    <p className="text-lg font-bold text-[#436444]">{draft1Result.structure_score}%</p>
                     <p className="text-xs text-gray-500">التَّرْكِيبُ</p>
                   </div>
                 </div>
                 {(draft1Result.improvements || []).length > 0 && (
-                  <div className="bg-blue-50 rounded-xl p-3 text-right">
-                    <p className="text-xs font-bold text-blue-700 mb-1">💡 أَشْيَاءُ لِلِانْتِبَاهِ إِلَيْهَا:</p>
+                  <div className="bg-[#f1f5e9] rounded-xl p-3 text-right">
+                    <p className="text-xs font-bold text-[#436444] mb-1">💡 أَشْيَاءُ لِلِانْتِبَاهِ إِلَيْهَا:</p>
                     {draft1Result.improvements.map((im: string, i: number) => (
-                      <p key={i} className="text-xs text-blue-700">• {im}</p>
+                      <p key={i} className="text-xs text-[#436444]">• {im}</p>
                     ))}
                   </div>
                 )}
                 <button onClick={() => setImproveStage("draft2")}
-                  className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold">✍️ اكْتُبِ النُّسْخَةَ الْمُحَسَّنَةَ</button>
+                  className="w-full py-3 bg-[#436444] text-white rounded-xl font-bold">✍️ اكْتُبِ النُّسْخَةَ الْمُحَسَّنَةَ</button>
               </div>
             )}
 
@@ -994,10 +1006,10 @@ export default function SelfLearning() {
                 <p className="text-right text-sm text-gray-500 mb-2">اكْتُبِ النُّسْخَةَ الْمُحَسَّنَةَ مُسْتَفِيدًا مِمَّا لَاحَظْتَهُ:</p>
                 <textarea value={draft2} onChange={e => setDraft2(e.target.value)}
                   placeholder="النُّسْخَةُ الثَّانِيَةُ..."
-                  className="w-full h-32 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none mb-3"
-                  style={{ fontFamily: "'Cairo', sans-serif" }} />
+                  className="w-full h-32 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-[#7c9567] focus:outline-none mb-3"
+                  style={{ fontFamily: "var(--font-brand)" }} />
                 <button onClick={submitDraft2} disabled={draft2.trim().length < 10 || improveLoading}
-                  className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">
+                  className="w-full py-3 bg-[#436444] text-white rounded-xl font-bold disabled:opacity-40">
                   {improveLoading ? "جَارٍ الْمُقَارَنَةُ..." : "✅ قَارِنْ بِالْمُحَاوَلَةِ الْأُولَى"}
                 </button>
               </>
@@ -1016,15 +1028,15 @@ export default function SelfLearning() {
                     <p className="text-2xl font-bold text-green-700">{draft2Result.overall_score}%</p>
                   </div>
                 </div>
-                <div className="bg-blue-50 rounded-xl p-3 text-right">
-                  <p className="text-sm text-blue-800 font-bold">
+                <div className="bg-[#f1f5e9] rounded-xl p-3 text-right">
+                  <p className="text-sm text-[#35533b] font-bold">
                     {draft2Result.overall_score > draft1Result.overall_score
                       ? `📈 تَحَسَّنْتَ بِنِسْبَةِ ${draft2Result.overall_score - draft1Result.overall_score}%! أَحْسَنْتَ.`
                       : "👍 حَافَظْتَ عَلَى مُسْتَوَاكَ. رَاجِعْ التَّعْلِيقَاتِ لِمُحَاوَلَةٍ أَقْوَى فِي الْمَرَّةِ الْقَادِمَةِ."}
                   </p>
                 </div>
                 <button onClick={() => setFlowStep("reflect")}
-                  className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold">التَّالِي: أَتَأَمَّلُ فِي تَعَلُّمِي 🪞</button>
+                  className="w-full py-3 bg-[#436444] text-white rounded-xl font-bold">التَّالِي: أَتَأَمَّلُ فِي تَعَلُّمِي 🪞</button>
               </div>
             )}
           </div>
@@ -1032,10 +1044,10 @@ export default function SelfLearning() {
 
         {/* ── 🎙️ تحدث ثم قيّم نفسك ── */}
         {flowStep === "task" && activity === "speak" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-2">🎙️ تَحَدَّثْ ثُمَّ قَيِّمْ نَفْسَكَ</h2>
-            <div className="bg-blue-50 rounded-xl p-3 text-right mb-4">
-              <p className="text-sm font-semibold text-blue-800">{SPEAK_PROMPT}</p>
+          <div className="surface-card bg-white rounded-2xl p-5 shadow">
+            <h2 className="text-right font-bold text-lg text-[#35533b] mb-2">🎙️ تَحَدَّثْ ثُمَّ قَيِّمْ نَفْسَكَ</h2>
+            <div className="bg-[#f1f5e9] rounded-xl p-3 text-right mb-4">
+              <p className="text-sm font-semibold text-[#35533b]">{SPEAK_PROMPT}</p>
             </div>
 
             {!audioBlobState && (
@@ -1045,12 +1057,12 @@ export default function SelfLearning() {
                 {!micError && (
                   <>
                     {!recording && <p className="text-xs text-gray-400 mb-2">قَدْ يَطْلُبُ مِنْكَ الْمُتَصَفِّحُ إِذْنَ اسْتِخْدَامِ الْمِيكْرُوفُونِ — اضْغَطْ "سَمَاحٌ / Allow".</p>}
-                    <p className="text-2xl font-bold text-blue-700 mb-2">{speakFmt(speakTimer)}</p>
-                    {recording && <AudioWaveform stream={mediaRef.current?.stream ?? null} color="#1d4ed8" />}
+                    <p className="text-2xl font-bold text-[#436444] mb-2">{speakFmt(speakTimer)}</p>
+                    {recording && <AudioWaveform stream={mediaRef.current?.stream ?? null} color="#436444" />}
                     <button onClick={recording ? stopSpeakRecording : startSpeakRecording}
                       aria-label={recording ? "إيقاف التسجيل" : "بدء تسجيل الصوت"}
                       aria-pressed={recording}
-                      className={`w-20 h-20 rounded-full text-3xl text-white shadow-lg mt-2 ${recording ? "bg-red-600 animate-pulse" : "bg-blue-700"}`}>
+                      className={`w-20 h-20 rounded-full text-3xl text-white shadow-lg mt-2 ${recording ? "bg-red-600 animate-pulse" : "bg-[#436444]"}`}>
                       {recording ? "⏹️" : "🎙️"}
                     </button>
                     <p className="text-xs text-gray-400 mt-2">{recording ? "جَارٍ التَّسْجِيلُ... اضْغَطْ لِإِنْهَائِهِ" : "اضْغَطْ لِبَدْءِ التَّسْجِيلِ"}</p>
@@ -1078,7 +1090,7 @@ export default function SelfLearning() {
                 </div>
                 <button onClick={submitSelfRatingThenAI}
                   disabled={Object.keys(selfRatings).length < SELF_RATING_CRITERIA.length || speakLoading}
-                  className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold disabled:opacity-40">
+                  className="w-full py-3 bg-[#436444] text-white rounded-xl font-bold disabled:opacity-40">
                   {speakLoading ? "جَارٍ التَّحْلِيلُ..." : "✅ تَأْكِيدُ تَقْيِيمِي"}
                 </button>
               </div>
@@ -1088,15 +1100,15 @@ export default function SelfLearning() {
               <div className="space-y-3">
                 {speakError && <p className="text-red-500 text-sm text-center">{speakError}</p>}
                 {speakResult && (
-                  <div className="bg-blue-50 rounded-xl p-3 text-right">
-                    <p className="text-xs text-blue-500 font-bold mb-1">🤖 تَقْيِيمُ الذَّكَاءِ الِاصْطِنَاعِيِّ:</p>
-                    <p className="text-blue-800 text-sm font-bold">النَّتِيجَةُ الْعَامَّةُ: {speakResult.overall ?? "—"}%</p>
-                    {speakResult.feedback && <p className="text-blue-700 text-xs mt-1">{speakResult.feedback}</p>}
+                  <div className="bg-[#f1f5e9] rounded-xl p-3 text-right">
+                    <p className="text-xs text-[#536344] font-bold mb-1">🤖 تَقْيِيمُ الذَّكَاءِ الِاصْطِنَاعِيِّ:</p>
+                    <p className="text-[#35533b] text-sm font-bold">النَّتِيجَةُ الْعَامَّةُ: {speakResult.overall ?? "—"}%</p>
+                    {speakResult.feedback && <p className="text-[#436444] text-xs mt-1">{speakResult.feedback}</p>}
                   </div>
                 )}
                 {(speakResult || speakError) && (
                   <button onClick={() => setFlowStep("reflect")}
-                    className="w-full py-3 bg-blue-700 text-white rounded-xl font-bold">التَّالِي: أَتَأَمَّلُ فِي تَعَلُّمِي 🪞</button>
+                    className="w-full py-3 bg-[#436444] text-white rounded-xl font-bold">التَّالِي: أَتَأَمَّلُ فِي تَعَلُّمِي 🪞</button>
                 )}
               </div>
             )}
@@ -1105,31 +1117,31 @@ export default function SelfLearning() {
 
         {/* ── 🪞 ماذا تعلمت؟ ── */}
         {flowStep === "reflect" && (
-          <div className="bg-white rounded-2xl p-5 shadow">
-            <h2 className="text-right font-bold text-lg text-blue-800 mb-1">🪞 مَاذَا تَعَلَّمْتُ؟</h2>
+          <div className="surface-card bg-white rounded-2xl p-5 shadow">
+            <h2 className="text-right font-bold text-lg text-[#35533b] mb-1">🪞 مَاذَا تَعَلَّمْتُ؟</h2>
             <p className="text-right text-sm text-gray-500 mb-4">خُذْ لَحْظَةً لِلتَّأَمُّلِ فِي رِحْلَتِكَ (يُمْكِنُكَ الْكِتَابَةُ بِاخْتِصَارٍ):</p>
             <div className="space-y-3">
               <div>
                 <label className="block text-right text-sm font-semibold text-gray-600 mb-1">مَاذَا تَعَلَّمْتَ؟</label>
                 <textarea value={reflection.learned} onChange={e => setReflection({ ...reflection, learned: e.target.value })}
-                  className="w-full p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none" rows={2}
-                  style={{ fontFamily: "'Cairo', sans-serif" }} />
+                  className="w-full p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-[#7c9567] focus:outline-none" rows={2}
+                  style={{ fontFamily: "var(--font-brand)" }} />
               </div>
               <div>
                 <label className="block text-right text-sm font-semibold text-gray-600 mb-1">مَا الشَّيْءُ الَّذِي كَانَ صَعْبًا؟</label>
                 <textarea value={reflection.hard} onChange={e => setReflection({ ...reflection, hard: e.target.value })}
-                  className="w-full p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none" rows={2}
-                  style={{ fontFamily: "'Cairo', sans-serif" }} />
+                  className="w-full p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-[#7c9567] focus:outline-none" rows={2}
+                  style={{ fontFamily: "var(--font-brand)" }} />
               </div>
               <div>
                 <label className="block text-right text-sm font-semibold text-gray-600 mb-1">كَيْفَ سَأَتَعَلَّمُهُ بِصُورَةٍ أَفْضَلَ فِي الْمَرَّةِ الْقَادِمَةِ؟</label>
                 <textarea value={reflection.better} onChange={e => setReflection({ ...reflection, better: e.target.value })}
-                  className="w-full p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-blue-500 focus:outline-none" rows={2}
-                  style={{ fontFamily: "'Cairo', sans-serif" }} />
+                  className="w-full p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-[#7c9567] focus:outline-none" rows={2}
+                  style={{ fontFamily: "var(--font-brand)" }} />
               </div>
             </div>
             <button onClick={() => { updateJourney({ stage: 8 }); resetToHome(); }}
-              className="w-full py-3 mt-4 bg-emerald-600 text-white rounded-xl font-bold">✅ إِنْهَاءُ الرِّحْلَةِ وَالْعَوْدَةُ 🌱</button>
+              className="w-full py-3 mt-4 bg-emerald-700 text-white rounded-xl font-bold">✅ إِنْهَاءُ الرِّحْلَةِ وَالْعَوْدَةُ 🌱</button>
           </div>
         )}
       </div>

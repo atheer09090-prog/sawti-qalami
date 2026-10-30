@@ -1,0 +1,12 @@
+(node:36385) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v2.1.9 /Users/Atheer/Documents/ChatGPT/Sawti qalmi/sawti-qalami/client
+
+ ✓ src/lib/exercise-answer.test.ts (2 tests) 3ms
+ ✓ src/lib/store.test.ts (9 tests) 37ms
+
+ Test Files  2 passed (2)
+      Tests  11 passed (11)
+   Start at  23:04:37
+   Duration  693ms (transform 87ms, setup 0ms, collect 91ms, tests 40ms, environment 0ms, prepare 186ms)

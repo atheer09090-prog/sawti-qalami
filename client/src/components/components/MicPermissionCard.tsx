@@ -1,6 +1,6 @@
 import { CheckCircle2, MicOff, RotateCw } from "lucide-react";
 import type { MicErrorInfo } from "@/lib/mic";
-import { Btn } from "@/components/ds";
+import { Btn } from "./ds/Btn";
 
 /**
  * بطاقة موحّدة لعرض مشاكل الميكروفون (رفض الإذن، لا يوجد جهاز، قيد الاستخدام...)

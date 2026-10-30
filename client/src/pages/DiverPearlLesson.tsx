@@ -1,3 +1,4 @@
+import { GameBackButton, GameMapHint } from "@/components/GameNavigation";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { playEffect, audioFile } from "@/lib/audio";
@@ -103,10 +104,10 @@ const DEFAULT_CONTENT = {
 
 function TopBar({ pearls, oxygen, onBack }: { pearls: number; oxygen: number; onBack: () => void }) {
   return (
-    <div className="flex items-center justify-between px-5 py-3" style={{ background: "rgba(6,30,50,0.55)" }}>
-      <button onClick={onBack} className="text-cyan-100 text-base">← الْمَهَامُّ</button>
+    <div className="game-toolbar flex items-center justify-between px-5 py-3 pointer-events-auto">
+      <GameBackButton onBack={onBack} />
       <div className="flex items-center gap-4">
-        <span className="flex items-center gap-1 bg-cyan-950/60 text-cyan-100 px-3 py-1 rounded-full text-base font-bold">🫧 {oxygen}</span>
+        <span className="flex items-center gap-1 bg-cyan-950/60 text-[#e7eddb] px-3 py-1 rounded-full text-base font-bold">🫧 {oxygen}</span>
         <span className="flex items-center gap-1 bg-cyan-950/60 text-yellow-200 px-3 py-1 rounded-full text-base font-bold">🦪 {pearls}</span>
       </div>
     </div>
@@ -118,7 +119,7 @@ function OceanBackdrop({ phase, interactive, onActivate, reaction, reactKey }: {
   return (
     <div className="absolute inset-0 overflow-hidden">
       <div className="absolute inset-0" style={{
-        background: "linear-gradient(180deg, #7dd3fc 0%, #0ea5e9 25%, #0369a1 55%, #0c4a6e 80%, #082f49 100%)"
+        background: "linear-gradient(180deg, #dce9de 0%, #bad1c1 25%, #8dab98 55%, #6e9582 80%, #426b5c 100%)"
       }} />
       {/* فقاعات زخرفية */}
       {[...Array(14)].map((_, i) => (
@@ -126,14 +127,14 @@ function OceanBackdrop({ phase, interactive, onActivate, reaction, reactKey }: {
           style={{ left: `${(i * 37) % 100}%`, top: `${(i * 53) % 100}%`, width: 6 + (i % 4) * 4, height: 6 + (i % 4) * 4 }} />
       ))}
       <svg className="absolute inset-0 w-full h-full opacity-25" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <path d="M12,10 Q25,25 40,40 T68,66 T90,90" fill="none" stroke="#e0f2fe" strokeWidth="0.8" strokeDasharray="2,2" />
+        <path d="M12,10 Q25,25 40,40 T68,66 T90,90" fill="none" stroke="#edf2e3" strokeWidth="0.8" strokeDasharray="2,2" />
       </svg>
       {(["intro", "video", "oyster1", "oyster2", "oyster3", "oyster4", "chest"] as Phase[]).map((p, i) => {
         const done = PHASES.indexOf(phase) > PHASES.indexOf(p);
         const active = phase === p;
         const clickable = active && interactive;
         return (
-          <div key={p} onClick={clickable ? onActivate : undefined}
+          <button type="button" key={p} aria-label={active ? "متابعة المرحلة الحالية" : `المرحلة ${i + 1}`} disabled={!clickable} onClick={clickable ? onActivate : undefined}
             className={`absolute flex items-center justify-center rounded-full shadow-lg transition-all ${active ? "pearl-node-active" : ""} ${clickable ? "cursor-pointer" : ""}`}
             style={{
               left: `${PATH_POS[p].x}%`, top: `${PATH_POS[p].y}%`,
@@ -141,22 +142,18 @@ function OceanBackdrop({ phase, interactive, onActivate, reaction, reactKey }: {
               transform: "translate(-50%, -50%)",
               background: done
                 ? "radial-gradient(circle at 35% 30%, #fff, #6ee7b7 60%, #059669)"
-                : "radial-gradient(circle at 35% 30%, #fff, #7dd3fc 55%, #0c4a6e)",
+                : "radial-gradient(circle at 35% 30%, #fff, #d4e1ce 55%, #365c4e)",
               border: "2px solid rgba(255,255,255,0.75)",
               fontSize: active ? 18 : 14,
             }}>
             {i === 6 ? "🏆" : done ? "✨" : "🦪"}
-          </div>
+          </button>
         );
       })}
-      {interactive && (
-        <div className="absolute whitespace-nowrap text-center pointer-events-none" style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: "translate(-50%, -170%)", animation: "hintBob2 1s ease-in-out infinite" }}>
-          <span className="px-3 py-1.5 rounded-full font-bold text-sm shadow-lg" style={{ background: "#f0f9ff", color: "#0c4a6e", border: "2px solid #0891b2" }}>👆 اضْغَطْ هُنَا</span>
-        </div>
-      )}
+      {interactive && <GameMapHint x={pos.x} y={pos.y} onActivate={onActivate} />}
       <style>{`
         @keyframes pearlNodePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(8,145,178,0.6); } 50% { box-shadow: 0 0 0 8px rgba(8,145,178,0); } }
-        @keyframes hintBob2 { 0%,100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -6px); } }
+
         .pearl-node-active { animation: pearlNodePulse 1.8s ease-out infinite; }
       `}</style>
       <div key={reactKey} className={`absolute text-5xl transition-all duration-500 ease-out ${reaction === "correct" ? "char-bounce-correct" : reaction === "wrong" ? "char-shake-wrong" : ""}`}
@@ -164,7 +161,7 @@ function OceanBackdrop({ phase, interactive, onActivate, reaction, reactKey }: {
         {reaction === "correct" ? "🤿😄" : reaction === "wrong" ? "🤿😟" : "🤿"}
       </div>
       {interactive && (
-        <div onClick={onActivate} className="absolute cursor-pointer z-20" style={{
+        <div onClick={onActivate} className={`absolute z-20 ${interactive ? "cursor-pointer" : "pointer-events-none"}`} style={{
           left: `${pos.x}%`, top: `${pos.y}%`, transform: "translate(-50%, -60%)",
           width: 160, height: 220,
         }} />
@@ -175,7 +172,7 @@ function OceanBackdrop({ phase, interactive, onActivate, reaction, reactKey }: {
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative z-10 max-w-3xl w-full mx-4 rounded-3xl p-8 shadow-2xl" style={{ background: "rgba(240,249,255,0.72)", border: "3px solid #0891b2", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}>
+    <div className="game-stage-card relative z-10 max-w-3xl w-full mx-4">
       {children}
     </div>
   );
@@ -210,21 +207,22 @@ function PearlOption({ label, index, status, wide, onClick }: {
   const cls = status === "picked-correct" ? "pearl-correct" : status === "picked-wrong" ? "pearl-wrong" : "pearl-idle";
   return (
     <button
+      aria-label={label}
       onClick={onClick}
       disabled={status === "picked-correct"}
-      className={`${cls} flex items-center justify-center text-center font-bold active:scale-95 transition-colors`}
+      className={`${cls} flex items-center justify-center text-center font-bold active:scale-[0.98] transition-colors`}
       style={{
         animationDelay: `${(index % 4) * 0.35}s`,
-        background: "radial-gradient(circle at 35% 30%, #ffffff, #e0f2fe 60%, #bae6fd)",
-        border: "2px solid #7dd3fc",
-        color: "#0c4a6e",
+        background: "radial-gradient(circle at 35% 30%, #ffffff, #edf2e3 60%, #d3dfc3)",
+        border: "2px solid #d4e1ce",
+        color: "#365c4e",
         borderRadius: wide ? "999px" : "50%",
         width: wide ? "auto" : 92,
         height: wide ? "auto" : 92,
         padding: wide ? "14px 22px" : 8,
         fontSize: wide ? 15 : 22,
-        fontFamily: "'Amiri', serif",
-        boxShadow: "0 4px 10px rgba(8,74,110,0.25)",
+        fontFamily: "var(--font-brand)",
+        boxShadow: "0 4px 10px rgba(40,70,45,0.12)",
       }}>
       {label}
     </button>
@@ -270,11 +268,11 @@ export default function DiverPearlLesson() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoDone, setVideoDone] = useState(false);
 
-  const oyster1Options = useMemo(() => shuffle(content.oyster1Sets[oyster1Step]), [oyster1Step, round]);
-  const oyster3Options = useMemo(() => shuffle(content.oyster3Options), [round]);
-  const oyster2AlefOptions = useMemo(() => shuffle(content.oyster2AlefOptions), [round]);
-  const oyster2HamzaOptions = useMemo(() => shuffle(content.oyster2HamzaOptions), [round]);
-  const oyster4Options = useMemo(() => shuffle(content.oyster4Options), [round]);
+  const oyster1Options = useMemo(() => shuffle(content.oyster1Sets[oyster1Step]), [oyster1Step, round, content.oyster1Sets]);
+  const oyster3Options = useMemo(() => shuffle(content.oyster3Options), [round, content.oyster3Options]);
+  const oyster2AlefOptions = useMemo(() => shuffle(content.oyster2AlefOptions), [round, content.oyster2AlefOptions]);
+  const oyster2HamzaOptions = useMemo(() => shuffle(content.oyster2HamzaOptions), [round, content.oyster2HamzaOptions]);
+  const oyster4Options = useMemo(() => shuffle(content.oyster4Options), [round, content.oyster4Options]);
 
   function goNext(nextPhase: Phase, gainedPearls = 0, gainedOxygen = false) {
     if (gainedPearls) setPearls(p => p + gainedPearls);
@@ -386,17 +384,17 @@ export default function DiverPearlLesson() {
       case "intro":
         return (
           <Card>
-            <h1 className="text-3xl font-bold text-center mb-1" style={{ color: "#0c4a6e", fontFamily: "'Amiri', serif" }}>🤿 الْغَوَّاصُ وَصَائِدُ اللَّآلِئِ</h1>
-            <p className="text-center text-cyan-700 text-base mb-5">الْهَمْزَةُ الْمُتَوَسِّطَةُ الْمُنْفَرِدَةُ عَلَى السَّطْرِ</p>
-            <div className="bg-cyan-50 rounded-2xl p-4 mb-5 border border-cyan-200">
-              <p className="font-bold text-cyan-900 mb-2 text-base">🎯 أَهْدَافُ غَوْصَتِنَا الْيَوْمَ:</p>
-              <ul className="text-cyan-800 text-lg font-semibold space-y-2 leading-relaxed">
+            <h1 className="text-3xl font-bold text-center mb-1" style={{ color: "#365c4e", fontFamily: "var(--font-brand)" }}>🤿 الْغَوَّاصُ وَصَائِدُ اللَّآلِئِ</h1>
+            <p className="text-center text-[#4c6b3e] text-base mb-5">الْهَمْزَةُ الْمُتَوَسِّطَةُ الْمُنْفَرِدَةُ عَلَى السَّطْرِ</p>
+            <div className="bg-[#f0f4e7] rounded-2xl p-4 mb-5 border border-[#d3dfc3]">
+              <p className="font-bold text-[#2b4828] mb-2 text-base">🎯 أَهْدَافُ غَوْصَتِنَا الْيَوْمَ:</p>
+              <ul className="text-[#395933] text-lg font-semibold space-y-2 leading-relaxed">
                 <li>١. اسْتِنْتَاجُ مَوَاضِعِ كِتَابَةِ الْهَمْزَةِ الْمُتَوَسِّطَةِ الْمُنْفَرِدَةِ عَلَى السَّطْرِ.</li>
                 <li>٢. تَوْضِيحُ سَبَبِ كِتَابَتِهَا (مَفْتُوحَةٌ بَعْدَ أَلِفِ مَدٍّ أَوْ وَاوِ مَدٍّ).</li>
                 <li>٣. تَطْبِيقُ الْقَاعِدَةِ وَإِتْقَانُ كِتَابَتِهَا إِمْلَائِيًّا.</li>
               </ul>
             </div>
-            <button onClick={() => goNext("video")} className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-95 transition-all" style={{ background: "#0891b2" }}>
+            <button onClick={() => goNext("video")} className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-[0.98] transition-all" style={{ background: "#557f6b" }}>
               🏊 ارْتَدِ مَلَابِسَ الْغَوْصِ وَابْدَأْ
             </button>
           </Card>
@@ -405,15 +403,15 @@ export default function DiverPearlLesson() {
       case "video":
         return (
           <Card>
-            <h2 className="text-2xl font-bold text-center mb-4" style={{ color: "#0c4a6e" }}>📺 مَحَطَّةُ الْمَعْرِفَةِ الْمَائِيَّةِ</h2>
+            <h2 className="text-2xl font-bold text-center mb-4" style={{ color: "#365c4e" }}>📺 مَحَطَّةُ الْمَعْرِفَةِ الْمَائِيَّةِ</h2>
             <div className="rounded-2xl overflow-hidden bg-black mb-4" style={{ aspectRatio: "16/9" }}>
               <video ref={videoRef} controls className="w-full h-full" onEnded={() => setVideoDone(true)} src="/videos/hamza-satr.mp4">
                 متصفحك لا يدعم عرض الفيديو.
               </video>
             </div>
-            {!videoDone && <p className="text-center text-cyan-600 text-sm mb-3">🔒 شَاهِدِ الْفِيدِيُو كَامِلاً لِلنُّزُولِ لِلْأَعْمَاقِ</p>}
+            {!videoDone && <p className="text-center text-[#5f7d4b] text-sm mb-3">🔒 شَاهِدِ الْفِيدِيُو كَامِلاً لِلنُّزُولِ لِلْأَعْمَاقِ</p>}
             <button onClick={() => goNext("oyster1")} disabled={!videoDone}
-              className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-95 transition-all disabled:opacity-40" style={{ background: "#0891b2" }}>
+              className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-[0.98] transition-all disabled:opacity-40" style={{ background: "#557f6b" }}>
               🦪 انْزِلْ لِلْأَعْمَاقِ
             </button>
           </Card>
@@ -423,8 +421,8 @@ export default function DiverPearlLesson() {
         const options = oyster1Options;
         return (
           <Card>
-            <p className="text-sm text-cyan-500 mb-1">🦪 الْمَحَارَةُ الْأُولَى — سُؤَالُ {oyster1Step + 1}/{content.oyster1Sets.length}</p>
-            <h2 className="text-2xl font-bold mb-5" style={{ color: "#0c4a6e" }}>لآلِئُ تَطْفُو أَمَامَكَ، الْتَقِطِ اللُّؤْلُؤَةَ الَّتِي تَحْمِلُ الْكَلِمَةَ الصَّحِيحَةَ إِمْلَائِيًّا:</h2>
+            <p className="text-sm text-[#536344] mb-1">🦪 الْمَحَارَةُ الْأُولَى — سُؤَالُ {oyster1Step + 1}/{content.oyster1Sets.length}</p>
+            <h2 className="text-2xl font-bold mb-5" style={{ color: "#365c4e" }}>لآلِئُ تَطْفُو أَمَامَكَ، الْتَقِطِ اللُّؤْلُؤَةَ الَّتِي تَحْمِلُ الْكَلِمَةَ الصَّحِيحَةَ إِمْلَائِيًّا:</h2>
             <PearlField>
               {options.map((o, i) => (
                 <PearlOption key={i} index={i} label={o.label}
@@ -442,12 +440,12 @@ export default function DiverPearlLesson() {
         const options = isAlef ? oyster2AlefOptions : oyster2HamzaOptions;
         return (
           <Card>
-            <p className="text-sm text-cyan-500 mb-1">🦪 الْمَحَارَةُ الثَّانِيَةُ — حَرَكَةُ الْهَمْزَةِ وَالْحَرْفِ السَّابِقِ</p>
-            <h2 className="text-2xl font-bold mb-3" style={{ color: "#0c4a6e" }}>تَأَمَّلْ كَلِمَةَ (قِراءَة)، وَاخْتَرِ الْحَرَكَةَ الصَّحِيحَةَ:</h2>
-            <p className="text-center text-4xl font-bold mb-2 p-3 rounded-2xl" style={{ background: "#e0f2fe", color: "#0c4a6e", fontFamily: "'Amiri', serif" }}>
-              قِر<span className={isAlef ? "underline decoration-wavy decoration-cyan-600" : ""}>ا</span><span className={!isAlef ? "underline decoration-wavy decoration-cyan-600" : ""}>ء</span>َة
+            <p className="text-sm text-[#536344] mb-1">🦪 الْمَحَارَةُ الثَّانِيَةُ — حَرَكَةُ الْهَمْزَةِ وَالْحَرْفِ السَّابِقِ</p>
+            <h2 className="text-2xl font-bold mb-3" style={{ color: "#365c4e" }}>تَأَمَّلْ كَلِمَةَ (قِراءَة)، وَاخْتَرِ الْحَرَكَةَ الصَّحِيحَةَ:</h2>
+            <p className="text-center text-4xl font-bold mb-2 p-3 rounded-2xl" style={{ background: "#edf2e3", color: "#365c4e", fontFamily: "var(--font-brand)" }}>
+              قِر<span className={isAlef ? "underline decoration-wavy decoration-[#5f7d4b]" : ""}>ا</span><span className={!isAlef ? "underline decoration-wavy decoration-[#5f7d4b]" : ""}>ء</span>َة
             </p>
-            <p className="text-center text-sm text-cyan-600 mb-4">{isAlef ? "أَوَّلًا: مَا حَرَكَةُ الْأَلِفِ (الْحَرْفُ السَّابِقُ لِلْهَمْزَةِ)؟" : "ثَانِيًا: مَا حَرَكَةُ الْهَمْزَةِ نَفْسِهَا؟"}</p>
+            <p className="text-center text-sm text-[#5f7d4b] mb-4">{isAlef ? "أَوَّلًا: مَا حَرَكَةُ الْأَلِفِ (الْحَرْفُ السَّابِقُ لِلْهَمْزَةِ)؟" : "ثَانِيًا: مَا حَرَكَةُ الْهَمْزَةِ نَفْسِهَا؟"}</p>
             <PearlField>
               {options.map((o, i) => (
                 <PearlOption key={i} index={i} label={o.label}
@@ -463,8 +461,8 @@ export default function DiverPearlLesson() {
       case "oyster3":
         return (
           <Card>
-            <p className="text-sm text-cyan-500 mb-1">🦪 الْمَحَارَةُ الثَّالِثَةُ — تَحَدِّي التَّعْلِيلِ</p>
-            <h2 className="text-2xl font-bold mb-5" style={{ color: "#0c4a6e", fontFamily: "'Amiri', serif" }}>لِمَاذَا كُتِبَتِ الْهَمْزَةُ مُنْفَرِدَةً عَلَى السَّطْرِ فِي كَلِمَةِ (نُبوءَة)؟ الْتَقِطِ الْمَحَارَةَ الَّتِي تَحْمِلُ التَّعْلِيلَ الصَّحِيحَ:</h2>
+            <p className="text-sm text-[#536344] mb-1">🦪 الْمَحَارَةُ الثَّالِثَةُ — تَحَدِّي التَّعْلِيلِ</p>
+            <h2 className="text-2xl font-bold mb-5" style={{ color: "#365c4e", fontFamily: "var(--font-brand)" }}>لِمَاذَا كُتِبَتِ الْهَمْزَةُ مُنْفَرِدَةً عَلَى السَّطْرِ فِي كَلِمَةِ (نُبوءَة)؟ الْتَقِطِ الْمَحَارَةَ الَّتِي تَحْمِلُ التَّعْلِيلَ الصَّحِيحَ:</h2>
             <PearlField>
               {oyster3Options.map((o, i) => (
                 <PearlOption key={i} index={i} label={`${i + 1}. ${o.text}`} wide
@@ -479,9 +477,9 @@ export default function DiverPearlLesson() {
       case "oyster4":
         return (
           <Card>
-            <p className="text-sm text-cyan-500 mb-1">🦪 الْمَحَارَةُ الرَّابِعَةُ وَالْأَخِيرَةُ — تَحَدِّي التَّصْحِيحِ</p>
-            <h2 className="text-2xl font-bold mb-3" style={{ color: "#0c4a6e" }}>هَاجَمَتْ سَمَكَةُ الْقِرْشِ الْكَلِمَةَ وَأَفْسَدَتْ كِتَابَتَهَا! الْتَقِطِ اللُّؤْلُؤَةَ الَّتِي تَحْمِلُ الشَّكْلَ الصَّحِيحَ:</h2>
-            <p className="text-center text-2xl font-bold mb-5 p-4 rounded-2xl leading-loose" style={{ background: "#e0f2fe", color: "#0c4a6e", fontFamily: "'Amiri', serif" }}>
+            <p className="text-sm text-[#536344] mb-1">🦪 الْمَحَارَةُ الرَّابِعَةُ وَالْأَخِيرَةُ — تَحَدِّي التَّصْحِيحِ</p>
+            <h2 className="text-2xl font-bold mb-3" style={{ color: "#365c4e" }}>هَاجَمَتْ سَمَكَةُ الْقِرْشِ الْكَلِمَةَ وَأَفْسَدَتْ كِتَابَتَهَا! الْتَقِطِ اللُّؤْلُؤَةَ الَّتِي تَحْمِلُ الشَّكْلَ الصَّحِيحَ:</h2>
+            <p className="text-center text-2xl font-bold mb-5 p-4 rounded-2xl leading-loose" style={{ background: "#edf2e3", color: "#365c4e", fontFamily: "var(--font-brand)" }}>
               يَتَّصِفُ هَذَا الرَّجُلُ بِالـ <span className="text-red-500 underline decoration-wavy">رَدَاءَه</span> فِي أَخْلَاقِهِ
             </p>
             <PearlField>
@@ -500,29 +498,29 @@ export default function DiverPearlLesson() {
           <Card>
             {!chestOpened ? (
               <div className="text-center">
-                <div className="text-7xl mb-4 animate-bounce">🗝️📦</div>
-                <h2 className="text-2xl font-bold mb-2" style={{ color: "#0c4a6e" }}>وَصَلْتَ إِلَى صُنْدُوقِ الْكَنْزِ الْغَارِقِ!</h2>
-                <p className="text-cyan-700 text-base mb-5">اسْتَخْدِمْ مِفْتَاحَيِ الْأُوكْسِجِينِ لِفَتْحِهِ ({oxygen}/2 🫧)</p>
+                <div className="text-7xl mb-4 animate-pulse">🗝️📦</div>
+                <h2 className="text-2xl font-bold mb-2" style={{ color: "#365c4e" }}>وَصَلْتَ إِلَى صُنْدُوقِ الْكَنْزِ الْغَارِقِ!</h2>
+                <p className="text-[#4c6b3e] text-base mb-5">اسْتَخْدِمْ مِفْتَاحَيِ الْأُوكْسِجِينِ لِفَتْحِهِ ({oxygen}/2 🫧)</p>
                 <button onClick={() => setChestOpened(true)} disabled={oxygen < 2}
-                  className="py-3.5 px-8 rounded-2xl text-white font-bold text-xl active:scale-95 transition-all disabled:opacity-40" style={{ background: "#0e7490" }}>
+                  className="py-3.5 px-8 rounded-2xl text-white font-bold text-xl active:scale-[0.98] transition-all disabled:opacity-40" style={{ background: "#537561" }}>
                   🔓 افْتَحِ الصُّنْدُوقَ
                 </button>
               </div>
             ) : (
               <div>
                 <div className="text-6xl text-center mb-3">✨🏆🐚</div>
-                <h2 className="text-2xl font-bold text-center mb-4" style={{ color: "#0c4a6e" }}>الْقَاعِدَةُ الذَّهَبِيَّةُ تَحْتَ الْمَاءِ</h2>
-                <div className="rounded-2xl p-4 mb-5" style={{ background: "#e0f2fe", border: "2px solid #0891b2" }}>
-                  <p className="text-cyan-900 leading-relaxed text-lg font-semibold mb-2">
+                <h2 className="text-2xl font-bold text-center mb-4" style={{ color: "#365c4e" }}>الْقَاعِدَةُ الذَّهَبِيَّةُ تَحْتَ الْمَاءِ</h2>
+                <div className="rounded-2xl p-4 mb-5" style={{ background: "#edf2e3", border: "2px solid #557f6b" }}>
+                  <p className="text-[#2b4828] leading-relaxed text-lg font-semibold mb-2">
                     تُكْتَبُ الْهَمْزَةُ الْمُتَوَسِّطَةُ مُنْفَرِدَةً عَلَى السَّطْرِ فِي حَالَتَيْنِ:
                   </p>
-                  <ul className="space-y-1 text-cyan-800 text-base">
+                  <ul className="space-y-1 text-[#395933] text-base">
                     <li>• إِذَا جَاءَتِ الْهَمْزَةُ مَفْتُوحَةً بَعْدَ أَلِفِ مَدٍّ سَاكِنَةٍ (مِثْلَ: عَباءَة).</li>
                     <li>• أَوْ إِذَا جَاءَتْ مَفْتُوحَةً بَعْدَ وَاوِ مَدٍّ سَاكِنَةٍ (مِثْلَ: مُروءَة).</li>
                   </ul>
                 </div>
                 <button onClick={() => setPhase("results")}
-                  className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-95 transition-all" style={{ background: "#0891b2" }}>
+                  className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-[0.98] transition-all" style={{ background: "#557f6b" }}>
                   عَرْضُ النَّتِيجَةِ 🎉
                 </button>
               </div>
@@ -545,10 +543,10 @@ export default function DiverPearlLesson() {
               achievements={achievements}
             >
               <div className="flex gap-3">
-                <button onClick={resetAll} className="flex-1 py-3 rounded-2xl font-bold" style={{ background: "#e0f2fe", color: "#0c4a6e", border: "2px solid #7dd3fc" }}>
+                <button onClick={resetAll} className="flex-1 py-3 rounded-2xl font-bold" style={{ background: "#edf2e3", color: "#365c4e", border: "2px solid #d4e1ce" }}>
                   🔄 إِعَادَةُ اللَّعِبِ
                 </button>
-                <button onClick={() => setLocation("/writing-games")} className="flex-1 py-3 rounded-2xl text-white font-bold" style={{ background: "#0891b2" }}>
+                <button onClick={() => setLocation("/writing-games/balloon")} className="flex-1 py-3 rounded-2xl text-white font-bold" style={{ background: "#557f6b" }}>
                   لُعْبَةُ الْهَمْزَةِ الْمُتَطَرِّفَةِ ←
                 </button>
               </div>
@@ -561,15 +559,15 @@ export default function DiverPearlLesson() {
   }
 
   return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", minHeight: "100vh" }} className="relative">
+    <div dir="rtl" style={{ fontFamily: "var(--font-brand)", minHeight: "100vh" }} className="relative game-world">
       <PearlStyles />
       <GameFeelStyles />
-      <ComboIndicator combo={combo} pulseKey={pulseKey} accent="#0891b2" />
+      <ComboIndicator combo={combo} pulseKey={pulseKey} accent="#557f6b" />
       <OceanBackdrop phase={phase} interactive={!cardVisible} onActivate={() => setCardVisible(true)} reaction={reaction} reactKey={reactKey} />
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col min-h-screen pointer-events-none">
         <TopBar pearls={pearls} oxygen={oxygen} onBack={() => setLocation("/writing-games")} />
         <div className="flex-1 flex items-start justify-center pt-6 pb-8 overflow-y-auto">
-          {cardVisible && <div key={phase} className="fade-in-up w-full flex justify-center">{renderScreen()}</div>}
+          {cardVisible && <div key={phase} className="fade-in-up w-full flex justify-center pointer-events-auto">{renderScreen()}</div>}
         </div>
       </div>
     </div>

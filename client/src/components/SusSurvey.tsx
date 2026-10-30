@@ -56,13 +56,13 @@ export function SusSurvey({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
       style={{ background: "rgba(0,0,0,0.5)" }} onClick={onClose}>
-      <div dir="rtl" className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-lg my-8"
-        style={{ fontFamily: "'Cairo', sans-serif" }} onClick={(e) => e.stopPropagation()}>
+      <div dir="rtl" className="program-dialog bg-white rounded-3xl p-6 shadow-2xl w-full max-w-lg my-8"
+        style={{ fontFamily: "var(--font-brand)" }} onClick={(e) => e.stopPropagation()}>
 
         {result ? (
           <div className="text-center py-4">
             <p className="text-5xl mb-3">🌟</p>
-            <p className="font-bold text-lg mb-1" style={{ color: "#1a5c2a" }}>شُكْرًا لَكَ عَلَى تَقْيِيمِكَ!</p>
+            <p className="font-bold text-lg mb-1" style={{ color: "#355e43" }}>شُكْرًا لَكَ عَلَى تَقْيِيمِكَ!</p>
             <div className="my-4 py-4 rounded-2xl" style={{ background: "#f9fafb" }}>
               <p className="text-xs text-gray-400 mb-1">دَرَجَةُ قَابِلِيَّةِ الِاسْتِخْدَامِ (SUS)</p>
               <p className="text-4xl font-black" style={{ color: result.band.color }}>{result.score}<span className="text-lg text-gray-400">/100</span></p>
@@ -72,13 +72,13 @@ export function SusSurvey({ onClose }: { onClose: () => void }) {
               أَقَلُّ مِنْ 50: يَحْتَاجُ إِلَى تَحْسِينٍ · 50 إِلَى 70: مُتَوَسِّطٌ · أَكْثَرُ مِنْ 70: جَيِّدٌ إِلَى مُمْتَازٍ
             </p>
             <button onClick={onClose} className="mt-5 px-8 py-2.5 rounded-xl text-white font-bold"
-              style={{ background: "#1a5c2a" }}>
+              style={{ background: "#355e43" }}>
               إِغْلَاقٌ
             </button>
           </div>
         ) : (
           <>
-            <h2 className="text-center font-bold text-lg mb-1" style={{ color: "#1a5c2a", fontFamily: "'Amiri', serif" }}>
+            <h2 className="text-center font-bold text-lg mb-1" style={{ color: "#355e43", fontFamily: "var(--font-brand)" }}>
               📋 قَيِّمْ تَجْرِبَتَكَ مَعَ الْبَرْنَامَجِ
             </h2>
             <p className="text-center text-gray-400 text-xs mb-4">
@@ -86,8 +86,8 @@ export function SusSurvey({ onClose }: { onClose: () => void }) {
             </p>
 
             {!checkingPrevious && previous && (
-              <div className="mb-4 bg-blue-50 border border-blue-100 rounded-xl p-2.5 text-center">
-                <p className="text-xs text-blue-700">
+              <div className="mb-4 bg-[#f1f5e9] border border-[#e6eddc] rounded-xl p-2.5 text-center">
+                <p className="text-xs text-[#436444]">
                   سبق أن قيّمت تجربتك بنتيجة {previous.score}/100 ({previous.band.label}). يمكنك تحديث تقييمك أدناه.
                 </p>
               </div>
@@ -112,8 +112,8 @@ export function SusSurvey({ onClose }: { onClose: () => void }) {
                         className="flex-1 py-2 rounded-lg text-xs font-bold border-2 transition-colors"
                         style={
                           answers[i] === s.v
-                            ? { background: "#1a5c2a", borderColor: "#1a5c2a", color: "white" }
-                            : { background: "white", borderColor: "#e5e7eb", color: "#9ca3af" }
+                            ? { background: "#355e43", borderColor: "#355e43", color: "white" }
+                            : { background: "white", borderColor: "#e5e7eb", color: "#536344" }
                         }
                       >
                         {s.v}
@@ -143,7 +143,7 @@ export function SusSurvey({ onClose }: { onClose: () => void }) {
                 onClick={handleSubmit}
                 disabled={!allAnswered || submitting}
                 className="flex-1 py-2.5 rounded-xl text-white font-bold disabled:opacity-40"
-                style={{ background: "#1a5c2a" }}
+                style={{ background: "#355e43" }}
               >
                 {submitting ? "جَارٍ الإِرْسَالُ..." : "إِرْسَالُ التَّقْيِيمِ"}
               </button>

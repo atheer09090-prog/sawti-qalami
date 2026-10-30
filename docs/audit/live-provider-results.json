@@ -1,0 +1,32 @@
+[
+  {
+    "feature": "real guest session restored through UI and proxy",
+    "status": "PASS"
+  },
+  {
+    "feature": "browser capture → playback → real Groq transcription → evaluation → PostgreSQL progress save",
+    "status": "PASS",
+    "transcriptPresent": true,
+    "serverLessonId": "",
+    "metadataBugStillOnDeployedBackend": true
+  },
+  {
+    "feature": "real AI chat UI attempt 1",
+    "status": "FAILED",
+    "http": 503
+  },
+  {
+    "feature": "real AI chat UI attempt 2",
+    "status": "FAILED",
+    "http": 503
+  },
+  {
+    "feature": "real AI chat UI attempt 3",
+    "status": "PASS",
+    "http": 200
+  },
+  {
+    "feature": "real Gemini answer displayed in assistant UI",
+    "status": "PASS"
+  }
+]

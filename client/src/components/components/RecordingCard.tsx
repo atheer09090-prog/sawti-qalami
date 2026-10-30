@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { Mic, RotateCcw, Send, Square } from "lucide-react";
 import { AudioWaveform } from "@/components/AudioWaveform";
-import { Btn } from "@/components/ds";
+import { Btn } from "./ds/Btn";
 import { cn } from "@/lib/utils";
 
 interface Props {

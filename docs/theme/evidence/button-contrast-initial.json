@@ -1,0 +1,578 @@
+[
+  {
+    "id": "writing-mobile",
+    "label": "تعلّم بالتجربة",
+    "ratio": 2.87,
+    "color": "rgb(135, 144, 123)",
+    "background": [
+      234,
+      240,
+      227
+    ],
+    "className": ""
+  },
+  {
+    "id": "writing-mobile",
+    "label": "تحدٍّ لغوي قصير",
+    "ratio": 2.86,
+    "color": "rgb(135, 144, 123)",
+    "background": [
+      244,
+      237,
+      221
+    ],
+    "className": ""
+  },
+  {
+    "id": "writing",
+    "label": "تعلّم بالتجربة",
+    "ratio": 2.87,
+    "color": "rgb(135, 144, 123)",
+    "background": [
+      234,
+      240,
+      227
+    ],
+    "className": ""
+  },
+  {
+    "id": "writing",
+    "label": "تحدٍّ لغوي قصير",
+    "ratio": 2.86,
+    "color": "rgb(135, 144, 123)",
+    "background": [
+      244,
+      237,
+      221
+    ],
+    "className": ""
+  },
+  {
+    "id": "speaking-activity-mobile",
+    "label": "← تَغْيِيرُ الْمَوْضُوعِ",
+    "ratio": 3.16,
+    "color": "oklch(0.627 0.194 149.214)",
+    "background": [
+      255,
+      253,
+      247
+    ],
+    "className": "text-green-600 text-sm mb-3 flex items-center gap-1"
+  },
+  {
+    "id": "speaking-activity",
+    "label": "← تَغْيِيرُ الْمَوْضُوعِ",
+    "ratio": 3.16,
+    "color": "oklch(0.627 0.194 149.214)",
+    "background": [
+      255,
+      253,
+      247
+    ],
+    "className": "text-green-600 text-sm mb-3 flex items-center gap-1"
+  },
+  {
+    "id": "teacher-الدروس-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-الدروس-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-الدروس-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-الدروس",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-الدروس",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-الدروس",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-الكتابة-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-الكتابة-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-الكتابة-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-الكتابة",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-الكتابة",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-الكتابة",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-التعلم الذاتي-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-التعلم الذاتي-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-التعلم الذاتي-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-التعلم الذاتي-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-التعلم الذاتي-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-التعلم الذاتي",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-التعلم الذاتي",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-التعلم الذاتي",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-التعلم الذاتي",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-التعلم الذاتي",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء-mobile",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء",
+    "label": "🗑️",
+    "ratio": 3.48,
+    "color": "oklch(0.637 0.237 25.331)",
+    "background": [
+      254,
+      242,
+      242
+    ],
+    "className": "text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded"
+  }
+]

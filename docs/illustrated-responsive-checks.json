@@ -1,0 +1,182 @@
+[
+  {
+    "route": "/",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/dashboard",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/skills",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/about",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/teacher",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/class-selection",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/dashboard",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/skills",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/about",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/teacher",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/class-selection",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/dashboard",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/skills",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/about",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/teacher",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/class-selection",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/dashboard",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/skills",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/about",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/teacher",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/class-selection",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/dashboard",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/skills",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/about",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/teacher",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/class-selection",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/dashboard",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/skills",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/about",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/teacher",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/class-selection",
+    "scroll": 1440,
+    "width": 1440
+  }
+]

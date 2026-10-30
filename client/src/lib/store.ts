@@ -71,15 +71,41 @@ const DEFAULT_STATE: StudentData = {
 
 const KEY = "sawti_qalami_v2_state";
 let listeners: (() => void)[] = [];
+const OWNER_KEY = `${KEY}_owner`;
+const DIRTY_KEY = `${KEY}_unsynced_owner`;
+
+function cacheOwner(): string | null {
+  try {
+    const payload = getToken()?.split(".")[1];
+    return payload ? JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/"))).sub || null : null;
+  } catch { return null; }
+}
+
+function cancelPendingSave() {
+  if (syncTimer) clearTimeout(syncTimer);
+  syncTimer = null;
+}
+
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function getState(): StudentData {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? { ...DEFAULT_STATE, ...JSON.parse(raw) } : DEFAULT_STATE;
+    const data = raw ? JSON.parse(raw) : {};
+    return { ...DEFAULT_STATE, ...data, selfLearning: { ...DEFAULT_SELF_LEARNING, ...data.selfLearning } };
   } catch {
     return DEFAULT_STATE;
   }
+}
+
+async function persistSnapshot(data: StudentData, token: string, signal?: AbortSignal): Promise<boolean> {
+  if (signal?.aborted) throw new DOMException("تم إلغاء استعادة الجلسة", "AbortError");
+  if (getToken() !== token) return false;
+  const serialized = JSON.stringify(data);
+  const saved = await saveMyStudentRecord(data, signal);
+  if (signal?.aborted) throw new DOMException("تم إلغاء استعادة الجلسة", "AbortError");
+  if (saved && getToken() === token && localStorage.getItem(KEY) === serialized) localStorage.removeItem(DIRTY_KEY);
+  return saved;
 }
 
 export function setState(updater: (prev: StudentData) => StudentData) {
@@ -91,10 +117,14 @@ export function setState(updater: (prev: StudentData) => StudentData) {
   // بعد تسجيل الدخول فقط، بدل الاعتماد على تخمين اسمه وصفّه. لا مزامنة
   // إن لم يكن هناك حساب مسجَّل دخوله بعد. نُؤخِّر الإرسال قليلًا حتى لا
   // نرسل طلبًا لكل ضغطة عند تغييرات متتالية سريعة.
-  if (getToken() && next.name.trim()) {
-    if (syncTimer) clearTimeout(syncTimer);
+  const ownerToken = getToken();
+  if (ownerToken && next.name.trim()) {
+    cancelPendingSave();
+    const owner = cacheOwner();
+    if (owner) localStorage.setItem(DIRTY_KEY, owner);
     syncTimer = setTimeout(() => {
-      saveMyStudentRecord(next);
+      syncTimer = null;
+      if (getToken() === ownerToken) void persistSnapshot(next, ownerToken);
     }, 800);
   }
 }
@@ -102,11 +132,39 @@ export function setState(updater: (prev: StudentData) => StudentData) {
 // يُستدعى عند تسجيل الدخول أو عند فتح البرنامج وهناك جلسة محفوظة: يجلب
 // سجل التقدّم المحفوظ لحساب الطالب الحالي من الخادم، وإن وُجد يستعيد
 // منه (النقاط، الشارات، الدروس المكتملة...) بدل البدء من الصفر.
-export async function loadMyStudentFromServer(fallbackName: string, fallbackGrade: string, avatar: string): Promise<StudentData> {
-  const record = await getMyStudentRecord();
+export function prefetchMyStudentRecord(signal: AbortSignal): Promise<any | null> | undefined {
+  // لا نسبق حفظ التغييرات المحلية بطلب قد يجلب نسخة أقدم من التقدم.
+  if (!getToken() || localStorage.getItem(DIRTY_KEY)) return undefined;
+  const request = getMyStudentRecord(signal);
+  // قد ينتهي التحقق من الهوية بالفشل قبل استهلاك هذا الطلب.
+  void request.catch(() => {});
+  return request;
+}
+
+export async function loadMyStudentFromServer(fallbackName: string, fallbackGrade: string, avatar: string, signal?: AbortSignal, prefetchedRecord?: Promise<any | null>): Promise<StudentData> {
+  if (signal?.aborted) throw new DOMException("تم إلغاء استعادة الجلسة", "AbortError");
+  cancelPendingSave();
+  const requestToken = getToken();
+  const owner = cacheOwner();
+  if (requestToken && owner && owner === localStorage.getItem(OWNER_KEY) && owner === localStorage.getItem(DIRTY_KEY)) {
+    prefetchedRecord = undefined;
+    const saved = await persistSnapshot(getState(), requestToken, signal);
+    if (getToken() !== requestToken) throw new Error("تغيرت جلسة المستخدم أثناء حفظ التقدم");
+    if (!saved) return getState();
+  }
+  let record;
+  try { record = await (prefetchedRecord ?? getMyStudentRecord(signal)); }
+  catch (error) {
+    if (signal?.aborted) throw error;
+    if (getToken() === requestToken && owner && owner === localStorage.getItem(OWNER_KEY)) return getState();
+    throw error;
+  }
+  if (signal?.aborted) throw new DOMException("تم إلغاء استعادة الجلسة", "AbortError");
+  if (getToken() !== requestToken) throw new Error("تغيرت جلسة المستخدم أثناء استعادة التقدم");
   const merged: StudentData = record
-    ? { ...DEFAULT_STATE, ...record, name: fallbackName, grade: fallbackGrade }
+    ? { ...DEFAULT_STATE, ...record, selfLearning: { ...DEFAULT_SELF_LEARNING, ...record.selfLearning }, name: fallbackName, grade: fallbackGrade }
     : { ...DEFAULT_STATE, name: fallbackName, grade: fallbackGrade, avatar };
+  if (owner) localStorage.setItem(OWNER_KEY, owner);
   localStorage.setItem(KEY, JSON.stringify(merged));
   listeners.forEach((fn) => fn());
   return merged;
@@ -118,6 +176,9 @@ export function subscribe(fn: () => void) {
 }
 
 export function clearState() {
+  cancelPendingSave();
+  localStorage.removeItem(DIRTY_KEY);
+  localStorage.removeItem(OWNER_KEY);
   localStorage.removeItem(KEY);
   listeners.forEach((fn) => fn());
 }
@@ -126,4 +187,14 @@ export function clearState() {
 export function logout() {
   clearToken();
   clearState();
+}
+
+// Retry an interrupted automatic save on reconnection, only for its authenticated owner.
+if (typeof window !== "undefined") {
+  const retrySave = () => {
+    const token = getToken();
+    if (token && cacheOwner() === localStorage.getItem(DIRTY_KEY)) void persistSnapshot(getState(), token);
+  };
+  window.addEventListener("online", retrySave);
+  import.meta.hot?.dispose(() => window.removeEventListener("online", retrySave));
 }

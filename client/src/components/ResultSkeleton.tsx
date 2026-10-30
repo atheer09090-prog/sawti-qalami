@@ -4,13 +4,13 @@ import { Skeleton } from "@/components/ui/skeleton";
  * هيكل تحميل (Skeleton) عام يُعرض في مكان بطاقة النتيجة أثناء انتظار
  * تقييم الخادم (تحدث أو كتابة)، بدل شاشة فارغة أو نص "جارٍ..." وحده.
  * الشكل عام (دائرة نتيجة + أسطر + شرائح صغيرة) ليُناسب بطاقات النتائج
- * المختلفة في المنصة دون الحاجة لنسخة منفصلة لكل صفحة.
+ * المختلفة في البرنامج دون الحاجة لنسخة منفصلة لكل صفحة.
  */
 export function ResultSkeleton({ label = "جارٍ تحليل إجابتك..." }: { label?: string }) {
   return (
-    <div dir="rtl" className="bg-white rounded-2xl p-5 shadow mt-4 text-center" aria-live="polite" aria-label={label}>
-      <p className="text-sm text-gray-400 mb-4">⏳ {label}</p>
-      <div className="flex justify-center mb-4">
+    <div dir="rtl" role="status" aria-busy="true" className="processing-state bg-white rounded-2xl p-6 mt-4 text-center" aria-live="polite" aria-label={label}>
+      <p className="text-sm text-gray-400 mb-4">{label}</p>
+      <p className="text-sm text-gray-500 mb-5">قد يستغرق ذلك عدة ثوانٍ</p><div className="flex justify-center mb-4">
         <Skeleton className="w-20 h-20 rounded-full" />
       </div>
       <div className="space-y-2 mb-4">

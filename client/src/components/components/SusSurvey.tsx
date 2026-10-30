@@ -78,7 +78,7 @@ export function SusSurvey({ onClose }: { onClose: () => void }) {
           </div>
         ) : (
           <>
-            <h2 className="text-center font-bold text-lg mb-1" style={{ color: "#1a5c2a", fontFamily: "'Amiri', serif" }}>
+            <h2 className="text-center font-bold text-lg mb-1" style={{ color: "#1a5c2a", fontFamily: "var(--font-brand)" }}>
               📋 قَيِّمْ تَجْرِبَتَكَ مَعَ الْبَرْنَامَجِ
             </h2>
             <p className="text-center text-gray-400 text-xs mb-4">
@@ -113,7 +113,7 @@ export function SusSurvey({ onClose }: { onClose: () => void }) {
                         style={
                           answers[i] === s.v
                             ? { background: "#1a5c2a", borderColor: "#1a5c2a", color: "white" }
-                            : { background: "white", borderColor: "#e5e7eb", color: "#9ca3af" }
+                            : { background: "white", borderColor: "#e5e7eb", color: "#536344" }
                         }
                       >
                         {s.v}

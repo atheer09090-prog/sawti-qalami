@@ -1,3 +1,6 @@
+import { Brand } from "@/components/ProductUI";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { LayoutDashboard, Users, Star, BookOpen } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -14,6 +17,7 @@ import {
   teacherLogin, teacherLogout, isTeacherTokenFresh, TEACHER_EXPIRED_EVENT,
   getDictationQuestions, saveDictationQuestion, deleteDictationQuestion, downloadSusExport,
   listStudents, saveStudentRecordByKey, downloadStudentReport, listReviews, getSusSummary, downloadSusReport,
+  describeError,
 } from "@/lib/api";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer,
@@ -89,19 +93,19 @@ const HAMZA_JOURNEYS: Record<"l1"|"l2"|"l3", {
   l1: {
     title: "رِحْلَةُ الْمُسْتَكْشِفِ التَّفَاعُلِيَّةُ",
     sub: "الْهَمْزَةُ الْمُتَوَسِّطَةُ عَلَى نَبْرَةٍ (يَاء) — قَاعِدَةُ الْكَسْرَةِ",
-    icon: "🗺️", color: "#059669", bg: "linear-gradient(135deg,#064e3b,#059669)",
+    icon: "🗺️", color: "#047857", bg: "linear-gradient(135deg,#064e3b,#047857)",
     route: "/writing-games/treasure-map",
   },
   l2: {
     title: "الْغَوَّاصُ وَصَائِدُ اللَّآلِئِ",
     sub: "الْهَمْزَةُ الْمُتَوَسِّطَةُ مُنْفَرِدَةً عَلَى السَّطْرِ",
-    icon: "🤿", color: "#1d4ed8", bg: "linear-gradient(135deg,#0c4a6e,#0891b2)",
+    icon: "🤿", color: "#436444", bg: "linear-gradient(135deg,#365c4e,#557f6b)",
     route: "/writing-games/diver-pearl",
   },
   l3: {
     title: "قَائِدُ الْمِنْطَادِ وَجَزِيرَةُ الْكَنْزِ",
     sub: "الْهَمْزَةُ الْمُتَطَرِّفَةُ — أَلِف / وَاو / يَاء / السَّطْر",
-    icon: "🎈", color: "#b45309", bg: "linear-gradient(135deg,#1e3a8a,#3b82f6)",
+    icon: "🎈", color: "#8a7247", bg: "linear-gradient(135deg,#293e32,#6f8b61)",
     route: "/writing-games/balloon",
   },
 };
@@ -155,7 +159,7 @@ function StarRating({ value }: { value: number }) {
   return (
     <span className="flex gap-0.5">
       {[1,2,3,4,5].map(i => (
-        <span key={i} style={{ color: i <= value ? "#f5c842" : "#d1d5db", fontSize: "14px" }}>★</span>
+        <span key={i} style={{ color: i <= value ? "#c6a260" : "#d1d5db", fontSize: "14px" }}>★</span>
       ))}
     </span>
   );
@@ -173,17 +177,17 @@ function TopStudents({ students }: { students: RealStudent[] }) {
   if (sorted.length === 0) {
     return (
       <div>
-        <h3 className="font-bold text-lg mb-3 text-right" style={{ color: "#b45309" }}>🏆 أَفْضَلُ الطُّلَّابِ أَدَاءً</h3>
+        <h3 className="font-bold text-lg mb-3 text-right" style={{ color: "#8a7247" }}>🏆 أَفْضَلُ الطُّلَّابِ أَدَاءً</h3>
         <p className="text-center text-gray-400 text-sm py-4">لَا يُوجَدُ طُلَّابٌ مُسَجَّلُونَ بَعْدُ.</p>
       </div>
     );
   }
   return (
     <div>
-      <h3 className="font-bold text-lg mb-3 text-right" style={{ color: "#b45309" }}>🏆 أَفْضَلُ الطُّلَّابِ أَدَاءً</h3>
+      <h3 className="font-bold text-lg mb-3 text-right" style={{ color: "#8a7247" }}>🏆 أَفْضَلُ الطُّلَّابِ أَدَاءً</h3>
       <div className="grid grid-cols-3 gap-2">
         {sorted.map((s, i) => (
-          <div key={s.key} className="rounded-2xl p-3 text-center" style={{ background: bgs[i], border: i === 0 ? "2px solid #f5c842" : "1px solid #e5e7eb" }}>
+          <div key={s.key} className="rounded-2xl p-3 text-center" style={{ background: bgs[i], border: i === 0 ? "2px solid #c6a260" : "1px solid #e5e7eb" }}>
             <div className="text-2xl mb-1">{medals[i]}</div>
             <p className="font-bold text-sm">{s.name}</p>
             <p className="text-xs text-gray-400">{s.stars} نَجْمَةٌ · {s.points} نُقْطَةٌ</p>
@@ -319,6 +323,18 @@ export default function Teacher() {
 
   const [lessonModal, setLessonModal] = useState<{type:"speaking"|"writing"; item:any|null} | null>(null);
   const [lessonForm, setLessonForm] = useState<any>({});
+  const [lessonSaving, setLessonSaving] = useState(false);
+
+  async function handleSaveLesson() {
+    if (!lessonModal || lessonSaving) return;
+    setLessonSaving(true);
+    try {
+      if (lessonModal.type === "speaking") await saveSpeakingLesson();
+      else await saveWritingTopic();
+    } catch (error) {
+      toast.error(describeError(error, "تعذّر حفظ التغييرات. تحقق من الاتصال وحاول مرة أخرى."));
+    } finally { setLessonSaving(false); }
+  }
 
   useEffect(() => {
     getSpeakingLessons().then(d => { if (d) setSpeakingLessons(d); });
@@ -484,9 +500,9 @@ export default function Teacher() {
   ];
 
   const barData = [
-    { name: "التَّحَدُّثُ", value: avgSpeaking, fill: "#1a5c2a" },
-    { name: "الْكِتَابَةُ", value: avgWriting, fill: "#b45309" },
-    { name: "التَّعَلُّمُ الذَّاتِيُّ", value: avgSelf, fill: "#1d4ed8" },
+    { name: "التَّحَدُّثُ", value: avgSpeaking, fill: "#075348" },
+    { name: "الْكِتَابَةُ", value: avgWriting, fill: "#8a7247" },
+    { name: "التَّعَلُّمُ الذَّاتِيُّ", value: avgSelf, fill: "#436444" },
   ];
 
   const TABS = [
@@ -500,25 +516,14 @@ export default function Teacher() {
   // فقط بدل كامل لوحة التحكم (بنفس هوية صفحة تسجيل دخول الطالب) ──
   if (!authed) {
     return (
-      <div dir="rtl" className="min-h-screen flex flex-col items-center justify-center p-4"
-        style={{
-          backgroundImage: "url('/assets/bg-main.png')", backgroundSize: "cover",
-          backgroundPosition: "center", backgroundAttachment: "fixed", fontFamily: "'Cairo', sans-serif",
-        }}>
-        <div className="w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl">
-          <div className="pt-8 pb-6 px-6 text-center"
-            style={{ background: "linear-gradient(160deg, #1a5c2a 0%, #2d7a3e 70%, #1a5c2a 100%)" }}>
-            <img src="/assets/logo.png" alt="صوتي قلمي" className="w-24 h-24 object-contain mx-auto mb-2"
-              style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" }} />
-            <h1 style={{ fontFamily: "'Amiri', serif", color: "#f5c842", fontSize: "1.6rem", fontWeight: 700 }}>
-              🎓 دُخُولُ الْمُعَلِّمِ
-            </h1>
-          </div>
-          <div className="bg-white px-6 py-6">
-            <label className="block text-right text-gray-600 mb-1.5 font-semibold text-sm">
+      <div dir="rtl" className="auth-page">
+        <div className="auth-layout">
+          <aside className="auth-brand"><Brand large /><h1>مساحة المعلم</h1><p>تابع تقدم طلابك، ونظّم رحلة تعلمهم.</p></aside>
+          <div className="auth-form">
+            <h1 className="text-2xl font-semibold mb-6">دخول المعلم</h1><label htmlFor="teacher-code" className="block text-right text-gray-600 mb-1.5 font-semibold text-sm">
               رَمْزُ الدُّخُولِ:
             </label>
-            <input type="password" value={code}
+            <input id="teacher-code" type="password" autoComplete="current-password" value={code}
               onChange={(e) => { setCode(e.target.value); setAuthError(""); }}
               onKeyDown={(e) => e.key === "Enter" && handleTeacherLogin()}
               placeholder="أَدْخِلْ رَمْزَ الْوُصُولِ الْخَاصَّ بِكَ"
@@ -527,7 +532,7 @@ export default function Teacher() {
             {authError && <p className="text-red-500 text-xs text-right mb-2">{authError}</p>}
             <button onClick={handleTeacherLogin} disabled={authChecking}
               className="w-full py-3 rounded-xl text-white font-bold mt-2 disabled:opacity-60"
-              style={{ background: "linear-gradient(135deg, #1a5c2a 0%, #2d7a3e 100%)" }}>
+              style={{ background: "var(--primary)" }}>
               {authChecking ? "جَارٍ التَّحَقُّقُ..." : "دُخُولٌ"}
             </button>
             <button onClick={() => setLocation("/")}
@@ -541,10 +546,9 @@ export default function Teacher() {
   }
 
   return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
+    <div dir="rtl" className="activity-page teacher-workspace">
       {/* ── Top bar ── */}
-      <div className="flex justify-between items-center px-4 py-3 text-white"
-        style={{ background: "linear-gradient(135deg, #1a5c2a 0%, #2d7a3e 100%)" }}>
+      <div className="teacher-header teacher-workspace-header flex flex-wrap justify-between items-center gap-3 px-6 py-4">
         <div className="flex items-center gap-2">
           <button onClick={() => { teacherLogout(); setLocation("/"); }}
             className="bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1 rounded-full transition-all">
@@ -557,30 +561,30 @@ export default function Teacher() {
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs opacity-75">مَنْصَةُ صَوْتِي قَلَمِي</p>
+          <p className="text-xs opacity-75">بَرْنَامَجُ صَوْتِي قَلَمِي</p>
           <p className="font-bold text-sm">لَوْحَةُ تَحَكُّمِ الْمُعَلِّمِ</p>
         </div>
-        <img src="/assets/logo.png" alt="" className="w-10 h-10 object-contain" />
+        <img src="/assets/brand-logo-transparent.png" alt="" className="w-10 h-10 object-contain" />
       </div>
 
       {/* ── Tab bar ── */}
       <div className="bg-white shadow-sm border-b border-gray-100 overflow-x-auto">
-        <div className="flex min-w-max">
+        <div className="flex min-w-max max-w-6xl mx-auto">
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id as any)}
-              className="px-4 py-3 text-sm font-bold transition-all whitespace-nowrap border-b-2"
+              aria-pressed={tab === t.id} className="inline-flex items-center gap-2 px-5 py-4 text-sm font-medium transition-colors whitespace-nowrap border-b-2"
               style={{
-                borderColor: tab === t.id ? "#1a5c2a" : "transparent",
-                color: tab === t.id ? "#1a5c2a" : "#6b7280",
+                borderColor: tab === t.id ? "#075348" : "transparent",
+                color: tab === t.id ? "#075348" : "#6b7280",
                 background: tab === t.id ? "#f0faf3" : "transparent",
               }}>
-              {t.icon} {t.label}
+              {t.id === "overview" ? <LayoutDashboard size={17} aria-hidden="true" /> : t.id === "students" ? <Users size={17} aria-hidden="true" /> : t.id === "reviews" ? <Star size={17} aria-hidden="true" /> : <BookOpen size={17} aria-hidden="true" />} {t.label}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-5">
+      <div className="page-container py-8">
 
         {/* ── OVERVIEW ── */}
         {tab === "overview" && (
@@ -588,12 +592,12 @@ export default function Teacher() {
             {/* KPI Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
-                { label: "إِجْمَالِيُّ الطُّلَّابِ", value: students.length, icon: "👥", color: "#1a5c2a" },
-                { label: "مُتَوَسِّطُ الأَدَاءِ", value: `${avgOverall}%`, icon: "📈", color: "#2563eb" },
-                { label: "إِجْمَالِيُّ النُّقَاطِ", value: students.reduce((s,x) => s+x.stars, 0), icon: "⭐", color: "#b45309" },
-                { label: "التَّقْيِيمَاتُ الْمُسْتَلَمَةُ", value: reviews.length, icon: "💬", color: "#7c3aed" },
+                { label: "إِجْمَالِيُّ الطُّلَّابِ", value: students.length, icon: "👥", color: "#075348" },
+                { label: "مُتَوَسِّطُ الأَدَاءِ", value: `${avgOverall}%`, icon: "📈", color: "#52744e" },
+                { label: "إِجْمَالِيُّ النُّقَاطِ", value: students.reduce((s,x) => s+x.stars, 0), icon: "⭐", color: "#8a7247" },
+                { label: "التَّقْيِيمَاتُ الْمُسْتَلَمَةُ", value: reviews.length, icon: "💬", color: "#887247" },
               ].map(k => (
-                <div key={k.label} className="bg-white rounded-2xl p-4 shadow-sm text-center">
+                <div key={k.label} className="surface-card bg-white rounded-2xl p-4 shadow-sm text-center">
                   <div className="text-3xl mb-1">{k.icon}</div>
                   <p className="text-2xl font-bold" style={{ color: k.color }}>{k.value}</p>
                   <p className="text-xs text-gray-500 mt-1">{k.label}</p>
@@ -603,22 +607,22 @@ export default function Teacher() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Radar */}
-              <div className="bg-white rounded-2xl p-4 shadow-sm">
-                <h3 className="font-bold text-right mb-3" style={{ color: "#1a5c2a" }}>🎯 مُؤَشِّرَاتُ الأَدَاءِ</h3>
+              <div className="surface-card bg-white rounded-2xl p-4 shadow-sm">
+                <h3 className="font-bold text-right mb-3" style={{ color: "#075348" }}>🎯 مُؤَشِّرَاتُ الأَدَاءِ</h3>
                 <ResponsiveContainer width="100%" height={220}>
                   <RadarChart data={radarData}>
                     <PolarGrid />
-                    <PolarAngleAxis dataKey="axis" tick={{ fontSize: 11, fontFamily: "'Cairo', sans-serif" }} />
-                    <Radar dataKey="value" stroke="#1a5c2a" fill="#1a5c2a" fillOpacity={0.3} />
+                    <PolarAngleAxis dataKey="axis" tick={{ fontSize: 11, fontFamily: "var(--font-brand)" }} />
+                    <Radar dataKey="value" stroke="#075348" fill="#075348" fillOpacity={0.3} />
                   </RadarChart>
                 </ResponsiveContainer>
               </div>
               {/* Bar */}
-              <div className="bg-white rounded-2xl p-4 shadow-sm">
-                <h3 className="font-bold text-right mb-3" style={{ color: "#1a5c2a" }}>📊 مُتَوَسِّطُ الْمَهَارَاتِ</h3>
+              <div className="surface-card bg-white rounded-2xl p-4 shadow-sm">
+                <h3 className="font-bold text-right mb-3" style={{ color: "#075348" }}>📊 مُتَوَسِّطُ الْمَهَارَاتِ</h3>
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={barData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                    <XAxis dataKey="name" tick={{ fontSize: 10, fontFamily: "'Cairo', sans-serif" }} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fontFamily: "var(--font-brand)" }} />
                     <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
                     <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                       {barData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
@@ -628,7 +632,7 @@ export default function Teacher() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 shadow-sm">
+            <div className="surface-card bg-white rounded-2xl p-5 shadow-sm">
               <TopStudents students={students} />
             </div>
           </div>
@@ -640,9 +644,9 @@ export default function Teacher() {
             <div className="relative mb-4">
               <input
                 value={searchQ} onChange={e => setSearchQ(e.target.value)}
-                placeholder="🔍 بَحْثٌ عَنِ الطَّالِبِ..."
-                className="w-full px-4 py-3 pr-10 rounded-xl border-2 text-right focus:outline-none bg-white shadow-sm"
-                style={{ borderColor: "#e5e7eb", fontFamily: "'Cairo', sans-serif" }}
+                aria-label="البحث عن طالب" placeholder="بَحْثٌ عَنِ الطَّالِبِ..."
+                className="w-full px-4 py-3 pl-28 rounded-xl border-2 text-right focus:outline-none bg-white shadow-sm"
+                style={{ borderColor: "#e5e7eb", fontFamily: "var(--font-brand)" }}
               />
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
                 {filteredStudents.length} طَالِبٌ
@@ -652,7 +656,7 @@ export default function Teacher() {
             <div className="flex justify-end mb-3">
               <button onClick={refreshStudents} disabled={studentsLoading}
                 className="text-xs px-3 py-1.5 rounded-lg border-2 font-bold disabled:opacity-50"
-                style={{ borderColor: "#1a5c2a", color: "#1a5c2a" }}>
+                style={{ borderColor: "#075348", color: "#075348" }}>
                 {studentsLoading ? "⏳ جَارٍ التَّحْدِيثُ..." : "🔄 تَحْدِيثٌ"}
               </button>
             </div>
@@ -660,7 +664,7 @@ export default function Teacher() {
             {studentsLoading && (
               <div className="space-y-3" aria-label="جارٍ تحميل بيانات الطلاب">
                 {[0, 1, 2].map((i) => (
-                  <div key={i} className="bg-white rounded-2xl p-4 shadow-sm">
+                  <div key={i} className="surface-card bg-white rounded-2xl p-4 shadow-sm">
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center gap-2">
                         <Skeleton className="w-8 h-8 rounded-full" />
@@ -682,7 +686,7 @@ export default function Teacher() {
             )}
 
             {!studentsLoading && students.length === 0 && (
-              <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
+              <div className="surface-card bg-white rounded-2xl p-8 text-center shadow-sm">
                 <p className="text-4xl mb-2">👥</p>
                 <p className="font-bold text-gray-600">لَا يُوجَدُ طُلَّابٌ مُسَجَّلُونَ بَعْدُ</p>
                 <p className="text-xs text-gray-400 mt-1">سَيَظْهَرُ الطُّلَّابُ هُنَا تِلْقَائِيًّا بَعْدَ أَوَّلِ تَسْجِيلِ دُخُولٍ لَهُمْ.</p>
@@ -696,9 +700,9 @@ export default function Teacher() {
             <div className="space-y-3">
               {filteredStudents.map(s => {
                 const avg = Math.round((s.speaking + s.writing + s.selfLearning) / 3);
-                const avgColor = avg >= 70 ? "#1a5c2a" : avg >= 50 ? "#d97706" : "#dc2626";
+                const avgColor = avg >= 70 ? "#075348" : avg >= 50 ? "#a08b55" : "#dc2626";
                 return (
-                  <div key={s.key} className="bg-white rounded-2xl p-4 shadow-sm">
+                  <div key={s.key} className="surface-card bg-white rounded-2xl p-4 shadow-sm">
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center gap-2">
                         <span className="text-2xl">{s.avatar}</span>
@@ -710,9 +714,9 @@ export default function Teacher() {
                       <span className="text-2xl font-bold" style={{ color: avgColor }}>{avg}%</span>
                     </div>
                     {[
-                      { label: "تَحَدُّثٌ", val: s.speaking, color: "#1a5c2a" },
-                      { label: "كِتَابَةٌ", val: s.writing, color: "#b45309" },
-                      { label: "تَعَلُّمٌ ذَاتِيٌّ", val: s.selfLearning, color: "#1d4ed8" },
+                      { label: "تَحَدُّثٌ", val: s.speaking, color: "#075348" },
+                      { label: "كِتَابَةٌ", val: s.writing, color: "#8a7247" },
+                      { label: "تَعَلُّمٌ ذَاتِيٌّ", val: s.selfLearning, color: "#436444" },
                     ].map(skill => (
                       <div key={skill.label} className="mb-2">
                         <div className="flex justify-between text-xs text-gray-500 mb-1">
@@ -731,12 +735,12 @@ export default function Teacher() {
                     <div className="mt-3 flex gap-2">
                       <button onClick={() => { setSelectedStudent(selectedStudent?.key === s.key ? null : s); setComment(s.teacherComment); }}
                         className="text-xs px-3 py-1 rounded-full border font-bold transition-all hover:bg-green-50"
-                        style={{ borderColor: "#1a5c2a", color: "#1a5c2a" }}>
+                        style={{ borderColor: "#075348", color: "#075348" }}>
                         💬 {s.teacherComment ? "تَعْدِيلُ التَّعْلِيقِ" : "إِضَافَةُ تَعْلِيقٍ"}
                       </button>
                       <button onClick={() => handleDownloadReport(s)} disabled={downloadingReport === s.key}
-                        className="text-xs px-3 py-1 rounded-full border font-bold transition-all hover:bg-blue-50 disabled:opacity-50"
-                        style={{ borderColor: "#1d4ed8", color: "#1d4ed8" }}>
+                        className="text-xs px-3 py-1 rounded-full border font-bold transition-all hover:bg-[#f1f5e9] disabled:opacity-50"
+                        style={{ borderColor: "#436444", color: "#436444" }}>
                         {downloadingReport === s.key ? "⏳ جَارٍ التَّحْمِيلُ..." : "📄 تَحْمِيلُ تَقْرِيرٍ"}
                       </button>
                     </div>
@@ -750,7 +754,7 @@ export default function Teacher() {
                           value={comment} onChange={e => setComment(e.target.value)}
                           placeholder="اكْتُبْ تَعْلِيقَكَ..."
                           className="flex-1 px-3 py-1 rounded-lg border text-right text-sm focus:outline-none"
-                          style={{ fontFamily: "'Cairo', sans-serif" }}
+                          style={{ fontFamily: "var(--font-brand)" }}
                         />
                       </div>
                     )}
@@ -765,9 +769,9 @@ export default function Teacher() {
         {tab === "reviews" && (
           <div>
             {/* ── استبيان SUS (أداة التقييم العلمية) ── */}
-            <div className="bg-white rounded-2xl p-4 shadow-sm mb-5 border-2" style={{ borderColor: "#dcf5e7" }}>
+            <div className="surface-card bg-white rounded-2xl p-4 shadow-sm mb-5 border-2" style={{ borderColor: "#e9f0df" }}>
               <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold text-sm" style={{ color: "#1a5c2a" }}>📋 استبيان قابلية الاستخدام (SUS)</h3>
+                <h3 className="font-bold text-sm" style={{ color: "#075348" }}>📋 استبيان قابلية الاستخدام (SUS)</h3>
                 <div className="flex gap-2">
                   <button
                     onClick={async () => {
@@ -778,7 +782,7 @@ export default function Teacher() {
                     }}
                     disabled={downloadingSusPdf}
                     className="text-xs px-3 py-1.5 rounded-lg font-bold text-white disabled:opacity-50"
-                    style={{ background: "#1a5c2a" }}
+                    style={{ background: "#075348" }}
                   >
                     {downloadingSusPdf ? "⏳ جَارٍ التَّحْمِيلُ..." : "📊 تقرير PDF (رسوم بيانية)"}
                   </button>
@@ -788,7 +792,7 @@ export default function Teacher() {
                       if (!ok) toast.error("تعذّر تصدير البيانات. حاول مرة أخرى.");
                     }}
                     className="text-xs px-3 py-1.5 rounded-lg border-2 font-bold"
-                    style={{ borderColor: "#1a5c2a", color: "#1a5c2a" }}
+                    style={{ borderColor: "#075348", color: "#075348" }}
                   >
                     ⬇️ JSON
                   </button>
@@ -799,7 +803,7 @@ export default function Teacher() {
               ) : (
                 <div className="grid grid-cols-4 gap-2 text-center">
                   <div className="bg-gray-50 rounded-xl p-2">
-                    <p className="text-2xl font-bold" style={{ color: "#1a5c2a" }}>{susSummary.average}</p>
+                    <p className="text-2xl font-bold" style={{ color: "#075348" }}>{susSummary.average}</p>
                     <p className="text-[10px] text-gray-400">مُتَوَسِّطُ SUS</p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-2">
@@ -838,9 +842,9 @@ export default function Teacher() {
                   {/* Summary KPIs */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                     {kpis.map(k => (
-                      <div key={k.label} className="bg-white rounded-2xl p-4 text-center shadow-sm">
+                      <div key={k.label} className="surface-card bg-white rounded-2xl p-4 text-center shadow-sm">
                         <div className="text-2xl mb-1">{k.icon}</div>
-                        <p className="text-3xl font-bold" style={{ color: "#1a5c2a" }}>{k.value}</p>
+                        <p className="text-3xl font-bold" style={{ color: "#075348" }}>{k.value}</p>
                         <p className="text-xs text-gray-500 mt-1">{k.label}</p>
                         <p className="text-xs text-gray-400">مِنْ 5</p>
                       </div>
@@ -850,7 +854,7 @@ export default function Teacher() {
                   <div className="flex justify-end mb-3">
                     <button onClick={refreshReviews} disabled={reviewsLoading}
                       className="text-xs px-3 py-1.5 rounded-lg border-2 font-bold disabled:opacity-50"
-                      style={{ borderColor: "#1a5c2a", color: "#1a5c2a" }}>
+                      style={{ borderColor: "#075348", color: "#075348" }}>
                       {reviewsLoading ? "⏳ جَارٍ التَّحْدِيثُ..." : "🔄 تَحْدِيثٌ"}
                     </button>
                   </div>
@@ -860,17 +864,17 @@ export default function Teacher() {
                   )}
 
                   {!reviewsLoading && n === 0 && (
-                    <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
+                    <div className="surface-card bg-white rounded-2xl p-8 text-center shadow-sm">
                       <p className="text-4xl mb-2">⭐</p>
                       <p className="font-bold text-gray-600">لَا تُوجَدُ تَقْيِيمَاتٌ بَعْدُ</p>
-                      <p className="text-xs text-gray-400 mt-1">سَتَظْهَرُ هُنَا تِلْقَائِيًّا عِنْدَمَا يُقَيِّمُ الطُّلَّابُ الْمَنْصَةَ مِنْ صَفْحَتِهِمِ الرَّئِيسِيَّةِ.</p>
+                      <p className="text-xs text-gray-400 mt-1">سَتَظْهَرُ هُنَا تِلْقَائِيًّا عِنْدَمَا يُقَيِّمُ الطُّلَّابُ الْبَرْنَامَجَ مِنْ صَفْحَتِهِمِ الرَّئِيسِيَّةِ.</p>
                     </div>
                   )}
 
                   {/* Reviews list */}
                   <div className="space-y-3">
                     {reviews.slice().reverse().map(r => (
-                      <div key={r.id} className="bg-white rounded-2xl p-4 shadow-sm">
+                      <div key={r.id} className="surface-card bg-white rounded-2xl p-4 shadow-sm">
                         <div className="flex justify-between items-center mb-2">
                           <p className="text-xs text-gray-400">{r.date}</p>
                           <div className="flex items-center gap-2">
@@ -891,7 +895,7 @@ export default function Teacher() {
                           ))}
                         </div>
                         {r.comment && (
-                          <div className="bg-amber-50 rounded-xl px-4 py-2 text-right border-r-4" style={{ borderColor: "#f5c842" }}>
+                          <div className="bg-[#faf6e9] rounded-xl px-4 py-2 text-right border-r-4" style={{ borderColor: "#c6a260" }}>
                             <p className="text-sm text-gray-700">"{r.comment}"</p>
                           </div>
                         )}
@@ -908,13 +912,13 @@ export default function Teacher() {
         {tab === "lessons" && (
           <div className="space-y-4">
             {/* Sub-tabs */}
-            <div className="flex gap-2 flex-wrap bg-white rounded-2xl p-2 shadow-sm">
+            <div className="flex gap-2 flex-wrap surface-card bg-white rounded-2xl p-2 shadow-sm">
               {[
-                { id: "speaking", label: "🎙️ التَّحَدُّثُ", color: "#1a5c2a" },
-                { id: "writing",  label: "✏️ الْكِتَابَةُ", color: "#b45309" },
-                { id: "self",     label: "🧠 التَّعَلُّمُ الذَّاتِيُّ", color: "#1d4ed8" },
-                { id: "games",    label: "🎮 أَلْعَابُ الْهَمْزَةِ", color: "#ea580c" },
-                { id: "dictation",label: "🦋 رِحْلَةُ الإِمْلَاءِ", color: "#7c3aed" },
+                { id: "speaking", label: "🎙️ التَّحَدُّثُ", color: "#075348" },
+                { id: "writing",  label: "✏️ الْكِتَابَةُ", color: "#8a7247" },
+                { id: "self",     label: "🧠 التَّعَلُّمُ الذَّاتِيُّ", color: "#436444" },
+                { id: "games",    label: "🎮 أَلْعَابُ الْهَمْزَةِ", color: "#c2410c" },
+                { id: "dictation",label: "🦋 رِحْلَةُ الإِمْلَاءِ", color: "#887247" },
               ].map(t => (
                 <button key={t.id} onClick={() => setLessonsTab(t.id as any)}
                   className="flex-1 py-2 px-3 rounded-xl text-sm font-bold transition-all"
@@ -926,22 +930,22 @@ export default function Teacher() {
 
             {/* ── التحدث ── */}
             {lessonsTab === "speaking" && (
-              <div className="rounded-2xl p-4" style={{ background: "#dcf5e7", border: "1px solid #86efac" }}>
+              <div className="rounded-2xl p-4" style={{ background: "#e9f0df", border: "1px solid #9dbb83" }}>
                 <div className="flex justify-between items-center mb-3">
                   <button onClick={() => { setLessonModal({type:"speaking", item:null}); setLessonForm({}); }}
-                    className="text-xs px-3 py-1.5 rounded-lg text-white font-bold" style={{ background: "#1a5c2a" }}>+ دَرْسٌ جَدِيدٌ</button>
-                  <h3 className="font-bold text-lg" style={{ color: "#1a5c2a" }}>🎙️ دُرُوسُ التَّحَدُّثِ</h3>
+                    className="text-xs px-3 py-1.5 rounded-lg text-white font-bold" style={{ background: "#075348" }}>+ دَرْسٌ جَدِيدٌ</button>
+                  <h3 className="font-bold text-lg" style={{ color: "#075348" }}>🎙️ دُرُوسُ التَّحَدُّثِ</h3>
                 </div>
                 <div className="space-y-2">
                   {speakingLessons.map((l: any) => (
-                    <div key={l.id} className="bg-white rounded-xl p-3 flex justify-between items-center">
+                    <div key={l.id} className="surface-card bg-white rounded-xl p-3 flex justify-between items-center">
                       <div className="flex gap-2">
-                        <button onClick={() => handleDeleteSpeaking(l.id)} className="text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg">🗑️</button>
+                        <button onClick={() => handleDeleteSpeaking(l.id)} className="text-xs px-2 py-1 bg-red-50 text-red-700 rounded-lg">🗑️</button>
                         <button onClick={() => { setLessonModal({type:"speaking", item:l}); setLessonForm({...l, topics: l.topics?.join("، ")}); }}
-                          className="text-xs px-2 py-1 bg-green-50 rounded-lg" style={{ color: "#1a5c2a" }}>✏️ تَعْدِيلٌ</button>
+                          className="text-xs px-2 py-1 bg-green-50 rounded-lg" style={{ color: "#075348" }}>✏️ تَعْدِيلٌ</button>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-sm" style={{ color: "#1a5c2a" }}>{l.icon} {l.title}</p>
+                        <p className="font-bold text-sm" style={{ color: "#075348" }}>{l.icon} {l.title}</p>
                         <p className="text-xs text-gray-400">{l.level} • {l.topics?.length || 0} مَوَاضِيعُ</p>
                       </div>
                     </div>
@@ -952,22 +956,22 @@ export default function Teacher() {
 
             {/* ── الكتابة ── */}
             {lessonsTab === "writing" && (
-              <div className="rounded-2xl p-4" style={{ background: "#fef3e2", border: "1px solid #fcd34d" }}>
+              <div className="rounded-2xl p-4" style={{ background: "#fef3e2", border: "1px solid #d0b773" }}>
                 <div className="flex justify-between items-center mb-3">
                   <button onClick={() => { setLessonModal({type:"writing", item:null}); setLessonForm({}); }}
-                    className="text-xs px-3 py-1.5 rounded-lg text-white font-bold bg-amber-600">+ مَوْضُوعٌ جَدِيدٌ</button>
-                  <h3 className="font-bold text-lg text-amber-800">✏️ مَوَاضِيعُ الْكِتَابَةِ</h3>
+                    className="text-xs px-3 py-1.5 rounded-lg text-white font-bold bg-[#826a3c]">+ مَوْضُوعٌ جَدِيدٌ</button>
+                  <h3 className="font-bold text-lg text-[#73603b]">✏️ مَوَاضِيعُ الْكِتَابَةِ</h3>
                 </div>
                 <div className="space-y-2">
                   {writingTopics.map((t: any) => (
-                    <div key={t.id} className="bg-white rounded-xl p-3 flex justify-between items-center">
+                    <div key={t.id} className="surface-card bg-white rounded-xl p-3 flex justify-between items-center">
                       <div className="flex gap-2">
-                        <button onClick={() => handleDeleteWriting(t.id)} className="text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg">🗑️</button>
+                        <button onClick={() => handleDeleteWriting(t.id)} className="text-xs px-2 py-1 bg-red-50 text-red-700 rounded-lg">🗑️</button>
                         <button onClick={() => { setLessonModal({type:"writing", item:t}); setLessonForm({...t, hints: t.hints?.join("، ")}); }}
-                          className="text-xs px-2 py-1 bg-amber-50 text-amber-700 rounded-lg">✏️ تَعْدِيلٌ</button>
+                          className="text-xs px-2 py-1 bg-[#faf6e9] text-[#73603b] rounded-lg">✏️ تَعْدِيلٌ</button>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-sm text-amber-800">{t.icon} {t.title}</p>
+                        <p className="font-bold text-sm text-[#73603b]">{t.icon} {t.title}</p>
                         <p className="text-xs text-gray-400">{t.hints?.length || 0} تَلْمِيحَاتٌ</p>
                       </div>
                     </div>
@@ -980,9 +984,9 @@ export default function Teacher() {
             {lessonsTab === "self" && (
               <div className="space-y-4">
                 {/* Header */}
-                <div className="rounded-2xl p-4 text-right" style={{ background: "linear-gradient(135deg, #1d4ed8, #2563eb)" }}>
+                <div className="rounded-2xl p-4 text-right" style={{ background: "var(--primary)" }}>
                   <h2 className="text-white font-bold text-xl">🧠 مَهَارَةُ التَّعَلُّمِ الذَّاتِيِّ</h2>
-                  <p className="text-blue-200 text-sm mt-1">أَسْئِلَةٌ تَفَاعُلِيَّةٌ — اضْغَطْ عَلَى أَيِّ سُؤَالٍ لِتَعْدِيلِهِ أَوْ أَضِفْ جَدِيدًا</p>
+                  <p className="text-[#d3dfc2] text-sm mt-1">أَسْئِلَةٌ تَفَاعُلِيَّةٌ — اضْغَطْ عَلَى أَيِّ سُؤَالٍ لِتَعْدِيلِهِ أَوْ أَضِفْ جَدِيدًا</p>
                   <div className="flex gap-3 mt-3">
                     <span className="bg-white/20 text-white text-xs px-3 py-1 rounded-full">🧠 {(slData.quiz||[]).length} سُؤَالَ اخْتِبَارٍ</span>
                     <span className="bg-white/20 text-white text-xs px-3 py-1 rounded-full">🔤 {(slData.word_order||[]).length} تَرْتِيبَ كَلِمَاتٍ</span>
@@ -990,23 +994,23 @@ export default function Teacher() {
                   </div>
                 </div>
                 {/* Quiz */}
-                <div className="rounded-2xl p-4" style={{ background: "#dbeafe", border: "1px solid #93c5fd" }}>
+                <div className="rounded-2xl p-4" style={{ background: "#e6eddc", border: "1px solid #b4c6a2" }}>
                   <div className="flex justify-between items-center mb-3">
                     <button onClick={() => { setSlModal({type:"quiz", idx:null}); setSlForm({}); }}
-                      className="text-xs px-3 py-1.5 rounded-lg text-white font-bold bg-blue-700">+ سُؤَالٌ جَدِيدٌ</button>
-                    <h3 className="font-bold text-lg text-blue-800">🧠 أَسْئِلَةُ الِاخْتِبَارِ</h3>
+                      className="text-xs px-3 py-1.5 rounded-lg text-white font-bold bg-[#436444]">+ سُؤَالٌ جَدِيدٌ</button>
+                    <h3 className="font-bold text-lg text-[#35533b]">🧠 أَسْئِلَةُ الِاخْتِبَارِ</h3>
                   </div>
                   <div className="space-y-2">
                     {(slData.quiz || []).map((q: any, i: number) => (
-                      <div key={i} className="bg-white rounded-xl p-3 text-right">
+                      <div key={i} className="surface-card bg-white rounded-xl p-3 text-right">
                         <div className="flex justify-between items-start mb-1">
                           <div className="flex gap-2">
                             <button onClick={async () => { if (!confirm("حذف؟")) return; await deleteQuizQuestion(i); refreshSL(); }}
-                              className="text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg">🗑️</button>
+                              className="text-xs px-2 py-1 bg-red-50 text-red-700 rounded-lg">🗑️</button>
                             <button onClick={() => { setSlModal({type:"quiz", idx:i}); setSlForm({...q, options: q.options?.join("، ")}); }}
-                              className="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-lg">✏️</button>
+                              className="text-xs px-2 py-1 bg-[#f1f5e9] text-[#436444] rounded-lg">✏️</button>
                           </div>
-                          <p className="font-bold text-sm text-blue-800">{q.q}</p>
+                          <p className="font-bold text-sm text-[#35533b]">{q.q}</p>
                         </div>
                         <p className="text-xs text-gray-400">✅ {q.options?.[q.correct]}</p>
                       </div>
@@ -1014,23 +1018,23 @@ export default function Teacher() {
                   </div>
                 </div>
                 {/* Word Order */}
-                <div className="rounded-2xl p-4" style={{ background: "#dcf5e7", border: "1px solid #86efac" }}>
+                <div className="rounded-2xl p-4" style={{ background: "#e9f0df", border: "1px solid #9dbb83" }}>
                   <div className="flex justify-between items-center mb-3">
                     <button onClick={() => { setSlModal({type:"order", idx:null}); setSlForm({}); }}
-                      className="text-xs px-3 py-1.5 rounded-lg text-white font-bold" style={{ background: "#1a5c2a" }}>+ سُؤَالٌ جَدِيدٌ</button>
-                    <h3 className="font-bold text-lg" style={{ color: "#1a5c2a" }}>🔤 تَرْتِيبُ الْكَلِمَاتِ</h3>
+                      className="text-xs px-3 py-1.5 rounded-lg text-white font-bold" style={{ background: "#075348" }}>+ سُؤَالٌ جَدِيدٌ</button>
+                    <h3 className="font-bold text-lg" style={{ color: "#075348" }}>🔤 تَرْتِيبُ الْكَلِمَاتِ</h3>
                   </div>
                   <div className="space-y-2">
                     {(slData.word_order || []).map((q: any, i: number) => (
-                      <div key={i} className="bg-white rounded-xl p-3 text-right">
+                      <div key={i} className="surface-card bg-white rounded-xl p-3 text-right">
                         <div className="flex justify-between items-start mb-1">
                           <div className="flex gap-2">
                             <button onClick={async () => { if (!confirm("حذف؟")) return; await deleteWordOrder(i); refreshSL(); }}
-                              className="text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg">🗑️</button>
+                              className="text-xs px-2 py-1 bg-red-50 text-red-700 rounded-lg">🗑️</button>
                             <button onClick={() => { setSlModal({type:"order", idx:i}); setSlForm({...q, words: q.words?.join("، ")}); }}
-                              className="text-xs px-2 py-1 bg-green-50 rounded-lg" style={{ color: "#1a5c2a" }}>✏️</button>
+                              className="text-xs px-2 py-1 bg-green-50 rounded-lg" style={{ color: "#075348" }}>✏️</button>
                           </div>
-                          <p className="font-bold text-sm" style={{ color: "#1a5c2a" }}>{q.answer}</p>
+                          <p className="font-bold text-sm" style={{ color: "#075348" }}>{q.answer}</p>
                         </div>
                         <p className="text-xs text-gray-400">{q.words?.join(" — ")}</p>
                       </div>
@@ -1041,20 +1045,20 @@ export default function Teacher() {
                 <div className="rounded-2xl p-4" style={{ background: "#f3e8ff", border: "1px solid #d8b4fe" }}>
                   <div className="flex justify-between items-center mb-3">
                     <button onClick={() => { setSlModal({type:"fill", idx:null}); setSlForm({}); }}
-                      className="text-xs px-3 py-1.5 rounded-lg text-white font-bold bg-purple-700">+ سُؤَالٌ جَدِيدٌ</button>
-                    <h3 className="font-bold text-lg text-purple-800">✏️ أَكْمِلِ الْجُمْلَةَ</h3>
+                      className="text-xs px-3 py-1.5 rounded-lg text-white font-bold bg-[#786440]">+ سُؤَالٌ جَدِيدٌ</button>
+                    <h3 className="font-bold text-lg text-[#6d6147]">✏️ أَكْمِلِ الْجُمْلَةَ</h3>
                   </div>
                   <div className="space-y-2">
                     {(slData.fill_in || []).map((q: any, i: number) => (
-                      <div key={i} className="bg-white rounded-xl p-3 text-right">
+                      <div key={i} className="surface-card bg-white rounded-xl p-3 text-right">
                         <div className="flex justify-between items-start mb-1">
                           <div className="flex gap-2">
                             <button onClick={async () => { if (!confirm("حذف؟")) return; await deleteFillIn(i); refreshSL(); }}
-                              className="text-xs px-2 py-1 bg-red-50 text-red-500 rounded-lg">🗑️</button>
+                              className="text-xs px-2 py-1 bg-red-50 text-red-700 rounded-lg">🗑️</button>
                             <button onClick={() => { setSlModal({type:"fill", idx:i}); setSlForm({...q}); }}
-                              className="text-xs px-2 py-1 bg-purple-50 text-purple-700 rounded-lg">✏️</button>
+                              className="text-xs px-2 py-1 bg-[#f7f3e7] text-[#786440] rounded-lg">✏️</button>
                           </div>
-                          <p className="font-bold text-sm text-purple-800">{q.sentence}</p>
+                          <p className="font-bold text-sm text-[#6d6147]">{q.sentence}</p>
                         </div>
                         <p className="text-xs text-gray-400">الإجابة: {q.answer}</p>
                       </div>
@@ -1068,9 +1072,9 @@ export default function Teacher() {
             {lessonsTab === "games" && (
               <div className="space-y-4">
                 {/* Header */}
-                <div className="rounded-2xl p-4 text-right" style={{ background: "linear-gradient(135deg,#1a1a2e,#16213e)" }}>
-                  <h2 className="text-white font-bold text-xl">🎮 أَلْعَابُ الْهَمْزَةِ</h2>
-                  <p className="text-white/60 text-sm mt-1">
+                <div className="rounded-2xl p-4 text-right" style={{ background: "#e8eede" }}>
+                  <h2 className="text-[#355a43] font-bold text-xl">🎮 أَلْعَابُ الْهَمْزَةِ</h2>
+                  <p className="text-[#66745d] text-sm mt-1">
                     ٣ رَحَلَاتٍ تَفَاعُلِيَّةٍ — عَدِّلِ الْكَلِمَاتِ وَالْخِيَارَاتِ وَالتَّعْلِيلَاتِ، وَتَظْهَرُ التَّعْدِيلَاتُ فَوْرًا لَدَى الطَّالِبِ
                   </p>
                   {/* Journey selector */}
@@ -1080,7 +1084,7 @@ export default function Teacher() {
                       return (
                         <button key={id} onClick={() => setGamesLesson(id)}
                           className="flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all"
-                          style={{ background: gamesLesson === id ? j.color : "rgba(255,255,255,0.1)", color: "white" }}>
+                          style={{ background: gamesLesson === id ? j.color : "#fffdf5", color: gamesLesson === id ? "#fffdf5" : "#58714a" }}>
                           {j.icon} {j.title}
                         </button>
                       );
@@ -1096,7 +1100,7 @@ export default function Teacher() {
                   return (
                     <div className="space-y-3">
                       {/* بطاقة الرحلة + رابط المعاينة + إعادة الافتراضي */}
-                      <div className="rounded-2xl overflow-hidden shadow-md">
+                      <div className="rounded-2xl overflow-hidden shadow-sm">
                         <div className="p-4 flex items-center gap-3" style={{ background: meta.bg }}>
                           <span className="text-4xl">{meta.icon}</span>
                           <div className="text-right flex-1">
@@ -1129,7 +1133,7 @@ export default function Teacher() {
                       {!journeysLoading && content && fields.map(field => {
                         const value = content[field.key];
                         return (
-                          <div key={field.key} className="rounded-2xl p-4" style={{ background: "#f5f0e8", border: "1px solid #e5e7eb" }}>
+                          <div key={field.key} className="rounded-2xl p-4" style={{ background: "#f7f7f2", border: "1px solid #e5e7eb" }}>
                             <div className="flex justify-between items-center mb-3 gap-2">
                               <button onClick={() => openJourneyEdit(field)}
                                 className="text-xs px-3 py-1 rounded-lg text-white font-bold shrink-0"
@@ -1140,15 +1144,15 @@ export default function Teacher() {
                             </div>
 
                             {field.kind === "text" && (
-                              <p className="text-sm text-gray-700 text-right leading-relaxed bg-white rounded-xl px-3 py-2"
-                                style={{ fontFamily: "'Amiri',serif" }}>{value}</p>
+                              <p className="text-sm text-gray-700 text-right leading-relaxed surface-card bg-white rounded-xl px-3 py-2"
+                                style={{ fontFamily: "var(--font-brand)" }}>{value}</p>
                             )}
 
                             {field.kind === "textList" && (
                               <div className="space-y-1.5">
                                 {(value as string[] ?? []).map((t, i) => (
-                                  <p key={i} className="text-sm text-gray-700 text-right bg-white rounded-xl px-3 py-2"
-                                    style={{ fontFamily: "'Amiri',serif" }}>{t}</p>
+                                  <p key={i} className="text-sm text-gray-700 text-right surface-card bg-white rounded-xl px-3 py-2"
+                                    style={{ fontFamily: "var(--font-brand)" }}>{t}</p>
                                 ))}
                               </div>
                             )}
@@ -1156,8 +1160,8 @@ export default function Teacher() {
                             {field.kind === "options" && (
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {(value as any[] ?? []).map((op, i) => (
-                                  <div key={i} className="bg-white rounded-xl px-3 py-2 text-right flex items-center justify-between gap-2">
-                                    <span className="text-sm font-bold" style={{ fontFamily: "'Amiri',serif", color: "#374151" }}>{op.label ?? op.text}</span>
+                                  <div key={i} className="surface-card bg-white rounded-xl px-3 py-2 text-right flex items-center justify-between gap-2">
+                                    <span className="text-sm font-bold" style={{ fontFamily: "var(--font-brand)", color: "#374151" }}>{op.label ?? op.text}</span>
                                     <span>{op.correct ? "✅" : "❌"}</span>
                                   </div>
                                 ))}
@@ -1169,8 +1173,8 @@ export default function Teacher() {
                                 {(value as any[][] ?? []).map((pair, i) => (
                                   <div key={i} className="flex gap-2">
                                     {pair.map((op: any, j: number) => (
-                                      <div key={j} className="flex-1 bg-white rounded-xl px-3 py-2 text-right flex items-center justify-between gap-2">
-                                        <span className="text-sm font-bold" style={{ fontFamily: "'Amiri',serif", color: "#374151" }}>{op.label ?? op.text}</span>
+                                      <div key={j} className="flex-1 surface-card bg-white rounded-xl px-3 py-2 text-right flex items-center justify-between gap-2">
+                                        <span className="text-sm font-bold" style={{ fontFamily: "var(--font-brand)", color: "#374151" }}>{op.label ?? op.text}</span>
                                         <span>{op.correct ? "✅" : "❌"}</span>
                                       </div>
                                     ))}
@@ -1189,13 +1193,13 @@ export default function Teacher() {
                 {journeyEditModal && (
                   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
                     onClick={() => setJourneyEditModal(null)}>
-                    <div className="bg-white rounded-2xl p-4 w-full max-w-md max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                    <div className="surface-card bg-white rounded-2xl p-4 w-full max-w-md max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                       <h3 className="font-bold text-base text-right mb-3">{journeyEditModal.label}</h3>
 
                       {journeyEditModal.kind === "text" && (
                         <textarea value={journeyEditForm ?? ""} onChange={e => setJourneyEditForm(e.target.value)}
                           className="w-full border-2 border-gray-200 rounded-xl p-3 text-right text-sm" rows={4}
-                          style={{ fontFamily: "'Amiri',serif" }} />
+                          style={{ fontFamily: "var(--font-brand)" }} />
                       )}
 
                       {journeyEditModal.kind === "textList" && (
@@ -1203,7 +1207,7 @@ export default function Teacher() {
                           {((journeyEditForm ?? []) as string[]).map((t, i) => (
                             <textarea key={i} value={t} rows={2}
                               onChange={e => setJourneyEditForm((prev: string[]) => prev.map((x, idx) => idx === i ? e.target.value : x))}
-                              className="w-full border-2 border-gray-200 rounded-xl p-2 text-right text-sm" style={{ fontFamily: "'Amiri',serif" }} />
+                              className="w-full border-2 border-gray-200 rounded-xl p-2 text-right text-sm" style={{ fontFamily: "var(--font-brand)" }} />
                           ))}
                         </div>
                       )}
@@ -1218,7 +1222,7 @@ export default function Teacher() {
                                   onChange={() => setJourneyEditForm((prev: any[]) => prev.map((x, idx) => ({ ...x, correct: idx === i })))} />
                                 <input value={op[fieldName]}
                                   onChange={e => setJourneyEditForm((prev: any[]) => prev.map((x, idx) => idx === i ? { ...x, [fieldName]: e.target.value } : x))}
-                                  className="flex-1 border-2 border-gray-200 rounded-xl p-2 text-right text-sm" style={{ fontFamily: "'Amiri',serif" }} />
+                                  className="flex-1 border-2 border-gray-200 rounded-xl p-2 text-right text-sm" style={{ fontFamily: "var(--font-brand)" }} />
                               </div>
                             );
                           })}
@@ -1238,7 +1242,7 @@ export default function Teacher() {
                                       onChange={() => setJourneyEditForm((prev: any[][]) => prev.map((p, pidx) => pidx === pi ? p.map((x, oidx) => ({ ...x, correct: oidx === oi })) : p))} />
                                     <input value={op[fieldName]}
                                       onChange={e => setJourneyEditForm((prev: any[][]) => prev.map((p, pidx) => pidx === pi ? p.map((x, oidx) => oidx === oi ? { ...x, [fieldName]: e.target.value } : x) : p))}
-                                      className="flex-1 border-2 border-gray-200 rounded-xl p-2 text-right text-sm" style={{ fontFamily: "'Amiri',serif" }} />
+                                      className="flex-1 border-2 border-gray-200 rounded-xl p-2 text-right text-sm" style={{ fontFamily: "var(--font-brand)" }} />
                                   </div>
                                 );
                               })}
@@ -1269,25 +1273,25 @@ export default function Teacher() {
               <div>
                 <div className="flex justify-between items-center mb-4">
                   <button onClick={() => { setDictationModal({idx:null}); setDictationForm({}); }}
-                    className="text-xs px-3 py-1.5 rounded-lg text-white font-bold" style={{ background: "#7c3aed" }}>+ سُؤَالٌ جَدِيدٌ</button>
-                  <h3 className="font-bold text-lg text-purple-800">🦋 أَسْئِلَةُ رِحْلَةِ الإِمْلَاءِ ({dictationQuestions.length})</h3>
+                    className="text-xs px-3 py-1.5 rounded-lg text-white font-bold" style={{ background: "#887247" }}>+ سُؤَالٌ جَدِيدٌ</button>
+                  <h3 className="font-bold text-lg text-[#6d6147]">🦋 أَسْئِلَةُ رِحْلَةِ الإِمْلَاءِ ({dictationQuestions.length})</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {dictationQuestions.map((q: any, i: number) => (
-                    <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                    <div key={i} className="surface-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-sm transition-all">
                       <div className="h-24 overflow-hidden">
                         <img src={q.img} alt="" className="w-full h-full object-cover" />
                       </div>
                       <div className="p-3 text-right">
                         <div className="flex justify-between items-center mb-1">
                           <div className="flex gap-1">
-                            <button onClick={() => deleteDictation(i)} className="text-xs px-1.5 py-0.5 bg-red-50 text-red-500 rounded">🗑️</button>
+                            <button onClick={() => deleteDictation(i)} className="text-xs px-1.5 py-0.5 bg-red-50 text-red-700 rounded">🗑️</button>
                             <button onClick={() => { setDictationModal({idx:i}); setDictationForm({...q, opts: q.opts?.join("، ")}); }}
-                              className="text-xs px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded">✏️</button>
+                              className="text-xs px-1.5 py-0.5 bg-[#f7f3e7] text-[#786440] rounded">✏️</button>
                           </div>
-                          <p className="font-bold text-base" style={{ fontFamily: "'Amiri', serif" }}>{q.word}</p>
+                          <p className="font-bold text-base" style={{ fontFamily: "var(--font-brand)" }}>{q.word}</p>
                         </div>
-                        <p className="text-xs text-purple-600 font-bold">{q.type}</p>
+                        <p className="text-xs text-[#887247] font-bold">{q.type}</p>
                         <p className="text-xs text-gray-400 mt-0.5">✅ {q.correct}</p>
                       </div>
                     </div>
@@ -1298,22 +1302,22 @@ export default function Teacher() {
                 {dictationModal && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}
                     onClick={() => setDictationModal(null)}>
-                    <div className="bg-white rounded-2xl p-5 w-full mx-4 shadow-2xl overflow-y-auto" style={{ maxWidth: 480, maxHeight: "90vh" }}
+                    <div className="surface-card bg-white rounded-2xl p-5 w-full mx-4 shadow-sm overflow-y-auto" style={{ maxWidth: 480, maxHeight: "90vh" }}
                       onClick={e => e.stopPropagation()} dir="rtl">
-                      <h3 className="font-bold text-lg mb-4 text-purple-800">
+                      <h3 className="font-bold text-lg mb-4 text-[#6d6147]">
                         {dictationModal.idx !== null ? "✏️ تَعْدِيلُ سُؤَالٍ" : "➕ سُؤَالٌ جَدِيدٌ"}
                       </h3>
                       <div className="space-y-3">
                         <div>
                           <label className="text-xs text-gray-500 block mb-1">الْكَلِمَةُ (مع تشكيل) *</label>
                           <input value={dictationForm.word||""} onChange={e => setDictationForm((p:any)=>({...p,word:e.target.value}))}
-                            className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-purple-400"
-                            placeholder="مثل: بِئْرٌ" style={{fontFamily:"'Amiri',serif",fontSize:"1.1rem"}} />
+                            className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-[#bba577]"
+                            placeholder="مثل: بِئْرٌ" style={{fontFamily:"var(--font-brand)",fontSize:"1.1rem"}} />
                         </div>
                         <div>
                           <label className="text-xs text-gray-500 block mb-1">نَوْعُ الْهَمْزَةِ</label>
                           <select value={dictationForm.type||""} onChange={e => setDictationForm((p:any)=>({...p,type:e.target.value}))}
-                            className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-purple-400">
+                            className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-[#bba577]">
                             <option value="">اختر...</option>
                             <option value="الْهَمْزَةُ الْمُتَوَسِّطَةُ">الهمزة المتوسطة</option>
                             <option value="الْهَمْزَةُ الْمُتَطَرِّفَةُ">الهمزة المتطرفة</option>
@@ -1322,25 +1326,25 @@ export default function Teacher() {
                         <div>
                           <label className="text-xs text-gray-500 block mb-1">الْخِيَارَاتُ (افصل بـ ،) *</label>
                           <textarea value={dictationForm.opts||""} onChange={e => setDictationForm((p:any)=>({...p,opts:e.target.value}))}
-                            className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-purple-400 resize-none"
-                            rows={2} placeholder="خيار١، خيار٢، خيار٣، خيار٤" style={{fontFamily:"'Amiri',serif"}} />
+                            className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-[#bba577] resize-none"
+                            rows={2} placeholder="خيار١، خيار٢، خيار٣، خيار٤" style={{fontFamily:"var(--font-brand)"}} />
                         </div>
                         <div>
                           <label className="text-xs text-gray-500 block mb-1">الإِجَابَةُ الصَّحِيحَةُ *</label>
                           <input value={dictationForm.correct||""} onChange={e => setDictationForm((p:any)=>({...p,correct:e.target.value}))}
-                            className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-purple-400"
-                            placeholder="الكلمة الصحيحة" style={{fontFamily:"'Amiri',serif"}} />
+                            className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-[#bba577]"
+                            placeholder="الكلمة الصحيحة" style={{fontFamily:"var(--font-brand)"}} />
                         </div>
                         <div>
                           <label className="text-xs text-gray-500 block mb-1">التَّلْمِيحُ</label>
                           <input value={dictationForm.hint||""} onChange={e => setDictationForm((p:any)=>({...p,hint:e.target.value}))}
-                            className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-purple-400"
-                            placeholder="سبب كتابة الهمزة..." style={{fontFamily:"'Cairo',sans-serif"}} />
+                            className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-[#bba577]"
+                            placeholder="سبب كتابة الهمزة..." style={{fontFamily:"var(--font-brand)"}} />
                         </div>
                         <div>
                           <label className="text-xs text-gray-500 block mb-1">رَابِطُ الصُّورَةِ</label>
                           <input value={dictationForm.img||""} onChange={e => setDictationForm((p:any)=>({...p,img:e.target.value}))}
-                            className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-purple-400 text-xs"
+                            className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-[#bba577] text-xs"
                             placeholder="https://..." />
                         </div>
                       </div>
@@ -1348,7 +1352,7 @@ export default function Teacher() {
                         <button onClick={() => setDictationModal(null)}
                           className="flex-1 py-2 border-2 border-gray-200 rounded-xl text-gray-500 font-bold">إِلْغَاءٌ</button>
                         <button onClick={saveDictation}
-                          className="flex-1 py-2 rounded-xl text-white font-bold bg-purple-700">💾 حِفْظٌ</button>
+                          className="flex-1 py-2 rounded-xl text-white font-bold bg-[#786440]">💾 حِفْظٌ</button>
                       </div>
                     </div>
                   </div>
@@ -1360,9 +1364,9 @@ export default function Teacher() {
             {slModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}
                 onClick={() => setSlModal(null)}>
-                <div className="bg-white rounded-2xl p-6 w-full mx-4 shadow-2xl overflow-y-auto" style={{ maxWidth: 480, maxHeight: "90vh" }}
+                <div className="surface-card bg-white rounded-2xl p-6 w-full mx-4 shadow-sm overflow-y-auto" style={{ maxWidth: 480, maxHeight: "90vh" }}
                   onClick={e => e.stopPropagation()} dir="rtl">
-                  <h3 className="font-bold text-lg mb-4 text-right text-blue-800">
+                  <h3 className="font-bold text-lg mb-4 text-right text-[#35533b]">
                     {slModal.idx !== null ? "✏️ تَعْدِيلٌ" : "➕ إِضَافَةٌ"} — {slModal.type === "quiz" ? "سُؤَالُ اخْتِبَارٍ" : slModal.type === "order" ? "تَرْتِيبُ كَلِمَاتٍ" : "إِكْمَالُ جُمْلَةٍ"}
                   </h3>
                   <div className="space-y-3">
@@ -1370,20 +1374,20 @@ export default function Teacher() {
                       <div>
                         <label className="text-sm text-gray-600 block mb-1">نَصُّ السُّؤَالِ *</label>
                         <input value={slForm.q || ""} onChange={e => setSlForm((p:any) => ({...p, q: e.target.value}))}
-                          className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-blue-400"
-                          placeholder="اكتب السؤال..." style={{ fontFamily: "'Cairo', sans-serif" }} />
+                          className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-[#8ea67c]"
+                          placeholder="اكتب السؤال..." style={{ fontFamily: "var(--font-brand)" }} />
                       </div>
                       <div>
                         <label className="text-sm text-gray-600 block mb-1">الْخِيَارَاتُ (افصل بـ ،) *</label>
                         <textarea value={slForm.options || ""} onChange={e => setSlForm((p:any) => ({...p, options: e.target.value}))}
-                          className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-blue-400 resize-none"
-                          rows={2} placeholder="خيار ١، خيار ٢، خيار ٣، خيار ٤" style={{ fontFamily: "'Cairo', sans-serif" }} />
+                          className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-[#8ea67c] resize-none"
+                          rows={2} placeholder="خيار ١، خيار ٢، خيار ٣، خيار ٤" style={{ fontFamily: "var(--font-brand)" }} />
                       </div>
                       <div>
                         <label className="text-sm text-gray-600 block mb-1">رَقْمُ الإِجَابَةِ الصَّحِيحَةِ (يبدأ من ٠)</label>
                         <input type="number" min="0" max="3" value={slForm.correct ?? 0}
                           onChange={e => setSlForm((p:any) => ({...p, correct: parseInt(e.target.value)}))}
-                          className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-blue-400" />
+                          className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-[#8ea67c]" />
                       </div>
                     </>)}
                     {slModal.type === "order" && (<>
@@ -1391,27 +1395,27 @@ export default function Teacher() {
                         <label className="text-sm text-gray-600 block mb-1">الْكَلِمَاتُ (افصل بـ ،) *</label>
                         <input value={slForm.words || ""} onChange={e => setSlForm((p:any) => ({...p, words: e.target.value}))}
                           className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-green-400"
-                          placeholder="كلمة١، كلمة٢، كلمة٣" style={{ fontFamily: "'Cairo', sans-serif" }} />
+                          placeholder="كلمة١، كلمة٢، كلمة٣" style={{ fontFamily: "var(--font-brand)" }} />
                       </div>
                       <div>
                         <label className="text-sm text-gray-600 block mb-1">الْجُمْلَةُ الصَّحِيحَةُ *</label>
                         <input value={slForm.answer || ""} onChange={e => setSlForm((p:any) => ({...p, answer: e.target.value}))}
                           className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-green-400"
-                          placeholder="الجملة الصحيحة كاملة" style={{ fontFamily: "'Cairo', sans-serif" }} />
+                          placeholder="الجملة الصحيحة كاملة" style={{ fontFamily: "var(--font-brand)" }} />
                       </div>
                     </>)}
                     {slModal.type === "fill" && (<>
                       <div>
                         <label className="text-sm text-gray-600 block mb-1">الْجُمْلَةُ (ضع ________ مكان الفراغ) *</label>
                         <textarea value={slForm.sentence || ""} onChange={e => setSlForm((p:any) => ({...p, sentence: e.target.value}))}
-                          className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-purple-400 resize-none"
-                          rows={2} placeholder="الجملة مع ________ مكان الفراغ" style={{ fontFamily: "'Cairo', sans-serif" }} />
+                          className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-[#bba577] resize-none"
+                          rows={2} placeholder="الجملة مع ________ مكان الفراغ" style={{ fontFamily: "var(--font-brand)" }} />
                       </div>
                       <div>
                         <label className="text-sm text-gray-600 block mb-1">الإِجَابَةُ *</label>
                         <input value={slForm.answer || ""} onChange={e => setSlForm((p:any) => ({...p, answer: e.target.value}))}
-                          className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-purple-400"
-                          placeholder="الكلمة الصحيحة" style={{ fontFamily: "'Cairo', sans-serif" }} />
+                          className="w-full px-3 py-2 border-2 rounded-xl text-right focus:outline-none focus:border-[#bba577]"
+                          placeholder="الكلمة الصحيحة" style={{ fontFamily: "var(--font-brand)" }} />
                       </div>
                     </>)}
                   </div>
@@ -1419,7 +1423,7 @@ export default function Teacher() {
                     <button onClick={() => setSlModal(null)}
                       className="flex-1 py-2 border-2 border-gray-200 rounded-xl text-gray-500 font-bold">إِلْغَاءٌ</button>
                     <button onClick={saveSLItem}
-                      className="flex-1 py-2 rounded-xl text-white font-bold bg-blue-700">💾 حِفْظٌ</button>
+                      className="flex-1 py-2 rounded-xl text-white font-bold bg-[#436444]">💾 حِفْظٌ</button>
                   </div>
                 </div>
               </div>
@@ -1428,6 +1432,21 @@ export default function Teacher() {
           </div>
         )}
 
+      <Dialog open={!!lessonModal} onOpenChange={open=>{if(!open&&!lessonSaving)setLessonModal(null);}}>
+        <DialogContent className="program-dialog lesson-editor-dialog" dir="rtl">
+          <DialogHeader><DialogTitle>{lessonModal?.item ? "تعديل" : "إضافة"} {lessonModal?.type==="speaking"?"درس التحدث":"موضوع الكتابة"}</DialogTitle><DialogDescription>نظّم محتوى النشاط. تظهر التغييرات للطلاب بعد حفظها.</DialogDescription></DialogHeader>
+          <fieldset disabled={lessonSaving} className="lesson-editor-fields">
+            <label htmlFor="lesson-title">العنوان <span aria-hidden="true">*</span></label><input id="lesson-title" value={lessonForm.title||""} onChange={e=>setLessonForm((p:any)=>({...p,title:e.target.value}))} placeholder="عنوان واضح للنشاط" />
+            <label htmlFor="lesson-icon">الرمز (اختياري)</label><input id="lesson-icon" value={lessonForm.icon||""} onChange={e=>setLessonForm((p:any)=>({...p,icon:e.target.value}))} placeholder="رمز يعبّر عن الموضوع" />
+            {lessonModal?.type==="speaking" ? <>
+              <label htmlFor="lesson-level">المستوى</label><input id="lesson-level" value={lessonForm.level||""} onChange={e=>setLessonForm((p:any)=>({...p,level:e.target.value}))} placeholder="سَهْلٌ" />
+              <label htmlFor="lesson-desc">وصف الدرس</label><textarea id="lesson-desc" rows={2} value={lessonForm.desc||""} onChange={e=>setLessonForm((p:any)=>({...p,desc:e.target.value}))} />
+              <label htmlFor="lesson-topics">الموضوعات (افصل بينها بفاصلة عربية ،)</label><textarea id="lesson-topics" rows={3} value={lessonForm.topics||""} onChange={e=>setLessonForm((p:any)=>({...p,topics:e.target.value}))} />
+            </> : <><label htmlFor="lesson-hints">الأفكار المساعدة (افصل بينها بفاصلة عربية ،)</label><textarea id="lesson-hints" rows={4} value={lessonForm.hints||""} onChange={e=>setLessonForm((p:any)=>({...p,hints:e.target.value}))} /></>}
+          </fieldset>
+          <div className="lesson-editor-actions"><button disabled={lessonSaving} onClick={()=>setLessonModal(null)} className="sawti-btn-outline">إلغاء</button><button disabled={lessonSaving} onClick={handleSaveLesson} className="sawti-btn-primary">{lessonSaving?"جارٍ الحفظ…":"حفظ التغييرات"}</button></div>
+        </DialogContent>
+      </Dialog>
       </div>
     </div>
   );

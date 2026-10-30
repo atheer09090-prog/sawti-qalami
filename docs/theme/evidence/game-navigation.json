@@ -1,0 +1,17 @@
+[
+  {
+    "game": "diver-pearl",
+    "status": "PASS",
+    "checks": "no overlap/clipping at 390/768/1440 through animation; hint opens video; back returns to tasks"
+  },
+  {
+    "game": "balloon",
+    "status": "PASS",
+    "checks": "no overlap/clipping at 390/768/1440 through animation; hint opens video; back returns to tasks"
+  },
+  {
+    "game": "treasure-map",
+    "status": "PASS",
+    "checks": "no overlap/clipping at 390/768/1440 through animation; hint opens video; back returns to tasks"
+  }
+]

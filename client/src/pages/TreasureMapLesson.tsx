@@ -1,3 +1,4 @@
+import { GameBackButton, GameMapHint } from "@/components/GameNavigation";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { playEffect, audioFile } from "@/lib/audio";
@@ -97,11 +98,11 @@ const DEFAULT_CONTENT = {
 
 function TopBar({ points, keys, onBack }: { points: number; keys: number; onBack: () => void }) {
   return (
-    <div className="flex items-center justify-between px-5 py-3" style={{ background: "rgba(41,26,13,0.55)" }}>
-      <button onClick={onBack} className="text-amber-100 text-base">← الْمَهَامُّ</button>
+    <div className="game-toolbar flex items-center justify-between px-5 py-3 pointer-events-auto">
+      <GameBackButton onBack={onBack} />
       <div className="flex items-center gap-4">
-        <span className="flex items-center gap-1 bg-amber-900/60 text-amber-100 px-3 py-1 rounded-full text-base font-bold">🔑 {keys}</span>
-        <span className="flex items-center gap-1 bg-amber-900/60 text-yellow-300 px-3 py-1 rounded-full text-base font-bold">⭐ {points}</span>
+        <span className="flex items-center gap-1 bg-[#5e5136]/60 text-[#f3ecd5] px-3 py-1 rounded-full text-base font-bold">🔑 {keys}</span>
+        <span className="flex items-center gap-1 bg-[#5e5136]/60 text-yellow-300 px-3 py-1 rounded-full text-base font-bold">⭐ {points}</span>
       </div>
     </div>
   );
@@ -122,32 +123,28 @@ function MapBackdrop({ phase, interactive, onActivate, reaction, reactKey }: { p
         const active = phase === p;
         const clickable = active && interactive;
         return (
-          <div key={p} onClick={clickable ? onActivate : undefined}
-            className={`absolute flex items-center justify-center shadow-lg transition-all ${clickable ? "lock-active-pulse" : ""}`}
+          <button type="button" key={p} aria-label={active ? "متابعة المرحلة الحالية" : `المرحلة ${i + 1}`} disabled={!clickable} onClick={clickable ? onActivate : undefined}
+            className={`absolute flex items-center justify-center shadow-lg transition-all ${clickable ? "lock-active-pulse z-30" : "pointer-events-none"}`}
             style={{
               left: `${PATH_POS[p].x}%`, top: `${PATH_POS[p].y}%`,
               width: active ? 40 : 28, height: active ? 46 : 32,
               transform: "translate(-50%, -50%)",
-              background: done ? "linear-gradient(180deg,#6ee7b7,#059669)" : active ? "linear-gradient(180deg,#fcd34d,#d97706)" : "linear-gradient(180deg,#c9a874,#8a7048)",
+              background: done ? "linear-gradient(180deg,#6ee7b7,#059669)" : active ? "linear-gradient(180deg,#d0b773,#a08b55)" : "linear-gradient(180deg,#c9a874,#8a7048)",
               border: "2px solid rgba(255,255,255,0.7)",
               borderRadius: "50% 50% 6px 6px",
               fontSize: active ? 18 : 12,
             }}>
             {i === 6 ? "🏆" : done ? "🔓" : "🔒"}
-          </div>
+          </button>
         );
       })}
-      {interactive && (
-        <div className="absolute lock-hint-bob whitespace-nowrap text-center pointer-events-none" style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: "translate(-50%, -170%)" }}>
-          <span className="px-3 py-1.5 rounded-full font-bold text-sm shadow-lg" style={{ background: "#fef3e2", color: "#78350f", border: "2px solid #d97706" }}>👆 اضْغَطْ هُنَا</span>
-        </div>
-      )}
+      {interactive && <GameMapHint x={pos.x} y={pos.y} onActivate={onActivate} />}
       <div key={reactKey} className={`absolute text-5xl transition-all duration-500 ease-out ${reaction === "correct" ? "char-bounce-correct" : reaction === "wrong" ? "char-shake-wrong" : ""}`}
         style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: "translate(-50%, -110%)", filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.4))" }}>
         {reaction === "correct" ? "😄" : reaction === "wrong" ? "😟" : "🧑‍🎓"}
       </div>
       {interactive && (
-        <div onClick={onActivate} className="absolute cursor-pointer z-20" style={{
+        <div onClick={onActivate} className={`absolute z-20 ${interactive ? "cursor-pointer" : "pointer-events-none"}`} style={{
           left: `${pos.x}%`, top: `${pos.y}%`, transform: "translate(-50%, -60%)",
           width: 160, height: 220,
         }} />
@@ -158,7 +155,7 @@ function MapBackdrop({ phase, interactive, onActivate, reaction, reactKey }: { p
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative z-10 max-w-3xl w-full mx-4 rounded-3xl p-8 shadow-2xl" style={{ background: "rgba(253,248,236,0.72)", border: "3px solid #c9a15a", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}>
+    <div className="game-stage-card relative z-10 max-w-3xl w-full mx-4">
       {children}
     </div>
   );
@@ -182,9 +179,9 @@ function GateStyles() {
       @keyframes gateRattle { 0%,100% { transform: rotate(0deg); } 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
       @keyframes gateOpen { 0% { transform: scaleX(1); opacity: 1; } 60% { transform: scaleX(1.06); opacity: 1; box-shadow: 0 0 30px 8px rgba(217,119,6,0.55); } 100% { transform: scaleX(1.02); opacity: 0.35; } }
       @keyframes lockPulse { 0%,100% { transform: translate(-50%,-50%) scale(1); box-shadow: 0 0 0 0 rgba(252,211,77,0.6); } 50% { transform: translate(-50%,-50%) scale(1.18); box-shadow: 0 0 0 10px rgba(252,211,77,0); } }
-      @keyframes hintBob { 0%,100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -6px); } }
+
       .lock-active-pulse { animation: lockPulse 1.1s ease-in-out infinite; cursor: pointer; }
-      .lock-hint-bob { animation: hintBob 1s ease-in-out infinite; }
+
       .gate-locked:hover { filter: brightness(1.05); }
       .gate-wrong { animation: gateRattle 0.35s ease-in-out 2; border-color: #dc2626 !important; }
       .gate-correct { animation: gateOpen 0.7s ease-out forwards; }
@@ -198,22 +195,23 @@ function GateOption({ label, order, status, wide, onClick }: {
   const cls = status === "picked-correct" ? "gate-correct" : status === "picked-wrong" ? "gate-wrong" : "gate-locked";
   return (
     <button
+      aria-label={label}
       onClick={onClick}
       disabled={status === "picked-correct"}
-      className={`${cls} relative text-center font-bold active:scale-95 transition-all ${wide ? "w-full text-right py-4 px-5" : "py-6 px-3"}`}
+      className={`${cls} relative text-center font-bold active:scale-[0.98] transition-all ${wide ? "w-full text-right py-4 px-5" : "py-6 px-3"}`}
       style={{
         background: "linear-gradient(180deg, #fef3e2 0%, #e9c98a 100%)",
         border: "3px solid #8a6d3b",
         borderRadius: "16px 16px 6px 6px",
-        color: "#78350f",
-        fontFamily: wide ? undefined : "'Amiri', serif",
+        color: "#5e5136",
+        fontFamily: wide ? undefined : "var(--font-brand)",
         fontSize: wide ? 15 : 22,
       }}>
       <span className="absolute -top-3 right-1/2 translate-x-1/2 text-xl">
         {status === "picked-correct" ? "🔓" : "🔒"}
       </span>
       {order !== undefined && (
-        <span className="absolute -top-3 left-2 bg-amber-700 text-white text-sm w-5 h-5 rounded-full flex items-center justify-center">{order}</span>
+        <span className="absolute -top-3 left-2 bg-[#8a7247] text-white text-sm w-5 h-5 rounded-full flex items-center justify-center">{order}</span>
       )}
       <span className="block mt-2">{wide ? `${label}` : label}</span>
     </button>
@@ -260,9 +258,9 @@ export default function TreasureMapLesson() {
   const [videoDone, setVideoDone] = useState(false);
 
   // نُخلط ترتيب الخيارات (يمين/يسار) لكل سؤال، وتبقى ثابتة طوال عرض نفس السؤال
-  const rock1Options = useMemo(() => shuffle(content.rock1Sets[rock1Step]), [rock1Step, round]);
-  const rock3Options = useMemo(() => shuffle(content.rock3Options), [round]);
-  const rock4Options = useMemo(() => shuffle(content.rock4Options), [round]);
+  const rock1Options = useMemo(() => shuffle(content.rock1Sets[rock1Step]), [rock1Step, round, content.rock1Sets]);
+  const rock3Options = useMemo(() => shuffle(content.rock3Options), [round, content.rock3Options]);
+  const rock4Options = useMemo(() => shuffle(content.rock4Options), [round, content.rock4Options]);
 
   function goNext(nextPhase: Phase, gainedPoints = 0, gainedKey = false) {
     if (gainedPoints) setPoints(p => p + gainedPoints);
@@ -378,17 +376,17 @@ export default function TreasureMapLesson() {
       case "intro":
         return (
           <Card>
-            <h1 className="text-3xl font-bold text-center mb-1" style={{ color: "#78350f", fontFamily: "'Amiri', serif" }}>🗺️ رِحْلَةُ الْمُسْتَكْشِفِ</h1>
-            <p className="text-center text-amber-800 text-base mb-5">الْهَمْزَةُ الْمُتَوَسِّطَةُ عَلَى نَبْرَةٍ (يَاء)</p>
-            <div className="bg-amber-50 rounded-2xl p-4 mb-5 border border-amber-200">
-              <p className="font-bold text-amber-900 mb-2 text-base">🎯 أَهْدَافُ رِحْلَتِنَا الْيَوْمَ:</p>
-              <ul className="text-amber-800 text-lg font-semibold space-y-2 leading-relaxed">
+            <h1 className="text-3xl font-bold text-center mb-1" style={{ color: "#5e5136", fontFamily: "var(--font-brand)" }}>🗺️ رِحْلَةُ الْمُسْتَكْشِفِ</h1>
+            <p className="text-center text-[#73603b] text-base mb-5">الْهَمْزَةُ الْمُتَوَسِّطَةُ عَلَى نَبْرَةٍ (يَاء)</p>
+            <div className="bg-[#faf6e9] rounded-2xl p-4 mb-5 border border-[#e8dbb7]">
+              <p className="font-bold text-[#5e5136] mb-2 text-base">🎯 أَهْدَافُ رِحْلَتِنَا الْيَوْمَ:</p>
+              <ul className="text-[#73603b] text-lg font-semibold space-y-2 leading-relaxed">
                 <li>١. التَّعَرُّفُ عَلَى مَوَاضِعِ كِتَابَةِ الْهَمْزَةِ الْمُتَوَسِّطَةِ عَلَى يَاءٍ.</li>
                 <li>٢. تَعْلِيلُ سَبَبِ كِتَابَتِهَا (مُقَارَنَةُ الْحَرَكَاتِ وَقُوَّةِ الْكَسْرَةِ).</li>
                 <li>٣. كِتَابَتُهَا بِشَكْلٍ صَحِيحٍ.</li>
               </ul>
             </div>
-            <button onClick={() => goNext("video")} className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-95 transition-all" style={{ background: "#b45309" }}>
+            <button onClick={() => goNext("video")} className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-[0.98] transition-all" style={{ background: "#8a7247" }}>
               🚶‍♂️ ابْدَأِ الرِّحْلَةَ
             </button>
           </Card>
@@ -397,15 +395,15 @@ export default function TreasureMapLesson() {
       case "video":
         return (
           <Card>
-            <h2 className="text-2xl font-bold text-center mb-4" style={{ color: "#78350f" }}>📺 مَحَطَّةُ الْمَعْرِفَةِ</h2>
+            <h2 className="text-2xl font-bold text-center mb-4" style={{ color: "#5e5136" }}>📺 مَحَطَّةُ الْمَعْرِفَةِ</h2>
             <div className="rounded-2xl overflow-hidden bg-black mb-4" style={{ aspectRatio: "16/9" }}>
               <video ref={videoRef} controls className="w-full h-full" onEnded={() => setVideoDone(true)} src="/videos/hamza-nabra.mp4">
                 متصفحك لا يدعم عرض الفيديو.
               </video>
             </div>
-            {!videoDone && <p className="text-center text-amber-600 text-sm mb-3">🔒 شَاهِدِ الْفِيدِيُو كَامِلاً لِفَتْحِ التَّحَدِّي التَّالِي</p>}
+            {!videoDone && <p className="text-center text-[#a08b55] text-sm mb-3">🔒 شَاهِدِ الْفِيدِيُو كَامِلاً لِفَتْحِ التَّحَدِّي التَّالِي</p>}
             <button onClick={() => goNext("rock1")} disabled={!videoDone}
-              className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-95 transition-all disabled:opacity-40" style={{ background: "#b45309" }}>
+              className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-[0.98] transition-all disabled:opacity-40" style={{ background: "#8a7247" }}>
               🪨 الِانْتِقَالُ لِلتَّحَدِّي
             </button>
           </Card>
@@ -415,8 +413,8 @@ export default function TreasureMapLesson() {
         const options = rock1Options;
         return (
           <Card>
-            <p className="text-sm text-amber-500 mb-1">🪨 الصَّخْرَةُ الْأُولَى — سُؤَالُ {rock1Step + 1}/{content.rock1Sets.length}</p>
-            <h2 className="text-2xl font-bold mb-5" style={{ color: "#78350f" }}>أَمَامَكَ بَوَّابَتَانِ مُقْفَلَتَانِ! افْتَحِ الْبَوَّابَةَ الَّتِي تَحْمِلُ الْكَلِمَةَ الصَّحِيحَةَ إِمْلَائِيًّا لِتَتَابَعَ مَسِيرَكَ:</h2>
+            <p className="text-sm text-[#536344] mb-1">🪨 الصَّخْرَةُ الْأُولَى — سُؤَالُ {rock1Step + 1}/{content.rock1Sets.length}</p>
+            <h2 className="text-2xl font-bold mb-5" style={{ color: "#5e5136" }}>أَمَامَكَ بَوَّابَتَانِ مُقْفَلَتَانِ! افْتَحِ الْبَوَّابَةَ الَّتِي تَحْمِلُ الْكَلِمَةَ الصَّحِيحَةَ إِمْلَائِيًّا لِتَتَابَعَ مَسِيرَكَ:</h2>
             <GateRow columns={2}>
               {options.map((o, i) => (
                 <GateOption key={i} label={o.label}
@@ -433,12 +431,12 @@ export default function TreasureMapLesson() {
         const remaining = HARAKAT_CORRECT_ORDER.filter(h => !harakatOrder.includes(h));
         return (
           <Card>
-            <p className="text-sm text-amber-500 mb-1">🪨 الصَّخْرَةُ الثَّانِيَةُ — بَوَّابَاتُ التَّرْتِيبِ</p>
-            <h2 className="text-2xl font-bold mb-4" style={{ color: "#78350f" }}>الْكَسْرَةُ هِيَ مَلِكَةُ الْحَرَكَاتِ! لِتَفْتَحَ الْبَوَّابَاتِ الْأَرْبَعَ لَا بُدَّ أَنْ تَخْتَارَهَا بِالتَّرْتِيبِ مِنَ الْأَقْوَى إِلَى الْأَضْعَفِ:</h2>
+            <p className="text-sm text-[#536344] mb-1">🪨 الصَّخْرَةُ الثَّانِيَةُ — بَوَّابَاتُ التَّرْتِيبِ</p>
+            <h2 className="text-2xl font-bold mb-4" style={{ color: "#5e5136" }}>الْكَسْرَةُ هِيَ مَلِكَةُ الْحَرَكَاتِ! لِتَفْتَحَ الْبَوَّابَاتِ الْأَرْبَعَ لَا بُدَّ أَنْ تَخْتَارَهَا بِالتَّرْتِيبِ مِنَ الْأَقْوَى إِلَى الْأَضْعَفِ:</h2>
             {harakatOrder.length > 0 && (
               <div className="flex flex-wrap gap-2 justify-center mb-4">
                 {harakatOrder.map((h, i) => (
-                  <span key={i} className="px-3 py-1.5 rounded-xl text-white font-bold text-sm flex items-center gap-1" style={{ background: "#059669" }}>🔓 {i + 1}. {h}</span>
+                  <span key={i} className="px-3 py-1.5 rounded-xl text-white font-bold text-sm flex items-center gap-1" style={{ background: "#047857" }}>🔓 {i + 1}. {h}</span>
                 ))}
               </div>
             )}
@@ -455,8 +453,8 @@ export default function TreasureMapLesson() {
       case "rock3":
         return (
           <Card>
-            <p className="text-sm text-amber-500 mb-1">🪨 الصَّخْرَةُ الثَّالِثَةُ — تَحَدِّي التَّعْلِيلِ</p>
-            <h2 className="text-2xl font-bold mb-5" style={{ color: "#78350f", fontFamily: "'Amiri', serif" }}>لِمَاذَا كُتِبَتِ الْهَمْزَةُ عَلَى نَبْرَةٍ فِي كَلِمَةِ (مُطْمَئِن)؟ افْتَحِ الْبَوَّابَةَ الَّتِي تَحْمِلُ التَّعْلِيلَ الصَّحِيحَ:</h2>
+            <p className="text-sm text-[#536344] mb-1">🪨 الصَّخْرَةُ الثَّالِثَةُ — تَحَدِّي التَّعْلِيلِ</p>
+            <h2 className="text-2xl font-bold mb-5" style={{ color: "#5e5136", fontFamily: "var(--font-brand)" }}>لِمَاذَا كُتِبَتِ الْهَمْزَةُ عَلَى نَبْرَةٍ فِي كَلِمَةِ (مُطْمَئِن)؟ افْتَحِ الْبَوَّابَةَ الَّتِي تَحْمِلُ التَّعْلِيلَ الصَّحِيحَ:</h2>
             <div className="space-y-3">
               {rock3Options.map((o, i) => (
                 <GateOption key={i} label={`${i + 1}. ${o.text}`} wide
@@ -471,9 +469,9 @@ export default function TreasureMapLesson() {
       case "rock4":
         return (
           <Card>
-            <p className="text-sm text-amber-500 mb-1">🪨 الصَّخْرَةُ الرَّابِعَةُ وَالْأَخِيرَةُ — الْبَوَّابَةُ الْأَخِيرَةُ</p>
-            <h2 className="text-2xl font-bold mb-3" style={{ color: "#78350f" }}>اكْتَشِفِ الْكَلِمَةَ الْخَطَأَ، ثُمَّ افْتَحِ الْبَوَّابَةَ الَّتِي تَحْمِلُ كِتَابَتَهَا الصَّحِيحَةَ:</h2>
-            <p className="text-center text-3xl font-bold mb-5 p-4 rounded-2xl" style={{ background: "#fef3e2", color: "#78350f", fontFamily: "'Amiri', serif" }}>
+            <p className="text-sm text-[#536344] mb-1">🪨 الصَّخْرَةُ الرَّابِعَةُ وَالْأَخِيرَةُ — الْبَوَّابَةُ الْأَخِيرَةُ</p>
+            <h2 className="text-2xl font-bold mb-3" style={{ color: "#5e5136" }}>اكْتَشِفِ الْكَلِمَةَ الْخَطَأَ، ثُمَّ افْتَحِ الْبَوَّابَةَ الَّتِي تَحْمِلُ كِتَابَتَهَا الصَّحِيحَةَ:</h2>
+            <p className="text-center text-3xl font-bold mb-5 p-4 rounded-2xl" style={{ background: "#fef3e2", color: "#5e5136", fontFamily: "var(--font-brand)" }}>
               شَرِبْتُ مِنْ <span className="text-red-500 underline decoration-wavy">بَأْرٍ</span> عَمِيقٍ
             </p>
             <GateRow columns={3}>
@@ -492,29 +490,29 @@ export default function TreasureMapLesson() {
           <Card>
             {!treasureOpened ? (
               <div className="text-center">
-                <div className="text-7xl mb-4 animate-bounce">📦</div>
-                <h2 className="text-2xl font-bold mb-2" style={{ color: "#78350f" }}>لَقَدْ وَصَلْتَ إِلَى صُنْدُوقِ الْكَنْزِ!</h2>
-                <p className="text-amber-700 text-base mb-5">اسْتَخْدِمِ الْمِفْتَاحَيْنِ اللَّذَيْنِ جَمَعْتَهُمَا لِفَتْحِهِ ({keys}/2 🔑)</p>
+                <div className="text-7xl mb-4 animate-pulse">📦</div>
+                <h2 className="text-2xl font-bold mb-2" style={{ color: "#5e5136" }}>لَقَدْ وَصَلْتَ إِلَى صُنْدُوقِ الْكَنْزِ!</h2>
+                <p className="text-[#8a7247] text-base mb-5">اسْتَخْدِمِ الْمِفْتَاحَيْنِ اللَّذَيْنِ جَمَعْتَهُمَا لِفَتْحِهِ ({keys}/2 🔑)</p>
                 <button onClick={() => setTreasureOpened(true)} disabled={keys < 2}
-                  className="py-3.5 px-8 rounded-2xl text-white font-bold text-xl active:scale-95 transition-all disabled:opacity-40" style={{ background: "#d97706" }}>
+                  className="py-3.5 px-8 rounded-2xl text-white font-bold text-xl active:scale-[0.98] transition-all disabled:opacity-40" style={{ background: "#73603b" }}>
                   🔓 افْتَحِ الصُّنْدُوقَ
                 </button>
               </div>
             ) : (
               <div>
                 <div className="text-6xl text-center mb-3">✨🏆✨</div>
-                <h2 className="text-2xl font-bold text-center mb-4" style={{ color: "#78350f" }}>الْقَاعِدَةُ الذَّهَبِيَّةُ</h2>
-                <div className="rounded-2xl p-4 mb-5" style={{ background: "#fef3e2", border: "2px solid #d97706" }}>
-                  <p className="text-amber-900 leading-relaxed text-lg font-semibold">
+                <h2 className="text-2xl font-bold text-center mb-4" style={{ color: "#5e5136" }}>الْقَاعِدَةُ الذَّهَبِيَّةُ</h2>
+                <div className="rounded-2xl p-4 mb-5" style={{ background: "#fef3e2", border: "2px solid #a08b55" }}>
+                  <p className="text-[#5e5136] leading-relaxed text-lg font-semibold">
                     تُكْتَبُ الْهَمْزَةُ الْمُتَوَسِّطَةُ عَلَى يَاءٍ فِي الْحَالَاتِ الْآتِيَةِ (وَالسَّبَبُ فِي الْحَالَاتِ كُلِّهَا أَنَّ <b>الْكَسْرَةَ</b> هِيَ الْحَرَكَةُ الْأَقْوَى):
                   </p>
-                  <ul className="mt-2 space-y-2 text-amber-800 text-lg font-semibold">
+                  <ul className="mt-2 space-y-2 text-[#73603b] text-lg font-semibold">
                     <li>• إِذَا جَاءَتِ الْهَمْزَةُ مَكْسُورَةً (مِثْلَ: سَائِل، مُقْرِئِين).</li>
                     <li>• أَوْ إِذَا جَاءَ الْحَرْفُ الَّذِي قَبْلَ الْهَمْزَةِ مَكْسُورًا (مِثْلَ: ذِئْب، مُنْشِئُون).</li>
                     <li>• أَوْ إِذَا سُبِقَتْ بِيَاءٍ سَاكِنَةٍ وَكَانَتِ الْهَمْزَةُ مَفْتُوحَةً أَوْ مَضْمُومَةً (مِثْلَ: دَفِيئَة).</li>
                   </ul>
                 </div>
-                <button onClick={() => setPhase("results")} className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-95 transition-all" style={{ background: "#b45309" }}>
+                <button onClick={() => setPhase("results")} className="w-full py-3.5 rounded-2xl text-white font-bold text-xl active:scale-[0.98] transition-all" style={{ background: "#8a7247" }}>
                   عَرْضُ النَّتِيجَةِ 🎉
                 </button>
               </div>
@@ -537,10 +535,10 @@ export default function TreasureMapLesson() {
               achievements={achievements}
             >
               <div className="flex gap-3">
-                <button onClick={resetAll} className="flex-1 py-3 rounded-2xl font-bold" style={{ background: "#fef3e2", color: "#78350f", border: "2px solid #e9c98a" }}>
+                <button onClick={resetAll} className="flex-1 py-3 rounded-2xl font-bold" style={{ background: "#fef3e2", color: "#5e5136", border: "2px solid #e9c98a" }}>
                   🔄 إِعَادَةُ اللَّعِبِ
                 </button>
-                <button onClick={() => setLocation("/writing-games")} className="flex-1 py-3 rounded-2xl text-white font-bold" style={{ background: "#b45309" }}>
+                <button onClick={() => setLocation("/writing-games/diver-pearl")} className="flex-1 py-3 rounded-2xl text-white font-bold" style={{ background: "#8a7247" }}>
                   الدَّرْسُ التَّالِي ←
                 </button>
               </div>
@@ -553,15 +551,15 @@ export default function TreasureMapLesson() {
   }
 
   return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", minHeight: "100vh" }} className="relative">
+    <div dir="rtl" style={{ fontFamily: "var(--font-brand)", minHeight: "100vh" }} className="relative game-world">
       <GateStyles />
       <GameFeelStyles />
-      <ComboIndicator combo={combo} pulseKey={pulseKey} accent="#d97706" />
+      <ComboIndicator combo={combo} pulseKey={pulseKey} accent="#a08b55" />
       <MapBackdrop phase={phase} interactive={!cardVisible} onActivate={() => setCardVisible(true)} reaction={reaction} reactKey={reactKey} />
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col min-h-screen pointer-events-none">
         <TopBar points={points} keys={keys} onBack={() => setLocation("/writing-games")} />
         <div className="flex-1 flex items-start justify-center pt-6 pb-8 overflow-y-auto">
-          {cardVisible && <div key={phase} className="fade-in-up w-full flex justify-center">{renderScreen()}</div>}
+          {cardVisible && <div key={phase} className="fade-in-up w-full flex justify-center pointer-events-auto">{renderScreen()}</div>}
         </div>
       </div>
     </div>

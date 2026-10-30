@@ -1,62 +1,15 @@
-import { cn } from "@/lib/utils";
 import { AlertTriangle, RotateCcw } from "lucide-react";
-import { Component, ReactNode } from "react";
-
-interface Props {
-  children: ReactNode;
-}
-
-interface State {
-  hasError: boolean;
-  error: Error | null;
-}
-
+import { Component, type ReactNode } from "react";
+import { Brand } from "@/components/ProductUI";
+interface Props { children: ReactNode }
+interface State { hasError: boolean }
 class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
-  }
-
+  state: State = { hasError:false };
+  static getDerivedStateFromError(): State { return {hasError:true}; }
+  componentDidCatch(error: Error) { console.error("صوتي قلمي: تعذّر عرض الصفحة",error); }
   render() {
-    if (this.state.hasError) {
-      return (
-        <div className="flex items-center justify-center min-h-screen p-8 bg-background">
-          <div className="flex flex-col items-center w-full max-w-2xl p-8">
-            <AlertTriangle
-              size={48}
-              className="text-destructive mb-6 flex-shrink-0"
-            />
-
-            <h2 className="text-xl mb-4">An unexpected error occurred.</h2>
-
-            <div className="p-4 w-full rounded bg-muted overflow-auto mb-6">
-              <pre className="text-sm text-muted-foreground whitespace-break-spaces">
-                {this.state.error?.stack}
-              </pre>
-            </div>
-
-            <button
-              onClick={() => window.location.reload()}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg",
-                "bg-primary text-primary-foreground",
-                "hover:opacity-90 cursor-pointer"
-              )}
-            >
-              <RotateCcw size={16} />
-              Reload Page
-            </button>
-          </div>
-        </div>
-      );
-    }
-
+    if(this.state.hasError) return <div className="not-found-page error-recovery-page" dir="rtl"><Brand large /><span className="not-found-art" aria-hidden="true"><AlertTriangle size={60} strokeWidth={1.2} /></span><h1>تعذّر عرض هذه الصفحة.</h1><p role="alert">جرّب إعادة التحميل للمتابعة. إذا استمرت المشكلة، حاول مرة أخرى بعد قليل.</p><button className="sawti-btn-primary" onClick={()=>window.location.reload()}><RotateCcw size={17} aria-hidden="true" />إعادة تحميل الصفحة</button></div>;
     return this.props.children;
   }
 }
-
 export default ErrorBoundary;

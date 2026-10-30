@@ -1,0 +1,62 @@
+[
+  {
+    "route": "/skills",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/dashboard",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/skills",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/dashboard",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/skills",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/dashboard",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/skills",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/dashboard",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/skills",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/dashboard",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/skills",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/dashboard",
+    "scroll": 1440,
+    "width": 1440
+  }
+]

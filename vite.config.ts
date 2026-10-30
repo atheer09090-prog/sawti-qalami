@@ -22,6 +22,12 @@ export default defineConfig({
     port: 3000,
     strictPort: false, // يبحث عن منفذ آخر إن كان 3000 مشغولًا
     host: true,
+    proxy: {
+      "/api": {
+        target: process.env.SAWTI_API_PROXY_TARGET || "https://sawti-0k3n.onrender.com",
+        changeOrigin: true,
+      },
+    },
     allowedHosts: ["localhost", "127.0.0.1"],
     fs: {
       strict: true,

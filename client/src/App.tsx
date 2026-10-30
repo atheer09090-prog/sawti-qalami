@@ -1,3 +1,4 @@
+import { ProductShell, PageSkeleton } from "./components/ProductUI";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, useLocation } from "wouter";
@@ -33,16 +34,7 @@ initGenderFromStore();
 
 /** مؤشر تحميل بسيط وخفيف (CSS فقط، بلا مكتبة) يظهر للحظات فقط أثناء
  * جلب كود الصفحة المطلوبة — لا يُستخدَم أي شيء أثقل من هذا عمدًا. */
-function RouteFallback() {
-  return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "#f5f0e8" }}>
-      <div
-        className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin"
-        style={{ borderColor: "#1a5c2a", borderTopColor: "transparent" }}
-      />
-    </div>
-  );
-}
+function RouteFallback() { return <PageSkeleton />; }
 
 function Router() {
   return (
@@ -88,7 +80,7 @@ export default function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <ProductShell><Router /></ProductShell>
           <AiTeacherGate />
         </TooltipProvider>
       </ThemeProvider>

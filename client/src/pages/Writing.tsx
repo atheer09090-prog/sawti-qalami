@@ -1,6 +1,9 @@
+import { ActivityHeader, DictationArtwork } from "@/components/ActivityUI";
+import { ArrowLeft, Gamepad2, SpellCheck, PenLine } from "lucide-react";
+import { SkillLibraryHeader } from "@/components/SkillLibraryHeader";
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { evaluateWriting, getWritingTopics, describeError } from "@/lib/api";
+import { evaluateWriting, getWritingTopics, describeError, getToken } from "@/lib/api";
 import { playSound, stopSound, playEffect, stopAll, audioFile } from "@/lib/audio";
 import { setState } from "@/lib/store";
 import { ResultSkeleton } from "@/components/ResultSkeleton";
@@ -15,14 +18,14 @@ const DEFAULT_TOPICS = [
 
 
 const TYPE_COLORS: Record<string, string> = {
-  "التَّاءُ الْمَرْبُوطَةُ": "#7c3aed",
-  "التَّنْوِينُ": "#b45309",
+  "التَّاءُ الْمَرْبُوطَةُ": "#887247",
+  "التَّنْوِينُ": "#8a7247",
   "الشَّدَّةُ": "#dc2626",
   "الْهَمْزَةُ": "#ea580c",
-  "الْمُثَبَّطُ": "#0891b2",
+  "الْمُثَبَّطُ": "#557f6b",
 };
 
-const WHEEL_COLORS = ["#1a5c2a","#2563eb","#b45309","#dc2626","#7c3aed","#0891b2","#ea580c","#059669"];
+const WHEEL_COLORS = ["#46654f", "#697344", "#826a3c", "#7b6150", "#607358", "#4c756b"];
 
 /* ── Spinning Wheel component ── */
 function SpinWheel({ questions, onSelect }: { questions: typeof DICTATION_QUESTIONS; onSelect: (i: number) => void }) {
@@ -59,7 +62,7 @@ function SpinWheel({ questions, onSelect }: { questions: typeof DICTATION_QUESTI
       ctx.rotate(start + sliceAngle / 2);
       ctx.textAlign = "right";
       ctx.fillStyle = "#fff";
-      ctx.font = "bold 13px Cairo, sans-serif";
+      ctx.font = "bold 13px 'IBM Plex Sans Arabic', sans-serif";
       ctx.fillText(q.word.slice(0, 5) + "...", r - 12, 5);
       ctx.restore();
     });
@@ -69,9 +72,10 @@ function SpinWheel({ questions, onSelect }: { questions: typeof DICTATION_QUESTI
     ctx.arc(cx, cy, 28, 0, 2 * Math.PI);
     ctx.fillStyle = "#fff";
     ctx.fill();
-    ctx.font = "20px serif";
+    ctx.font = "bold 24px 'IBM Plex Sans Arabic', sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("✏️", cx, cy + 7);
+    ctx.fillStyle = "#355a43";
+    ctx.fillText("أ", cx, cy + 9);
 
     // Pointer
     ctx.beginPath();
@@ -79,7 +83,7 @@ function SpinWheel({ questions, onSelect }: { questions: typeof DICTATION_QUESTI
     ctx.lineTo(cx - 10, 20);
     ctx.lineTo(cx + 10, 20);
     ctx.closePath();
-    ctx.fillStyle = "#b45309";
+    ctx.fillStyle = "#8a7247";
     ctx.fill();
   }
 
@@ -114,11 +118,11 @@ function SpinWheel({ questions, onSelect }: { questions: typeof DICTATION_QUESTI
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <p className="font-bold text-amber-700">🎡 أَدِرِ الْعَجَلَةَ لِاخْتِيَارِ سُؤَالٍ!</p>
-      <canvas ref={canvasRef} width={300} height={300} className="drop-shadow-xl" />
+      <p className="font-bold text-[#8a7247]">🎡 أَدِرِ الْعَجَلَةَ لِاخْتِيَارِ سُؤَالٍ!</p>
+      <canvas ref={canvasRef} width={300} height={300} className="drop-shadow-sm" />
       <button onClick={spin} disabled={spinning}
         className="px-8 py-3 rounded-xl text-white font-bold text-lg transition-all disabled:opacity-60"
-        style={{ background: spinning ? "#9ca3af" : "linear-gradient(135deg, #b45309, #d97706)" }}>
+        style={{ background: spinning ? "#9ca3af" : "var(--primary)" }}>
         {spinning ? "🎡 جَارٍ الدَّوَرَانُ..." : "🎡 أَدِرِ الْعَجَلَةَ!"}
       </button>
     </div>
@@ -171,84 +175,41 @@ function DictationGame({ onBack }: { onBack: () => void }) {
 
   /* ── Intro ── */
   if (phase === "intro") return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-      <div className="p-4" style={{ background: "linear-gradient(135deg, #b45309 0%, #d97706 100%)" }}>
-        <button onClick={onBack} className="text-amber-100 text-sm mb-1">← مَهَارَةُ الْكِتَابَةِ</button>
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <h1 className="text-xl font-bold text-white">رِحْلَةُ الإِمْلَاءِ</h1>
-            <p className="text-amber-100 text-xs">أَدِرِ الْعَجَلَةَ — اخْتَرِ الْكِتَابَةَ الصَّحِيحَةَ</p>
-          </div>
-          <span className="text-3xl p-2 bg-amber-800 rounded-xl">🎡</span>
-        </div>
-      </div>
-      <div className="max-w-xl mx-auto px-4 py-5">
-        <div className="bg-white rounded-2xl p-5 shadow text-right mb-4">
-          <h2 className="font-bold text-lg text-amber-800 mb-2">🎉 أَهْلاً فِي رِحْلَةِ الإِمْلَاءِ!</h2>
-          <p className="text-gray-500 text-sm mb-4">أَدِرِ الْعَجَلَةَ لِاخْتِيَارِ سُؤَالٍ إِمْلَائِيٍّ، ثُمَّ اخْتَرِ الْكِتَابَةَ الصَّحِيحَةَ.</p>
-          <div className="bg-amber-50 rounded-xl p-4 mb-4 border border-amber-100">
-            <p className="font-bold text-amber-800 mb-2">📋 كَيْفَ تَلْعَبُ؟</p>
-            <div className="space-y-2 text-sm text-gray-600">
-              {["اضْغَطْ عَلَى الْعَجَلَةِ أَوْ زِرَّ «أَدِرِ الْعَجَلَةَ»","تَتَوَقَّفُ الْعَجَلَةُ عَلَى مَنُّوٍ إِمْلَائِيٍّ","انْظُرْ إِلَى الصُّورَةِ وَاخْتَرِ الْكِتَابَةَ الصَّحِيحَةَ مِنَ الْخِيَارَاتِ","أَجِبْ عَنْ جَمِيعِ الأَسْئِلَةِ لِتَرَى نَتِيجَتَكَ النِّهَائِيَّةَ"].map((s, i) => (
-                <div key={i} className="flex gap-2 items-start justify-end">
-                  <span>{s}</span>
-                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                    style={{ background: "#b45309" }}>{i + 1}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2 justify-end mb-4">
-            {Object.entries(TYPE_COLORS).map(([type, color]) => (
-              <span key={type} className="text-xs px-2 py-1 rounded-full text-white font-bold" style={{ background: color }}>{type}</span>
-            ))}
-          </div>
-          <p className="text-xs text-gray-400 text-center mb-4">🎯 فِئَاتُ الأَسْئِلَةِ ({DICTATION_QUESTIONS.length} سُؤَالٌ)</p>
-          <button onClick={() => setPhase("wheel")}
-            className="w-full py-4 rounded-xl text-white font-bold text-lg"
-            style={{ background: "linear-gradient(135deg, #b45309, #d97706)" }}>
-            🎡 ابْدَأِ الرِّحْلَةَ!
-          </button>
-        </div>
+    <div dir="rtl" className="activity-page dictation-page">
+      <ActivityHeader title="رِحْلَةُ الإِمْلَاءِ" eyebrow="مهارة الكتابة" description="أدر العجلة، وتأمل الصورة، واختر الكتابة الصحيحة." backLabel="مهارة الكتابة" onBack={onBack} icon={SpellCheck} />
+      <div className="page-container dictation-intro-layout">
+        <section className="dictation-instructions"><p className="studio-eyebrow">كلمات صغيرة، وتعلّم يتجدد</p><h2>كيف تبدأ رحلتك؟</h2><ol>{["أدر العجلة لاختيار سؤال.","تأمل الصورة والكلمة المطلوبة.","اختر الكتابة الصحيحة، واقرأ الملاحظة.","واصل المحاولة، وتابع نتيجتك في النهاية."].map((step,i)=><li key={step}><span>{i+1}</span><p>{step}</p></li>)}</ol><button onClick={()=>setPhase("wheel")} className="sawti-btn-primary">ابْدَأِ الرِّحْلَةَ <ArrowLeft size={18} aria-hidden="true" /></button></section>
+        <aside className="dictation-art-panel"><DictationArtwork /><p>{DICTATION_QUESTIONS.length} سؤالًا لتجربة ما تعرفه</p><div className="dictation-category-list">{Object.keys(TYPE_COLORS).map(type=><span key={type}>{type}</span>)}</div></aside>
       </div>
     </div>
   );
 
   /* ── Wheel ── */
   if (phase === "wheel") return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-      <div className="p-4" style={{ background: "linear-gradient(135deg, #b45309 0%, #d97706 100%)" }}>
-        <button onClick={onBack} className="text-amber-100 text-sm mb-1">← مَهَارَةُ الْكِتَابَةِ</button>
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-amber-100">{correct} ✓ / {total}</span>
-          <h1 className="text-xl font-bold text-white">رِحْلَةُ الإِمْلَاءِ</h1>
-        </div>
-        {/* Progress bar */}
-        <div className="mt-2 w-full h-2 bg-amber-800 rounded-full overflow-hidden">
-          <div className="h-2 bg-white rounded-full transition-all" style={{ width: `${(total / DICTATION_QUESTIONS.length) * 100}%` }} />
-        </div>
-      </div>
-      <div className="max-w-xl mx-auto px-4 py-5">
+    <div dir="rtl" className="activity-page dictation-page">
+      <ActivityHeader title="رِحْلَةُ الإِمْلَاءِ" eyebrow="مهارة الكتابة" description="أدر العجلة، وتأمل الصورة، واختر الكتابة الصحيحة." backLabel="مهارة الكتابة" onBack={onBack} icon={SpellCheck} />
+      <div className="dictation-progress page-container"><span><strong>{correct}</strong> إجابات صحيحة</span><span dir="ltr">{total} / {DICTATION_QUESTIONS.length}</span><div role="progressbar" aria-label="تقدم رحلة الإملاء" aria-valuenow={total} aria-valuemin={0} aria-valuemax={DICTATION_QUESTIONS.length}><span style={{width:`${total/DICTATION_QUESTIONS.length*100}%`}} /></div></div>
+      <div className="activity-body activity-body--narrow">
         {/* Question status */}
-        <div className="bg-white rounded-2xl p-4 shadow mb-4">
+        <div className="surface-card bg-white rounded-2xl p-4 shadow mb-4">
           <p className="text-right text-sm font-bold text-gray-500 mb-2">📊 حَالَةُ الأَسْئِلَةِ:</p>
           <div className="flex gap-2 flex-wrap justify-end">
             {DICTATION_QUESTIONS.map((_, i) => (
               <div key={i} className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
-                style={{ background: answered[i] ? "#dcf5e7" : "#f5f0e8", color: answered[i] ? "#1a5c2a" : "#6b7280", border: answered[i] ? "2px solid #86efac" : "2px solid #e5e7eb" }}>
+                style={{ background: answered[i] ? "#e9f0df" : "#f7f7f2", color: answered[i] ? "#075348" : "#6b7280", border: answered[i] ? "2px solid #9dbb83" : "2px solid #e5e7eb" }}>
                 {i + 1}
               </div>
             ))}
           </div>
         </div>
         {remaining === 0 ? (
-          <div className="bg-white rounded-2xl p-6 shadow text-center">
+          <div className="surface-card bg-white rounded-2xl p-6 shadow text-center">
             <p className="text-4xl mb-3">🎉</p>
-            <h2 className="font-bold text-xl text-amber-800 mb-2">أَكْمَلْتَ الرِّحْلَةَ!</h2>
+            <h2 className="font-bold text-xl text-[#73603b] mb-2">أَكْمَلْتَ الرِّحْلَةَ!</h2>
             <p className="text-gray-600 mb-1">نَتِيجَتُكَ: <strong className="text-green-600">{correct}</strong> / {DICTATION_QUESTIONS.length}</p>
             <p className="text-gray-400 text-sm mb-4">{correct >= 6 ? "مُمْتَازٌ! أَنْتَ بَطَلُ الإِمْلَاءِ 🏆" : "جَيِّدٌ! تَدَرَّبْ أَكْثَرَ 💪"}</p>
             <button onClick={() => { setAnswered(Array(DICTATION_QUESTIONS.length).fill(false)); setCorrect(0); setTotal(0); }}
-              className="px-6 py-3 rounded-xl text-white font-bold" style={{ background: "#b45309" }}>
+              className="px-6 py-3 rounded-xl text-white font-bold" style={{ background: "#8a7247" }}>
               🔄 ابْدَأْ مِنْ جَدِيدٍ
             </button>
           </div>
@@ -261,19 +222,11 @@ function DictationGame({ onBack }: { onBack: () => void }) {
 
   /* ── Question ── */
   if (phase === "question" && currentQ) return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-      <div className="p-4" style={{ background: "linear-gradient(135deg, #b45309 0%, #d97706 100%)" }}>
-        <button onClick={() => setPhase("wheel")} className="text-amber-100 text-sm mb-1">← مَهَارَةُ الْكِتَابَةِ</button>
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-amber-100">{correct} ✓ / {total}</span>
-          <h1 className="text-xl font-bold text-white">رِحْلَةُ الإِمْلَاءِ</h1>
-        </div>
-        <div className="mt-2 w-full h-2 bg-amber-800 rounded-full overflow-hidden">
-          <div className="h-2 bg-white rounded-full transition-all" style={{ width: `${(total / DICTATION_QUESTIONS.length) * 100}%` }} />
-        </div>
-      </div>
-      <div className="max-w-xl mx-auto px-4 py-4">
-        <div className="bg-white rounded-2xl overflow-hidden shadow">
+    <div dir="rtl" className="activity-page dictation-page">
+      <ActivityHeader title="رِحْلَةُ الإِمْلَاءِ" eyebrow="مهارة الكتابة" description="أدر العجلة، وتأمل الصورة، واختر الكتابة الصحيحة." backLabel="العودة إلى العجلة" onBack={()=>setPhase("wheel")} icon={SpellCheck} />
+      <div className="dictation-progress page-container"><span><strong>{correct}</strong> إجابات صحيحة</span><span dir="ltr">{total} / {DICTATION_QUESTIONS.length}</span><div role="progressbar" aria-label="تقدم رحلة الإملاء" aria-valuenow={total} aria-valuemin={0} aria-valuemax={DICTATION_QUESTIONS.length}><span style={{width:`${total/DICTATION_QUESTIONS.length*100}%`}} /></div></div>
+      <div className="activity-body activity-body--narrow">
+        <div className="surface-card bg-white rounded-2xl overflow-hidden shadow">
           {/* Header */}
           <div className="flex justify-between items-center px-4 py-2 border-b border-gray-100">
             <span className="text-xs font-bold px-2 py-1 rounded-full text-white"
@@ -292,21 +245,21 @@ function DictationGame({ onBack }: { onBack: () => void }) {
           </div>
           {/* Question */}
           <div className="p-4">
-            <div className="bg-amber-50 rounded-xl p-3 mb-4 text-right border border-amber-100">
-              <p className="font-bold text-amber-800 text-sm mb-1">✏️ اخْتَرِ الْكِتَابَةَ الصَّحِيحَةَ لِلْكَلِمَةِ فِي الصُّورَةِ:</p>
+            <div className="bg-[#faf6e9] rounded-xl p-3 mb-4 text-right border border-[#f3ecd5]">
+              <p className="font-bold text-[#73603b] text-sm mb-1">✏️ اخْتَرِ الْكِتَابَةَ الصَّحِيحَةَ لِلْكَلِمَةِ فِي الصُّورَةِ:</p>
               <p className="text-xs text-gray-500">💡 {currentQ.hint}</p>
             </div>
             <div className="grid grid-cols-2 gap-2 mb-3">
               {currentQ.opts.map((opt) => {
                 let bg = "#f9fafb", border = "#e5e7eb", color = "#374151";
                 if (selected) {
-                  if (opt === currentQ.correct) { bg = "#dcf5e7"; border = "#86efac"; color = "#1a5c2a"; }
+                  if (opt === currentQ.correct) { bg = "#e9f0df"; border = "#9dbb83"; color = "#075348"; }
                   else if (opt === selected && opt !== currentQ.correct) { bg = "#fee2e2"; border = "#fca5a5"; color = "#dc2626"; }
                 }
                 return (
                   <button key={opt} onClick={() => handleAnswer(opt)} disabled={!!selected}
                     className="p-3 rounded-xl text-center font-bold transition-all relative"
-                    style={{ background: bg, border: `2px solid ${border}`, color, fontFamily: "'Amiri', serif", fontSize: "1rem" }}>
+                    style={{ background: bg, border: `2px solid ${border}`, color, fontFamily: "var(--font-brand)", fontSize: "1rem" }}>
                     {selected && opt === currentQ.correct && <span className="absolute top-1 right-1 text-green-600 text-xs">✓</span>}
                     {opt}
                   </button>
@@ -315,8 +268,8 @@ function DictationGame({ onBack }: { onBack: () => void }) {
             </div>
             {selected && (
               <div className="rounded-xl p-3 text-right mb-3"
-                style={{ background: selected === currentQ.correct ? "#dcf5e7" : "#fee2e2" }}>
-                <p className="font-bold text-sm" style={{ color: selected === currentQ.correct ? "#1a5c2a" : "#dc2626" }}>
+                style={{ background: selected === currentQ.correct ? "#e9f0df" : "#fee2e2" }}>
+                <p className="font-bold text-sm" style={{ color: selected === currentQ.correct ? "#075348" : "#dc2626" }}>
                   {selected === currentQ.correct ? "✅ أَحْسَنْتَ! الْكِتَابَةُ صَحِيحَةٌ!" : `❌ الْإِجَابَةُ الصَّحِيحَةُ: ${currentQ.correct}`}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">💡 {currentQ.hint}</p>
@@ -325,13 +278,13 @@ function DictationGame({ onBack }: { onBack: () => void }) {
             {selected && (
               <button onClick={() => setPhase("wheel")}
                 className="w-full py-3 rounded-xl text-white font-bold mb-2"
-                style={{ background: "linear-gradient(135deg, #b45309, #d97706)" }}>
+                style={{ background: "var(--primary)" }}>
                 🎡 الْعَوْدَةُ إِلَى الْعَجَلَةِ
               </button>
             )}
             {!selected && (
               <button onClick={() => { setSelected(null); setPhase("wheel"); }}
-                className="w-full py-2 rounded-xl text-amber-700 font-bold text-sm border-2 border-amber-200 bg-amber-50 hover:bg-amber-100 transition-all">
+                className="w-full py-2 rounded-xl text-[#73603b] font-bold text-sm border-2 border-[#e8dbb7] bg-[#faf6e9] hover:bg-[#f3ecd5] transition-all">
                 ↩️ تَخَطَّ هَذَا السُّؤَالَ وَعُدْ لِلْعَجَلَةِ
               </button>
             )}
@@ -380,7 +333,7 @@ function WritingResult({ result, originalText, contextSuggestions }: { result: a
       }
     });
     return (
-      <span className="leading-loose text-base" style={{ fontFamily: "'Cairo', sans-serif" }}>
+      <span className="leading-loose text-base" style={{ fontFamily: "var(--font-brand)" }}>
         {words.map((word, i) => {
           const stripD = (s: string) => s.replace(/[\u064B-\u065F\u0670]/g, "");
           const cleanWord = stripD(word.replace(/[.,،؛:!؟٣٢١٠0-9]/g, ""));
@@ -400,7 +353,7 @@ function WritingResult({ result, originalText, contextSuggestions }: { result: a
                 {isOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveError(null); }} />
-                    <span className="fixed bottom-4 left-1/2 z-50 bg-gray-900 text-white text-xs rounded-xl p-3 text-right shadow-2xl"
+                    <span className="fixed bottom-4 left-1/2 z-50 bg-gray-900 text-white text-xs rounded-xl p-3 text-right shadow-sm"
                       style={{ width: "min(300px, 90vw)", transform: "translateX(-50%)" }}>
                       <span className="flex items-center gap-2 mb-2">
                         <span className="line-through text-red-400 font-bold text-sm">{multiError.wrong}</span>
@@ -431,7 +384,7 @@ function WritingResult({ result, originalText, contextSuggestions }: { result: a
                 {isOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveError(null); }} />
-                    <span className="fixed bottom-4 left-1/2 z-50 bg-gray-900 text-white text-xs rounded-xl p-3 text-right shadow-2xl"
+                    <span className="fixed bottom-4 left-1/2 z-50 bg-gray-900 text-white text-xs rounded-xl p-3 text-right shadow-sm"
                       style={{ width: "min(300px, 90vw)", transform: "translateX(-50%)" }}>
                       {/* الخطأ والصحيح */}
                       <span className="flex items-center gap-2 mb-2">
@@ -577,18 +530,18 @@ function WritingResult({ result, originalText, contextSuggestions }: { result: a
   const spelling = Math.round(calcSpellingScore());
 
   return (
-    <div className="bg-white rounded-2xl shadow mt-4 overflow-hidden text-right">
+    <div className="surface-card bg-white rounded-2xl shadow mt-4 overflow-hidden text-right">
       {/* Score header */}
-      <div className="p-5" style={{ background: overall >= 70 ? "linear-gradient(135deg,#dcf5e7,#f0fdf4)" : "linear-gradient(135deg,#fef3e2,#fffbeb)" }}>
+      <div className="p-5" style={{ background: overall >= 70 ? "linear-gradient(135deg,#e9f0df,#f4f7ed)" : "linear-gradient(135deg,#fef3e2,#fffbeb)" }}>
         <div className="flex justify-between items-center mb-3">
           <div className="flex gap-1">
             {[1,2,3,4,5].map(i => (
-              <span key={i} style={{ color: i <= Math.ceil(overall/20) ? "#f5c842" : "#d1d5db", fontSize: "20px" }}>★</span>
+              <span key={i} style={{ color: i <= Math.ceil(overall/20) ? "#c6a260" : "#d1d5db", fontSize: "20px" }}>★</span>
             ))}
           </div>
           <div className="text-right">
             <p className="text-sm text-gray-500">📊 نَتِيجَةُ التَّقْيِيمِ</p>
-            <p className="text-4xl font-bold" style={{ color: overall >= 70 ? "#1a5c2a" : "#b45309" }}>{overall}%</p>
+            <p className="text-4xl font-bold" style={{ color: overall >= 70 ? "#075348" : "#8a7247" }}>{overall}%</p>
           </div>
         </div>
         <p className="text-gray-700 text-sm">{result.feedback || result.general_feedback}</p>
@@ -599,9 +552,9 @@ function WritingResult({ result, originalText, contextSuggestions }: { result: a
         <p className="font-bold text-gray-700 mb-3">📈 تَفْصِيلُ الدَّرَجَاتِ:</p>
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: "الإِمْلَاءُ",   value: spelling,  color: "#b45309", bg: "#fef3e2" },
-            { label: "التَّرْكِيبُ",  value: structure, color: "#7c3aed", bg: "#ede9f5" },
-            { label: "الْمُحْتَوَى", value: contentS,  color: "#1d4ed8", bg: "#dbeafe" },
+            { label: "الإِمْلَاءُ",   value: spelling,  color: "#8a7247", bg: "#fef3e2" },
+            { label: "التَّرْكِيبُ",  value: structure, color: "#887247", bg: "#f2efdf" },
+            { label: "الْمُحْتَوَى", value: contentS,  color: "#436444", bg: "#e6eddc" },
           ].map(({ label, value, color, bg }) => (
             <div key={label} className="rounded-xl p-3 text-center" style={{ background: bg }}>
               <p className="text-xs text-gray-500 mb-1">{label}</p>
@@ -668,7 +621,7 @@ function WritingResult({ result, originalText, contextSuggestions }: { result: a
         )}
         {result.improvements?.length > 0 && (
           <div>
-            <p className="font-bold text-amber-700 text-sm mb-2">💡 اقْتِرَاحَاتُ التَّحْسِينِ:</p>
+            <p className="font-bold text-[#8a7247] text-sm mb-2">💡 اقْتِرَاحَاتُ التَّحْسِينِ:</p>
             <div className="space-y-1">
               {result.improvements.map((s: string, i: number) => {
                 // Convert generic "صحح N خطأ" messages to friendlier Arabic
@@ -685,8 +638,8 @@ function WritingResult({ result, originalText, contextSuggestions }: { result: a
                   .replace(/استخدم\s*علامات\s*الترقيم/g, "اسْتَخْدِمْ عَلَامَاتِ التَّرْقِيمِ بِشَكْلٍ صَحِيحٍ (. ، ؟ !)")
                   .replace(/وسّع\s*المفردات/gi, "حَاوِلْ اسْتِخْدَامَ كَلِمَاتٍ أَكْثَرَ تَنَوُّعاً وَثَرَاءً");
                 return (
-                  <div key={i} className="flex items-start gap-2 bg-amber-50 rounded-lg px-3 py-2">
-                    <span className="text-amber-500">•</span>
+                  <div key={i} className="flex items-start gap-2 bg-[#faf6e9] rounded-lg px-3 py-2">
+                    <span className="text-[#536344]">•</span>
                     <p className="text-sm text-gray-700">{friendly}</p>
                   </div>
                 );
@@ -699,17 +652,17 @@ function WritingResult({ result, originalText, contextSuggestions }: { result: a
         {/* اقتراحات السياق */}
         {contextSuggestions.length > 0 && (
           <div className="px-4 pb-4">
-            <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-              <p className="font-bold text-blue-700 text-sm mb-3">🔵 اقْتِرَاحَاتٌ أُسْلُوبِيَّةٌ:</p>
+            <div className="bg-[#f1f5e9] rounded-xl p-4 border border-[#e6eddc]">
+              <p className="font-bold text-[#436444] text-sm mb-3">🔵 اقْتِرَاحَاتٌ أُسْلُوبِيَّةٌ:</p>
               <div className="space-y-3">
                 {contextSuggestions.map((s, i) => (
-                  <div key={i} className="bg-white rounded-lg p-3 border border-blue-100 text-right">
+                  <div key={i} className="bg-white rounded-lg p-3 border border-[#e6eddc] text-right">
                     <div className="flex items-center gap-2 mb-1 flex-row-reverse">
                       <span className="text-red-400 text-sm line-through">{s.original}</span>
                       <span className="text-gray-400">←</span>
                       <span className="text-green-600 font-bold text-sm">{s.suggested}</span>
                     </div>
-                    <p className="text-xs text-blue-600">📌 {s.rule}</p>
+                    <p className="text-xs text-[#52744e]">📌 {s.rule}</p>
                   </div>
                 ))}
               </div>
@@ -737,9 +690,6 @@ export default function Writing() {
         const local = DEFAULT_TOPICS.find(t => t.id === backendTopic.id);
         return local ? { ...local, ...backendTopic, image: backendTopic.image || local.image } : backendTopic;
       });
-      for (const local of DEFAULT_TOPICS) {
-        if (!merged.some((m: any) => m.id === local.id)) merged.push(local);
-      }
       setTopics(merged);
     });
   }, []);
@@ -758,18 +708,25 @@ export default function Writing() {
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
   const sentenceCount = text.split(/[.!؟]/).filter(s => s.trim()).length;
 
+  const evaluationVersion = useRef(0);
+  useEffect(() => { evaluationVersion.current += 1; setLoading(false); return () => { evaluationVersion.current += 1; }; }, [view, selectedTopic?.id]);
+
   async function handleEvaluate() {
-    if (wordCount < 10) return; // الزر معطَّل أصلًا قبل الوصول لهذا الحد، فلا حاجة لتنبيه منبثق
+    if (wordCount < 10 || loading) return;
+    const version = evaluationVersion.current;
+    const ownerToken = getToken(); // الزر معطَّل أصلًا قبل الوصول لهذا الحد، فلا حاجة لتنبيه منبثق
     setLoading(true);
     setWriteError("");
     try {
       const res = await evaluateWriting(text, 20, 0, selectedTopic?.id || "");
+      if (version !== evaluationVersion.current || ownerToken !== getToken()) return;
       setResult(res);
       const score = res.overall_score || 0;
       const newStars = score >= 90 ? 5 : score >= 70 ? 4 : score >= 50 ? 3 : score >= 30 ? 2 : 1;
       setState((prev) => ({
         ...prev,
         writingProgress: Math.max(prev.writingProgress, score),
+        completedLessons: Array.from(new Set([...prev.completedLessons, `writing:${selectedTopic?.id}`])),
         stars: Math.max(prev.stars, newStars),
         points: prev.points + Math.round(score / 10),
       }));
@@ -778,9 +735,9 @@ export default function Writing() {
       // لا نُظهِر نتيجةً وَهْمِيَّةً عند فشل الاتصال بالخادم — كانت التجربة
       // السابقة تعرض تقييمًا إيجابيًا مُلَفَّقًا (75%) وتحفظه في تقدُّم
       // الطالب الفعلي حتى لو تعطَّل الخادم، وهذا يُفسِد دقّة سجلّ تقدُّمه.
-      setWriteError(describeError(e, "تَعَذَّرَ الِاتِّصَالُ بِالْخَادِمِ لِتَقْيِيمِ نَصِّكَ. تَحَقَّقْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ وَحَاوِلْ مَرَّةً أُخْرَى."));
+      if (version === evaluationVersion.current) setWriteError(describeError(e, "تَعَذَّرَ الِاتِّصَالُ بِالْخَادِمِ لِتَقْيِيمِ نَصِّكَ. تَحَقَّقْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ وَحَاوِلْ مَرَّةً أُخْرَى."));
     }
-    setLoading(false);
+    if (version === evaluationVersion.current) setLoading(false);
   }
 
   /* Dictation view */
@@ -788,17 +745,11 @@ export default function Writing() {
 
   /* Writing view */
   if (view === "writing" && selectedTopic) return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-      <div className="p-4" style={{ background: "linear-gradient(135deg, #b45309 0%, #d97706 100%)" }}>
-        <button onClick={() => { setView("topics"); setResult(null); setText(""); stopAll(); }} className="text-amber-100 text-sm mb-1">← اخْتَرْ مَوْضُوعًا آخَرَ</button>
-        <p className="text-white text-sm text-right font-bold">✏️ دَرْسُ الْكِتَابَةِ</p>
-      </div>
-      <div className="max-w-2xl mx-auto px-4 py-4">
-        <div className="bg-white rounded-2xl p-5 shadow">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-4xl">{selectedTopic.icon}</span>
-            <h2 className="text-xl font-bold text-right text-amber-800">{selectedTopic.title}</h2>
-          </div>
+    <div dir="rtl" className="activity-page writing-workspace-page">
+      <ActivityHeader title={selectedTopic.title} eyebrow="مهارة الكتابة" description="رتّب أفكارك، واكتب نصك، ثم راجع ما يمكنك تحسينه." backLabel="اختر موضوعًا آخر" onBack={()=>{setView("topics");setResult(null);setText("");stopAll();}} icon={PenLine} />
+      <div className="activity-body">
+        <div className="surface-card bg-white rounded-2xl p-5 shadow">
+
 
           {/* صورة الموضوع (Placeholder قابل للاستبدال) */}
           {selectedTopic.image && (
@@ -808,22 +759,22 @@ export default function Writing() {
             </div>
           )}
 
-          <div className="bg-amber-50 rounded-xl p-3 mb-3 text-right border border-amber-100">
-            <p className="text-sm text-amber-700 font-semibold mb-2">📌 اسْتَعِنْ بِهَذِهِ الْعَنَاصِرِ:</p>
+          <div className="bg-[#faf6e9] rounded-xl p-3 mb-3 text-right border border-[#f3ecd5]">
+            <p className="text-sm text-[#8a7247] font-semibold mb-2">📌 اسْتَعِنْ بِهَذِهِ الْعَنَاصِرِ:</p>
             <div className="flex gap-2 flex-wrap">
-              {selectedTopic.hints.map(h => <span key={h} className="text-xs bg-white text-amber-700 px-2 py-1 rounded-full border border-amber-200">{h}</span>)}
+              {selectedTopic.hints.map(h => <span key={h} className="text-xs bg-white text-[#8a7247] px-2 py-1 rounded-full border border-[#e8dbb7]">{h}</span>)}
             </div>
           </div>
-          <textarea value={text} onChange={(e) => setText(e.target.value)}
+          <textarea value={text} disabled={loading} onChange={(e) => { setText(e.target.value); setResult(null); }}
             placeholder="اكْتُبْ هُنَا..."
-            className="w-full h-64 p-3 rounded-xl border-2 border-gray-200 text-right resize-none focus:border-amber-500 focus:outline-none"
-            style={{ fontFamily: "'Cairo', sans-serif", fontSize: "16px" }} />
+            aria-label="مساحة كتابة النص" className="writing-workspace w-full rounded-xl text-right resize-y focus:outline-none"
+            style={{ fontFamily: "var(--font-brand)", fontSize: "16px" }} />
           <div className="flex justify-between text-sm text-gray-500 mt-1">
             <span>{sentenceCount} جُمَلٌ</span>
             <span>{wordCount} / 200 كَلِمَةٌ</span>
           </div>
           <div className="w-full h-2 bg-gray-200 rounded-full mt-1 mb-3 overflow-hidden">
-            <div className="h-2 rounded-full transition-all" style={{ width: `${Math.min(wordCount / 200 * 100, 100)}%`, background: "#b45309" }} />
+            <div className="h-2 rounded-full transition-all" style={{ width: `${Math.min(wordCount / 200 * 100, 100)}%`, background: "#8a7247" }} />
           </div>
 
           {/* تدقيق إملائي فوري أثناء الكتابة */}
@@ -833,13 +784,13 @@ export default function Writing() {
             </div>
           )}
           {wordCount > 0 && wordCount < 10 && (
-            <p className="text-amber-600 text-xs text-center mb-2">
+            <p className="text-[#a08b55] text-xs text-center mb-2">
               ✏️ اكْتُبْ {10 - wordCount} كَلِمَاتٍ إِضَافِيَّةٍ عَلَى الْأَقَلِّ لِتَتَمَكَّنَ مِنَ التَّقْيِيمِ
             </p>
           )}
           <button onClick={handleEvaluate} disabled={loading || wordCount < 10}
             className="w-full py-3 rounded-xl text-white font-bold text-lg transition-all hover:opacity-90 disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, #b45309 0%, #d97706 100%)" }}>
+            style={{ background: "var(--primary)" }}>
             {loading ? "⏳ جَارٍ التَّقْيِيمُ..." : "🏛️ تَقْيِيمُ الْكِتَابَةِ"}
           </button>
         </div>
@@ -851,76 +802,18 @@ export default function Writing() {
 
   /* Topics view (default) */
   return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-      <div className="p-4" style={{ background: "linear-gradient(135deg, #b45309 0%, #d97706 100%)" }}>
-        <div className="flex items-center gap-2 mb-2">
-          <button onClick={() => setLocation("/skills")} className="text-amber-100 text-sm">← الْمَهَارَاتُ</button>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <h1 className="text-2xl font-bold text-white">مَهَارَةُ الْكِتَابَةِ</h1>
-            <p className="text-amber-100 text-sm">طَوِّرْ أُسْلُوبَكَ الْكِتَابِيَّ وَإِبْدَاعَكَ اللُّغَوِيَّ</p>
-          </div>
-          <span className="text-3xl p-2 bg-amber-800 rounded-xl">✏️</span>
-        </div>
+    <div className="page-container writing-library" dir="rtl">
+      <SkillLibraryHeader kind="writing" onBack={() => setLocation("/skills")} />
+      <div className="writing-playgrounds">
+        <button className="writing-playground" onClick={() => setLocation("/writing-games")}><span className="writing-playground-icon"><Gamepad2 size={28} strokeWidth={1.5} /></span><span><small>تعلّم بالتجربة</small><h2>أَلْعَابُ الْهَمْزَةِ</h2><p>ثلاث رحلات لاكتشاف قواعد الهمزة.</p></span><ArrowLeft size={20} aria-hidden="true" /></button>
+        <button className="writing-playground writing-playground--dictation" onClick={() => setView("dictation")}><span className="writing-playground-icon"><SpellCheck size={28} strokeWidth={1.5} /></span><span><small>تحدٍّ لغوي قصير</small><h2>رِحْلَةُ الإِمْلَاءِ</h2><p>أدر العجلة، واختر الكتابة الصحيحة.</p></span><ArrowLeft size={20} aria-hidden="true" /></button>
       </div>
-
-      <div className="max-w-2xl mx-auto px-4 py-5">
-        {/* Mascot welcome */}
-        <div className="bg-white rounded-xl p-3 mb-4 flex items-center gap-3 shadow">
-          <img src="/assets/omani-boy.png" alt="" className="w-10 h-10 object-contain" />
-          <p className="font-bold text-sm text-right">اخْتَرْ نَشَاطَ الْكِتَابَةِ وَابْدَأْ إِبْدَاعَكَ! ✏️</p>
-        </div>
-
-        {/* Writing Games card */}
-        <button onClick={() => setLocation("/writing-games")}
-          className="w-full p-5 rounded-2xl text-right shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all mb-3 flex justify-between items-center"
-          style={{ background: "linear-gradient(135deg, #ede9f5, #ddd6fe)", border: "2px solid #c4b5fd" }}>
-          <div className="flex items-center gap-2">
-            <span className="text-xs bg-purple-700 text-white px-2 py-1 rounded-full font-bold">أَلْعَابٌ تَفَاعُلِيَّةٌ</span>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-purple-800">🎮 أَلْعَابُ الْهَمْزَةِ</h2>
-            <p className="text-purple-600 text-sm">هَمْزَةٌ مُتَوَسِّطَةٌ • هَمْزَةٌ مُتَطَرِّفَةٌ • تَحَدِّي سَرِيعٌ</p>
-          </div>
-          <span className="text-4xl">🎮</span>
-        </button>
-
-        {/* Dictation Journey card */}
-        <button onClick={() => setView("dictation")}
-          className="w-full p-5 rounded-2xl text-right shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all mb-3 flex justify-between items-center"
-          style={{ background: "linear-gradient(135deg, #fef3e2, #fde68a)", border: "2px solid #fcd34d" }}>
-          <div className="flex items-center gap-2">
-            <span className="text-xs bg-amber-700 text-white px-2 py-1 rounded-full font-bold">لُعْبَةٌ تَفَاعُلِيَّةٌ</span>
-            <span className="text-amber-600 text-sm font-bold">←</span>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-amber-800">🎡 رِحْلَةُ الإِمْلَاءِ</h2>
-            <p className="text-amber-600 text-sm">أَدِرِ الْفَجَلَةَ وَاخْتَرِ الْكِتَابَةَ الصَّحِيحَةَ لِلْكَلِمَاتِ</p>
-          </div>
-          <span className="text-4xl">🎡</span>
-        </button>
-
-        {/* Writing topics */}
-        <h2 className="text-right font-bold text-lg mb-3 text-amber-800">✏️ مَوَاضِيعُ الْكِتَابَةِ</h2>
-        <div className="flex flex-col gap-3">
-          {topics.map((t) => (
-            <button key={t.id} onClick={() => { setSelectedTopic(t); setView("writing"); }}
-              className="p-5 bg-white rounded-2xl shadow text-right hover:shadow-md hover:-translate-y-0.5 transition-all flex justify-between items-center">
-              <div>
-                <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">حَتَّى 200 كَلِمَةٍ</span>
-              </div>
-              <div>
-                <h3 className="font-bold text-lg text-amber-800">{t.title}</h3>
-                <div className="flex gap-1 flex-wrap justify-end mt-1">
-                  {t.hints.map(h => <span key={h} className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">{h}</span>)}
-                </div>
-              </div>
-              <span className="text-4xl">{t.icon}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+      <div className="speaking-library-heading"><div><p className="studio-eyebrow">حكاية تنتظر قلمك</p><h2>مَوَاضِيعُ الْكِتَابَةِ</h2></div><span>حتى 200 كلمة لكل نص</span></div>
+      <div className="writing-topic-grid">{topics.map(t => <button key={t.id} className="writing-topic-card" onClick={() => { setSelectedTopic(t); setView("writing"); }}>
+        <div className="writing-topic-photo">{t.image ? <img src={t.image} alt="" loading="lazy" /> : <PenFallback />}<span>وصف وتعبير</span></div>
+        <div className="writing-topic-copy"><h3>{t.title}</h3><p>{t.hints.join(" · ")}</p><span className="speaking-lesson-action">ابدأ الكتابة <ArrowLeft size={18} aria-hidden="true" /></span></div>
+      </button>)}</div>
     </div>
   );
 }
+function PenFallback() { return <SpellCheck size={48} strokeWidth={1.3} aria-hidden="true" />; }

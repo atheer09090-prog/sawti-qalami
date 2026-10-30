@@ -1,0 +1,23 @@
+[
+  {
+    "scenario": "slow-session-api",
+    "formVisibleWithin2500ms": false,
+    "formMs": null,
+    "bodyText": "جَارٍ التَّحَقُّقُ مِنْ جَلْسَتِكَ...",
+    "errors": []
+  },
+  {
+    "scenario": "unavailable-font-host",
+    "formVisibleWithin2500ms": false,
+    "formMs": null,
+    "bodyText": "",
+    "errors": []
+  },
+  {
+    "scenario": "new-visitor",
+    "formVisibleWithin2500ms": true,
+    "formMs": 938,
+    "bodyText": "مساحة لصوتك، وأفق لقلمك\n\nبَرْنَامَجٌ تَفَاعُلِيٌّ لِتَعْلِيمِ اللُّغَةِ الْعَرَبِيَّةِ لِطُلَّابِ الصَّفِّ السَّادِسِ\n\nأ",
+    "errors": []
+  }
+]

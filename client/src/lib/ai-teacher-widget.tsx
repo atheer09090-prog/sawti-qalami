@@ -1,3 +1,4 @@
+import { MessagesSquare, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { askSmartTeacher } from "./api";
 
@@ -51,9 +52,9 @@ export default function AiTeacherWidget() {
       {/* ── الزر العائم (الشخصية) ── */}
       {!open && (
         <button onClick={() => setOpen(true)} aria-label="المعلم الذكي"
-          className="fixed bottom-5 left-5 z-40 w-16 h-16 rounded-full shadow-xl flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
-          style={{ background: "linear-gradient(135deg,#1a5c2a,#2d7a3e)", border: "3px solid white" }}>
-          <span className="text-3xl">🤖</span>
+          className="fixed bottom-24 md:bottom-5 left-5 z-40 w-16 h-16 rounded-full shadow-md flex items-center justify-center transition-transform hover:scale-[1.03] active:scale-[0.98]"
+          style={{ background: "var(--primary)", border: "3px solid white" }}>
+          <MessagesSquare size={26} color="white" aria-hidden="true" />
           <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white"
             style={{ background: "#f5c842", animation: "aiPulse 1.6s ease-in-out infinite" }} />
         </button>
@@ -66,31 +67,31 @@ export default function AiTeacherWidget() {
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
 
           <div dir="rtl"
-            className="fixed bottom-5 left-5 z-50 w-[360px] max-w-[92vw] h-[520px] max-h-[75vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-24 md:bottom-5 left-5 z-50 w-[360px] max-w-[92vw] h-[520px] max-h-[75vh] rounded-3xl shadow-md flex flex-col overflow-hidden"
             style={{
-              background: "rgba(255,255,255,0.82)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              border: "1px solid rgba(255,255,255,0.5)",
+              background: "var(--card)",
+              backdropFilter: "none",
+              WebkitBackdropFilter: "none",
+              border: "1px solid var(--border)",
               animation: "aiPopIn 0.2s ease-out",
             }}
             onClick={e => e.stopPropagation()}>
 
             {/* الرأس */}
-            <div className="p-3.5 flex items-center justify-between text-white shrink-0"
-              style={{ background: "linear-gradient(135deg,#1a5c2a,#2d7a3e)" }}>
-              <button onClick={() => setOpen(false)} className="text-white/80 text-lg leading-none px-1">✕</button>
+            <div className="p-3.5 flex items-center justify-between shrink-0"
+              style={{ background: "#edf2e3", color: "#45633d", borderBottom:"1px solid #dce3ce" }}>
+              <button onClick={() => setOpen(false)} aria-label="إغلاق المعلم الذكي" className="icon-control"><X size={20} /></button>
               <div className="flex items-center gap-2">
                 <div className="text-right">
                   <p className="font-bold text-sm">الْمُعَلِّمُ الذَّكِيُّ</p>
-                  <p className="text-[11px] text-white/70">اسْأَلْ أَوِ اطْلُبْ مِثَالًا إِضَافِيًّا</p>
+                  <p className="text-[11px] text-[#7b8a6d]">اسْأَلْ أَوِ اطْلُبْ مِثَالًا إِضَافِيًّا</p>
                 </div>
-                <span className="text-2xl">🤖</span>
+                <MessagesSquare size={24} aria-hidden="true" />
               </div>
             </div>
 
             {/* الرسائل */}
-            <div ref={listRef} className="flex-1 overflow-y-auto p-3.5 space-y-2.5" style={{ fontFamily: "'Cairo', sans-serif" }}>
+            <div ref={listRef} className="flex-1 overflow-y-auto p-3.5 space-y-2.5" style={{ fontFamily: "var(--font-brand)" }}>
               {messages.map((m, i) => (
                 <div key={i} className={`flex ${m.role === "user" ? "justify-start" : "justify-end"}`}>
                   <div className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
@@ -107,7 +108,7 @@ export default function AiTeacherWidget() {
                   {SUGGESTIONS.map(s => (
                     <button key={s} onClick={() => send(s)}
                       className="text-xs px-3 py-1.5 rounded-xl border-2 text-right hover:bg-green-50 transition-all bg-white/70"
-                      style={{ borderColor: "#a7f3d0", color: "#1a5c2a" }}>
+                      style={{ borderColor: "#d0ddbf", color: "#58754a" }}>
                       {s}
                     </button>
                   ))}
@@ -131,10 +132,11 @@ export default function AiTeacherWidget() {
                 إِرْسَالٌ
               </button>
               <input value={input} onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && send()}
+                onKeyDown={e => e.key === "Enter" && !e.nativeEvent.isComposing && send()}
+                aria-label="سؤالك للمعلم الذكي" maxLength={500}
                 placeholder="اكْتُبْ سُؤَالَكَ هُنَا..."
                 className="flex-1 min-w-0 px-3 py-2 rounded-xl border-2 border-gray-200 bg-white/80 text-right focus:border-green-500 focus:outline-none text-sm"
-                style={{ fontFamily: "'Cairo', sans-serif" }} />
+                style={{ fontFamily: "var(--font-brand)" }} />
             </div>
           </div>
 

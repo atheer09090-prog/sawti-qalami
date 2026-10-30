@@ -1,12 +1,15 @@
+import { ActivityHeader } from "@/components/ActivityUI";
+import { ArrowLeft, Mic, Square } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { evaluateSpeech, diacritizeText, getSpeakingLessons, describeError } from "@/lib/api";
+import { evaluateSpeech, diacritizeText, getSpeakingLessons, describeError, getToken } from "@/lib/api";
 import { playSound, stopSound, playEffect, stopAll, audioFile } from "@/lib/audio";
 import { setState, getState } from "@/lib/store";
 import { classifyMicError, checkMicSupport, type MicErrorInfo } from "@/lib/mic";
 import { MicPermissionCard, MicDoneNotice } from "@/components/MicPermissionCard";
 import { ResultSkeleton } from "@/components/ResultSkeleton";
 import { AudioWaveform } from "@/components/AudioWaveform";
+import { SpeakingLessonArt } from "@/components/SpeakingLessonArt";
 
 const DEFAULT_LESSONS = [
   { id: "summer", title: "وَصْفُ رِحْلَةٍ صَيْفِيَّةٍ", level: "سَهْلٌ", icon: "🏖️", desc: "تَحَدَّثْ عَنْ عُطْلَتِكَ الصَّيْفِيَّةِ", topics: ["رِحْلَةٌ بَحْرِيَّةٌ", "رِحْلَةٌ جَبَلِيَّةٌ", "صُورَةٌ دَالَّةٌ عَلَى تَعَلُّمٍ", "رِحْلَةٌ جَوِّيَّةٌ"] },
@@ -146,21 +149,21 @@ const TOPIC_ACTIVITIES: Record<string, TopicActivity> = {
 function TopicBriefing({ topic, data, started, onBack, onStart }: { topic: string; data: TopicActivity; started: boolean; onBack: () => void; onStart: () => void }) {
   return (
     <div>
-      <button onClick={onBack} className="text-green-600 text-sm mb-3 flex items-center gap-1">← تَغْيِيرُ الْمَوْضُوعِ</button>
+      <button onClick={onBack} className="text-green-800 text-sm mb-3 flex items-center gap-1">← تَغْيِيرُ الْمَوْضُوعِ</button>
 
       {/* ١) الوسيلة البصرية: منشور توعوي نصّي (إن وُجد)، وإلا صورة أو فيديو */}
       {data.poster ? (
-        <div className="rounded-2xl overflow-hidden mb-4 shadow-sm border-2" style={{ borderColor: "#1a5c2a" }}>
-          <div className="p-3 text-center" style={{ background: "linear-gradient(135deg, #1a5c2a, #2d7a3e)" }}>
+        <div className="rounded-2xl overflow-hidden mb-4 shadow-sm border-2" style={{ borderColor: "#075348" }}>
+          <div className="p-3 text-center" style={{ background: "var(--primary)" }}>
             <span className="text-xs px-2 py-0.5 rounded-full bg-white/25 text-white">📢 مَنْشُورٌ تَوْعَوِيٌّ</span>
           </div>
           <div className="p-5 text-center" style={{ background: "#f7fbf8" }}>
-            <p className="font-bold text-xl mb-3" style={{ color: "#1a5c2a" }}>{data.poster.title}</p>
+            <p className="font-bold text-xl mb-3" style={{ color: "#075348" }}>{data.poster.title}</p>
             <p className="text-gray-700 text-sm leading-loose">{data.poster.body}</p>
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl overflow-hidden mb-4 shadow-sm" style={{ aspectRatio: "16/9", background: "#dcf5e7" }}>
+        <div className="rounded-2xl overflow-hidden mb-4 shadow-sm" style={{ aspectRatio: "16/9", background: "#e9f0df" }}>
           {data.video ? (
             <video controls className="w-full h-full object-cover" src={data.video} />
           ) : (
@@ -170,11 +173,11 @@ function TopicBriefing({ topic, data, started, onBack, onStart }: { topic: strin
         </div>
       )}
 
-      <h2 className="text-right font-bold text-xl mb-4" style={{ color: "#1a5c2a" }}>{TOPIC_ICONS[topic] ?? "📌"} {topic}</h2>
+      <h2 className="text-right font-bold text-xl mb-4" style={{ color: "#075348" }}>{TOPIC_ICONS[topic] ?? "📌"} {topic}</h2>
 
       {/* ٢) بطاقة أهداف النشاط */}
       <div className="rounded-2xl p-4 mb-4 shadow-sm" style={{ background: "#fff" }}>
-        <p className="font-bold text-right mb-2" style={{ color: "#1a5c2a" }}>🎯 أَهْدَافُ النَّشَاطِ</p>
+        <p className="font-bold text-right mb-2" style={{ color: "#075348" }}>🎯 أَهْدَافُ النَّشَاطِ</p>
         <ul className="text-right text-gray-700 text-sm space-y-1.5 leading-relaxed">
           {data.objectives.map((o, i) => <li key={i}>• {o}</li>)}
         </ul>
@@ -182,17 +185,17 @@ function TopicBriefing({ topic, data, started, onBack, onStart }: { topic: strin
 
       {/* ٣) بطاقة الكلمات المساعدة */}
       <div className="rounded-2xl p-4 mb-4 shadow-sm" style={{ background: "#fff" }}>
-        <p className="font-bold text-right mb-3" style={{ color: "#1a5c2a" }}>🗝️ كَلِمَاتٌ تُسَاعِدُكَ</p>
+        <p className="font-bold text-right mb-3" style={{ color: "#075348" }}>🗝️ كَلِمَاتٌ تُسَاعِدُكَ</p>
         <div className="flex flex-wrap gap-2 justify-end">
           {data.keywords.map((k, i) => (
-            <span key={i} className="text-sm px-3 py-1.5 rounded-full font-medium" style={{ background: "#dcf5e7", color: "#1a5c2a" }}>{k}</span>
+            <span key={i} className="text-sm px-3 py-1.5 rounded-full font-medium" style={{ background: "#e9f0df", color: "#075348" }}>{k}</span>
           ))}
         </div>
       </div>
 
       {/* ٤) بطاقة الأسئلة الإرشادية */}
       <div className="rounded-2xl p-4 mb-5 shadow-sm" style={{ background: "#fff" }}>
-        <p className="font-bold text-right mb-2" style={{ color: "#1a5c2a" }}>❓ أَسْئِلَةٌ تُسَاعِدُكَ عَلَى التَّحَدُّثِ</p>
+        <p className="font-bold text-right mb-2" style={{ color: "#075348" }}>❓ أَسْئِلَةٌ تُسَاعِدُكَ عَلَى التَّحَدُّثِ</p>
         <ul className="text-right text-gray-700 text-sm space-y-1.5 leading-relaxed">
           {data.questions.map((q, i) => <li key={i}>• {q}</li>)}
         </ul>
@@ -202,8 +205,8 @@ function TopicBriefing({ topic, data, started, onBack, onStart }: { topic: strin
              بينما تبقى الأهداف والكلمات والأسئلة ظاهرة طوال وقت التحدث */}
       {!started ? (
         <button onClick={onStart}
-          className="w-full py-4 rounded-2xl text-white font-bold text-lg shadow-md active:scale-95 transition-all"
-          style={{ background: "linear-gradient(135deg, #1a5c2a, #2d7a3e)" }}>
+          className="w-full py-4 rounded-2xl text-white font-bold text-lg shadow-sm active:scale-[0.98] transition-all"
+          style={{ background: "var(--primary)" }}>
           ابْدَأِ التَّحَدُّثَ 🎙️
         </button>
       ) : (
@@ -231,19 +234,19 @@ export default function Speaking() {
         return {
           ...local,
           ...backendLesson,
-          topics: backendTopics.length > 0 ? backendTopics : local.topics,
+          topics: Array.isArray(backendLesson.topics) ? backendTopics : local.topics,
         };
       });
-      // أضِف أي درس محلي جديد غير موجود بعد في بيانات الباكند
-      for (const local of DEFAULT_LESSONS) {
-        if (!merged.some((m: any) => m.id === local.id)) merged.push(local);
-      }
       setLessons(merged);
     });
   }, []);
   const [selectedTopic, setSelectedTopic] = useState("");
   const [topicStarted, setTopicStarted] = useState(false); // هل ضغط الطالب "ابدأ التحدث" بعد صفحة النشاط؟
   const [recording, setRecording] = useState(false);
+  const [pendingRecording, setPendingRecording] = useState<Blob | null>(null);
+  const [recordingUrl, setRecordingUrl] = useState<string | null>(null);
+  useEffect(() => () => { if (recordingUrl) URL.revokeObjectURL(recordingUrl); }, [recordingUrl]);
+  useEffect(() => { setRecordingUrl(null); setPendingRecording(null); }, [selectedLesson?.id, selectedTopic]);
   const [timer, setTimer] = useState(0);
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -251,8 +254,42 @@ export default function Speaking() {
   const [micError, setMicError] = useState<MicErrorInfo | null>(null);
   const [justFinished, setJustFinished] = useState(false);
   const mediaRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
+  const mountedRef = useRef(true);
+  const recordingSessionRef = useRef(0);
+  const permissionPendingRef = useRef(false);
+  const evaluationIdRef = useRef(0);
+  const evaluationAbortRef = useRef<AbortController | null>(null);
+  const [acquiringMic, setAcquiringMic] = useState(false);
+  const activityRef = useRef("");
+  activityRef.current = `${selectedLesson?.id || ""}:${selectedTopic}`;
   const timerRef = useRef<any>(null);
+
+  function disposeRecorder() {
+    recordingSessionRef.current += 1;
+    clearInterval(timerRef.current);
+    const recorder = mediaRef.current;
+    mediaRef.current = null;
+    if (recorder) {
+      recorder.onstop = null;
+      recorder.ondataavailable = null;
+      recorder.onerror = null;
+      if (recorder.state !== "inactive") recorder.stop();
+      recorder.stream.getTracks().forEach(track => track.stop());
+    }
+    evaluationIdRef.current += 1;
+    evaluationAbortRef.current?.abort();
+    evaluationAbortRef.current = null;
+  }
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; disposeRecorder(); stopAll(); };
+  }, []);
+
+  useEffect(() => {
+    disposeRecorder();
+    setRecording(false); setTimer(0); setResult(null); setEnhancedTranscript(null); setLoading(false);
+  }, [selectedLesson?.id, selectedTopic]);
 
   // Play lesson intro audio when lesson selected — stops any prior sound
   useEffect(() => {
@@ -273,13 +310,70 @@ export default function Speaking() {
     if (recording) stopAll();
   }, [recording]);
 
+  async function evaluateRecording(blob: Blob) {
+    if (loading || evaluationAbortRef.current) return;
+    const requestId = ++evaluationIdRef.current;
+    const ownerToken = getToken();
+    const active = () => mountedRef.current && requestId === evaluationIdRef.current && ownerToken === getToken();
+    const controller = new AbortController();
+    evaluationAbortRef.current = controller;
+    setError("");
+        setJustFinished(true);
+        setLoading(true);
+        try {
+          const res = await evaluateSpeech(blob, selectedTopic, 0, selectedLesson?.id || "", controller.signal);
+          if (!active()) return;
+          setResult(res);
+          setPendingRecording(null);
+          if (res.transcript) {
+            // Show raw transcript immediately, then enhance with diacritics
+            setEnhancedTranscript(res.transcript);
+            diacritizeText(res.transcript).then((diacritized) => {
+              if (active()) setEnhancedTranscript(diacritized);
+            });
+          }
+          const score = res.overall || 0;
+          // إن لم يُتعرَّف على أي كلام (نص فارغ) لا تُمنح نجمة؛ كانت تُمنح نجمة واحدة حتى مع الدرجة 0
+          const noSpeech = !res.transcript || !res.transcript.trim();
+          const newStars = noSpeech ? 0 : score >= 90 ? 5 : score >= 70 ? 4 : score >= 50 ? 3 : score >= 30 ? 2 : 1;
+          setState((prev) => ({
+            ...prev,
+            speakingProgress: Math.max(prev.speakingProgress, score),
+            completedLessons: noSpeech ? prev.completedLessons : Array.from(new Set([...prev.completedLessons, `speaking:${selectedLesson?.id}:${selectedTopic}`])),
+            stars: Math.max(prev.stars, newStars),
+            points: prev.points + Math.round(score / 10),
+          }));
+          // Play achievement sound if score >= 70
+          if ((res.overall || 0) >= 70) {
+            playEffect(audioFile("/assets/achievement.mp3"), 0.7);
+          } else {
+            playEffect(audioFile("/assets/tryagain.mp3"), 0.6);
+          }
+        } catch (e) {
+          if (active()) setError(describeError(e, "تَعَذَّرَ الِاتِّصَالُ بِالْخَادِمِ. تَأَكَّدْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ، ثُمَّ حَاوِلْ مَرَّةً أُخْرَى."));
+        }
+        if (active()) {
+          evaluationAbortRef.current = null;
+          setJustFinished(false);
+          setLoading(false);
+        }
+  }
+
   async function startRecording() {
+    if (permissionPendingRef.current || recording || loading) return;
     setError(""); setResult(null); setMicError(null); setJustFinished(false);
     const supportIssue = checkMicSupport();
     if (supportIssue) { setMicError(supportIssue); return; }
+    setRecordingUrl(null);
+    setPendingRecording(null);
     stopSound(); // Stop intro audio BEFORE recording
+    permissionPendingRef.current = true;
+    setAcquiringMic(true);
+    const session = ++recordingSessionRef.current;
+    const activity = activityRef.current;
+    let stream: MediaStream | null = null;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,   // إلغاء صدى الصوت
           noiseSuppression: true,   // تقليل ضوضاء الخلفية (مهم في بيئة الفصل)
@@ -289,6 +383,11 @@ export default function Speaking() {
                                      // ويقلل حجم الملف دون أي تأثير على وضوح الصوت
         },
       });
+      if (!mountedRef.current || session !== recordingSessionRef.current || activity !== activityRef.current) {
+        stream.getTracks().forEach(track => track.stop());
+        return;
+      }
+      const capturedStream = stream;
       // نختار أول صيغة يدعمها المتصفح فعلياً بدل افتراض "audio/webm" دائماً —
       // Safari لا يدعم WebM إطلاقاً، فكان استخدامه يُسقط التسجيل بصمت هناك
       // (يظهر كخطأ "تعذّر الوصول للميكروفون" رغم أن الإذن مُمنوح فعلاً).
@@ -302,55 +401,46 @@ export default function Speaking() {
         ? new MediaRecorder(stream, { mimeType: supportedMimeType })
         : new MediaRecorder(stream); // آخر حل احتياطي: صيغة المتصفح الافتراضية
       const actualMimeType = mr.mimeType || supportedMimeType || "audio/webm";
-      chunksRef.current = [];
-      mr.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      const chunks: Blob[] = [];
+      mr.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
       mr.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop());
+        capturedStream.getTracks().forEach(t => t.stop());
+        clearInterval(timerRef.current);
+        if (!mountedRef.current || session !== recordingSessionRef.current || activity !== activityRef.current) return;
+        setRecording(false);
         // نستخدم نفس نوع MIME الفعلي الذي سجّل به المتصفح، بدل افتراض "audio/webm"
         // دائماً — هذا يضمن تطابق محتوى الملف مع الصيغة المُرسَلة للباك إند بدقة.
-        const blob = new Blob(chunksRef.current, { type: actualMimeType });
-        setJustFinished(true);
-        setLoading(true);
-        try {
-          const res = await evaluateSpeech(blob, selectedTopic, 0, selectedLesson?.id || "");
-          setResult(res);
-          if (res.transcript) {
-            // Show raw transcript immediately, then enhance with diacritics
-            setEnhancedTranscript(res.transcript);
-            diacritizeText(res.transcript).then((diacritized) => {
-              setEnhancedTranscript(diacritized);
-            });
-          }
-          const score = res.overall || 0;
-          // إن لم يُتعرَّف على أي كلام (نص فارغ) لا تُمنح نجمة؛ كانت تُمنح نجمة واحدة حتى مع الدرجة 0
-          const noSpeech = !res.transcript || !res.transcript.trim();
-          const newStars = noSpeech ? 0 : score >= 90 ? 5 : score >= 70 ? 4 : score >= 50 ? 3 : score >= 30 ? 2 : 1;
-          setState((prev) => ({
-            ...prev,
-            speakingProgress: Math.max(prev.speakingProgress, score),
-            stars: Math.max(prev.stars, newStars),
-            points: prev.points + Math.round(score / 10),
-          }));
-          // Play achievement sound if score >= 70
-          if ((res.overall || 0) >= 70) {
-            playEffect(audioFile("/assets/achievement.mp3"), 0.7);
-          } else {
-            playEffect(audioFile("/assets/tryagain.mp3"), 0.6);
-          }
-        } catch (e) {
-          setError(describeError(e, "تَعَذَّرَ الِاتِّصَالُ بِالْخَادِمِ. تَأَكَّدْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِتِ، ثُمَّ حَاوِلْ مَرَّةً أُخْرَى."));
+        const blob = new Blob(chunks, { type: actualMimeType });
+        if (blob.size < 1000) {
+          setError("التسجيل قصير جدًا أو فارغ. سجّل مرة أخرى وتحدث لثوانٍ.");
+          return;
         }
-        setJustFinished(false);
-        setLoading(false);
+        setRecordingUrl(URL.createObjectURL(blob));
+        setPendingRecording(blob);
+      };
+      mr.onerror = () => {
+        capturedStream.getTracks().forEach(track => track.stop());
+        clearInterval(timerRef.current);
+        if (mountedRef.current && session === recordingSessionRef.current) {
+          setRecording(false);
+          setError("تعذّر حفظ التسجيل. حاول التسجيل مرة أخرى.");
+        }
       };
       mr.start(1000);
       mediaRef.current = mr;
       setRecording(true); setTimer(0);
+      const startedAt = performance.now();
       timerRef.current = setInterval(() => {
-        setTimer(t => { if (t >= 119) { stopRecording(); return t; } return t + 1; });
+        const elapsed = Math.min(120, Math.floor((performance.now() - startedAt) / 1000));
+        setTimer(elapsed);
+        if (elapsed >= 120) stopRecording();
       }, 1000);
     } catch (err) {
-      setMicError(classifyMicError(err));
+      stream?.getTracks().forEach(track => track.stop());
+      if (mountedRef.current && session === recordingSessionRef.current) setMicError(classifyMicError(err));
+    } finally {
+      permissionPendingRef.current = false;
+      if (mountedRef.current) setAcquiringMic(false);
     }
   }
 
@@ -362,79 +452,44 @@ export default function Speaking() {
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
+  const avatar = getState().avatar || "boy1";
+  const avatarSrc = `/assets/avatars/${["boy1", "boy2", "girl1", "girl2"].includes(avatar) ? avatar : "boy1"}-v2.png`;
+
   if (!selectedLesson) return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-      <div className="p-4" style={{ background: "linear-gradient(135deg, #1a5c2a 0%, #2d7a3e 100%)" }}>
-        <div className="flex items-center gap-2 mb-2">
-          <img src="/assets/logo.png" alt="" className="w-7 h-7 object-contain" />
-          <button onClick={() => setLocation("/skills")} className="text-green-200 text-sm">← الْمَهَارَاتُ</button>
-        </div>
-        <div className="flex justify-between items-center">
-          <div className="text-right">
-            <h1 className="text-2xl font-bold text-white">مَهَارَةُ التَّحَدُّثِ</h1>
-            <p className="text-green-200 text-sm">تَعَلَّمِ التَّعْبِيرَ الشَّفَهِيَّ وَالتَّحَدُّثَ بِثِقَةٍ</p>
-          </div>
-          <span className="text-3xl p-2 bg-green-700 rounded-xl">🎙️</span>
-        </div>
+    <div className="page-container speaking-library" dir="rtl">
+      <button className="speaking-back" onClick={() => setLocation("/skills")}>مسارات التعلم <span aria-hidden="true">/</span> التحدث</button>
+      <header className="speaking-library-hero">
+        <div><p className="studio-eyebrow">مَهَارَةُ التَّحَدُّثِ</p><h1>لكل حكاية صوت.<br /><span>وهنا تبدأ حكايتك.</span></h1><p className="speaking-intro">صِفْ رِحْلَةً، شَارِكْ فِكْرَةً، أَوْ عَبِّرْ عَنْ رَأْيِكَ.<br />اخْتَرْ دَرْسَكَ وَتَحَدَّثْ بِأُسْلُوبِكَ.</p></div>
+        <div className="speaking-hero-art" aria-hidden="true"><span className="speaking-hero-ring" /><div className="speaking-hero-mic"><Mic size={56} strokeWidth={1.3} /></div><div className="speaking-hero-waves">{[16,30,43,25,56,38,22].map((height,i)=><span key={i} style={{height}} />)}</div><span className="speaking-art-note">فكرتك، بصوتك.</span></div>
+      </header>
+      <div className="speaking-library-heading"><div><p className="studio-eyebrow">من أين نبدأ؟</p><h2>دُرُوسُ التَّحَدُّثِ</h2></div><span>{lessons.length} دروس للاستكشاف</span></div>
+      <div className="speaking-lesson-grid">
+        {lessons.map((l, index) => <button key={l.id} className="speaking-lesson-card" onClick={() => {
+          setSelectedLesson(l);
+          setSelectedTopic(l.topics.length === 0 && TOPIC_ACTIVITIES[l.title] ? l.title : "");
+          setTopicStarted(false);
+        }}>
+          <div className="speaking-lesson-cover"><SpeakingLessonArt lesson={l.id} /><span className="speaking-lesson-level">{l.level}</span></div>
+          <div className="speaking-lesson-copy"><span className="speaking-lesson-number">الدرس {String(index + 1).padStart(2,"0")}</span><h3>{l.title}</h3><p>{l.desc}</p><span className="speaking-lesson-action">استكشف الدرس <ArrowLeft size={18} aria-hidden="true" /></span></div>
+        </button>)}
       </div>
-      <div className="max-w-2xl mx-auto px-4 py-4">
-        <div className="bg-white rounded-xl p-3 mb-4 flex items-center gap-3 shadow">
-          <div className="text-right flex-1">
-            <p className="font-bold text-sm">مَرْحَباً يَا بَطَلَ اللُّغَةِ الْعَرَبِيَّةِ! 🌟</p>
-            <p className="text-gray-500 text-xs">هُنَا نَتَعَلَّمُ وَنُبْدِعُ مَعًا</p>
-          </div>
-          <img src="/assets/omani-boy.png" alt="" className="w-10 h-10 object-contain" />
-        </div>
-        <h2 className="text-right font-bold text-lg mb-3" style={{ color: "#1a5c2a" }}>📚 دُرُوسُ التَّحَدُّثِ</h2>
-        <div className="flex flex-col gap-3">
-          {lessons.map((l) => (
-            <button key={l.id} onClick={() => {
-                setSelectedLesson(l);
-                // إن كان الدرس بلا قائمة مواضيع متعددة (كـ"ساعة الأرض")، نعرض صفحة نشاطه مباشرة
-                setSelectedTopic(l.topics.length === 0 && TOPIC_ACTIVITIES[l.title] ? l.title : "");
-                setTopicStarted(false);
-              }}
-              className="p-4 bg-white rounded-xl shadow text-right hover:shadow-md hover:-translate-y-0.5 transition-all flex justify-between items-center">
-              <div>
-                <div className="flex gap-2 justify-end mb-1">
-                  <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">{l.level}</span>
-                  <h3 className="font-bold">{l.title}</h3>
-                </div>
-                <p className="text-gray-500 text-sm">{l.desc}</p>
-              </div>
-              <span className="text-3xl">{l.icon}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+      <aside className="speaking-coach-note"><img src={avatarSrc} alt="" /><div><strong>خذ وقتك، وصوتك سيكبر مع كل محاولة.</strong><p>اختر موضوعك، رتّب أفكارك، ثم سجّل صوتك عندما تكون مستعدًا.</p></div></aside>
     </div>
   );
 
   return (
-    <div dir="rtl" style={{ fontFamily: "'Cairo', sans-serif", background: "#f5f0e8", minHeight: "100vh" }}>
-      <div className="p-4 flex items-center gap-3 bg-white shadow-sm">
-        <img src="/assets/omani-boy.png" alt="" className="w-10 h-10 object-contain" />
-        <div className="text-right">
-          <p className="font-bold text-sm">مَرْحَباً يَا بَطَلَ اللُّغَةِ الْعَرَبِيَّةِ! 🌟</p>
-          <p className="text-gray-400 text-xs">{getState().name}</p>
-        </div>
-      </div>
-      <div className="max-w-2xl mx-auto px-4 py-4">
-        <button
-          onClick={() => { setSelectedLesson(null); setResult(null); setSelectedTopic(""); setTopicStarted(false); setError(""); setMicError(null); setJustFinished(false); }}
-          className="text-green-600 text-sm mb-3 flex items-center gap-1">
-          ← الْعَوْدَةُ لِلدُّرُوسِ
-        </button>
-        <div className="bg-white rounded-2xl p-5 shadow">
-          <h2 className="text-right font-bold text-xl mb-2">{selectedLesson.icon} {selectedLesson.title}</h2>
-          <p className="text-right text-gray-500 text-sm mb-4">{selectedLesson.desc}</p>
+    <div dir="rtl" className="activity-page speaking-workspace-page">
+      <ActivityHeader title={selectedLesson.title} eyebrow="مهارة التحدث" description={selectedLesson.desc} backLabel="العودة للدروس" onBack={()=>{setSelectedLesson(null);setResult(null);setSelectedTopic("");setTopicStarted(false);setError("");setMicError(null);setJustFinished(false);}} icon={Mic} />
+      <div className="activity-body">
+        <div className="surface-card bg-white rounded-2xl p-5 shadow">
+
 
           {selectedLesson.topics.length > 0 && !selectedTopic && (
             <div className="grid grid-cols-2 gap-3 mb-4">
               {selectedLesson.topics.map((t) => (
                 <button key={t} onClick={() => { setSelectedTopic(t); setTopicStarted(false); }}
                   className="p-3 rounded-xl text-sm font-bold transition-all"
-                  style={{ background: "#dcf5e7", color: "#1a5c2a" }}>
+                  style={{ background: "#e9f0df", color: "#075348" }}>
                   {TOPIC_ICONS[t] ?? "📌"} {t}
                 </button>
               ))}
@@ -472,26 +527,27 @@ export default function Speaking() {
                   <p className="text-2xl font-mono font-bold text-green-700 mb-1 animate-pulse">
                     🔴 جَارٍ التَّسْجِيلُ... {fmt(timer)} / 2:00
                   </p>
-                  <AudioWaveform stream={mediaRef.current?.stream ?? null} color="#1a5c2a" />
+                  <AudioWaveform stream={mediaRef.current?.stream ?? null} color="#075348" />
                   <p className="text-gray-400 text-xs mt-1">تَحَدَّثْ الْآنَ بِوُضُوحٍ، وَاضْغَطْ ⏹️ عِنْدَ الِانْتِهَاءِ</p>
                 </div>
               )}
 
               {justFinished && !recording && loading && <MicDoneNotice />}
 
-              {!micError && (
+              {!micError && !pendingRecording && !result && (
                 <div className="text-center mb-4">
                   <button
                     onClick={recording ? stopRecording : startRecording}
-                    disabled={loading}
+                    disabled={loading || acquiringMic}
+                    aria-busy={acquiringMic}
                     aria-label={recording ? "إيقاف التسجيل" : "بدء تسجيل الصوت"}
                     aria-pressed={recording}
-                    className="w-20 h-20 rounded-full text-3xl text-white shadow-lg transition-all hover:scale-105 disabled:opacity-50"
+                    className="record-control w-20 h-20 rounded-full text-white shadow-sm transition-colors inline-flex items-center justify-center disabled:opacity-50"
                     style={recording
                       ? { background: "#dc2626" }
-                      : { background: "linear-gradient(135deg, #1a5c2a, #2d7a3e)" }}
+                      : { background: "var(--primary)" }}
                   >
-                    {recording ? "⏹️" : "🎙️"}
+                    {recording ? <Square size={26} fill="currentColor" aria-hidden="true" /> : <Mic size={30} aria-hidden="true" />}
                   </button>
                   {!recording && !loading && (
                     <p className="text-gray-500 text-sm mt-2">اضْغَطْ لِبَدْءِ التَّسْجِيلِ</p>
@@ -510,6 +566,8 @@ export default function Speaking() {
             </div>
           )}
 
+          {recordingUrl && !recording && <section className="surface-card p-5 mt-4"><h3 className="font-semibold mb-3">استمع إلى تسجيلك</h3><audio controls src={recordingUrl} className="w-full" aria-label="تشغيل تسجيلك الصوتي" />{pendingRecording && !loading && !result && <div className="flex flex-wrap gap-3 mt-4"><button className="sawti-btn-primary flex-1" onClick={() => evaluateRecording(pendingRecording)}>إرسال للتقييم</button><button className="sawti-btn-outline" onClick={startRecording}>إعادة التسجيل</button></div>}</section>}
+
           {loading && <ResultSkeleton label="جَارٍ تَحْلِيلُ صَوْتِكَ بِالذَّكَاءِ الِاصْطِنَاعِيِّ..." />}
 
           {result && !loading && (
@@ -518,9 +576,9 @@ export default function Speaking() {
             >
               {/* Transcript */}
               {result.transcript && (
-                <div className="bg-white rounded-xl p-3 mb-3 border border-green-200">
+                <div className="surface-card bg-white rounded-xl p-3 mb-3 border border-green-200">
                   <p className="text-xs text-gray-400 mb-2 text-left">📝 مَا قُلْتَهُ:</p>
-                  <p className="text-gray-800 leading-loose text-base font-medium text-right" style={{ fontFamily: "'Cairo', sans-serif", lineHeight: "2.2" }}>
+                  <p className="text-gray-800 leading-loose text-base font-medium text-right" style={{ fontFamily: "var(--font-brand)", lineHeight: "2.2" }}>
                     {(() => {
                       const text = enhancedTranscript || result.transcript;
                       const errors: any[] = result.errors || [];
@@ -542,16 +600,16 @@ export default function Speaking() {
                 </div>
               )}
               {/* Overall score */}
-              <div className="rounded-xl p-4 mb-3" style={{ background: (result.overall||0)>=70 ? "linear-gradient(135deg,#dcf5e7,#f0fdf4)" : "linear-gradient(135deg,#fef3e2,#fffbeb)" }}>
+              <div className="rounded-xl p-4 mb-3" style={{ background: (result.overall||0)>=70 ? "linear-gradient(135deg,#e9f0df,#f4f7ed)" : "linear-gradient(135deg,#fef3e2,#fffbeb)" }}>
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex gap-1">
                     {[1,2,3,4,5].map(i=>(
-                      <span key={i} style={{color: i<=Math.ceil((result.overall||0)/20)?"#f5c842":"#d1d5db",fontSize:"18px"}}>★</span>
+                      <span key={i} style={{color: i<=Math.ceil((result.overall||0)/20)?"#c6a260":"#d1d5db",fontSize:"18px"}}>★</span>
                     ))}
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-gray-500">النَّتِيجَةُ الْكُلِّيَّةُ</p>
-                    <p className="text-3xl font-bold" style={{color:(result.overall||0)>=70?"#1a5c2a":"#b45309"}}>{result.overall}%</p>
+                    <p className="text-3xl font-bold" style={{color:(result.overall||0)>=70?"#075348":"#8a7247"}}>{result.overall}%</p>
                   </div>
                 </div>
                 <p className="text-gray-700 text-sm">{result.feedback}</p>
@@ -559,22 +617,22 @@ export default function Speaking() {
               {/* Skill breakdown — تختلف المعايير حسب نوع النشاط */}
               <div className="grid grid-cols-2 gap-2 mb-3">
                 {(selectedLesson?.id === "opinion" ? [
-                  { label: "🗣️ وُضُوحُ الرَّأْيِ",     value: result.opinion_clarity,  color: "#1a5c2a", bg: "#dcf5e7", tip: "هل عبّرت عن رأيك بوضوح منذ البداية؟" },
-                  { label: "📌 قُوَّةُ الْأَسْبَابِ",    value: result.reasons_score,    color: "#7c3aed", bg: "#ede9f5", tip: "هل دعمت رأيك بسبب أو أكثر؟" },
-                  { label: "🗝️ عِبَارَاتُ الرَّأْيِ",   value: result.phrases_score,    color: "#0c7490", bg: "#e0f7fa", tip: "استخدام: أعتقد، في رأيي، لأن، لذلك" },
-                  { label: "🔗 تَرَابُطُ الْأَفْكَارِ",  value: result.coherence_score,  color: "#b45309", bg: "#fef3e2", tip: "تسلسل الأفكار بشكل منطقي" },
+                  { label: "🗣️ وُضُوحُ الرَّأْيِ",     value: result.opinion_clarity,  color: "#075348", bg: "#e9f0df", tip: "هل عبّرت عن رأيك بوضوح منذ البداية؟" },
+                  { label: "📌 قُوَّةُ الْأَسْبَابِ",    value: result.reasons_score,    color: "#887247", bg: "#f2efdf", tip: "هل دعمت رأيك بسبب أو أكثر؟" },
+                  { label: "🗝️ عِبَارَاتُ الرَّأْيِ",   value: result.phrases_score,    color: "#537561", bg: "#eef2e3", tip: "استخدام: أعتقد، في رأيي، لأن، لذلك" },
+                  { label: "🔗 تَرَابُطُ الْأَفْكَارِ",  value: result.coherence_score,  color: "#8a7247", bg: "#fef3e2", tip: "تسلسل الأفكار بشكل منطقي" },
                   { label: "🏁 الْخَاتِمَةُ",           value: result.conclusion_score, color: "#dc2626", bg: "#fee2e2", tip: "هل ختمت حديثك بشكل مناسب؟" },
                 ] : selectedLesson?.id === "earth" ? [
-                  { label: "🧠 فَهْمُ الْفِكْرَةِ",      value: result.understanding_score, color: "#1a5c2a", bg: "#dcf5e7", tip: "هل فهمت فكرة المنشور الرئيسة؟" },
-                  { label: "🎯 تَوْضِيحُ الْهَدَفِ",     value: result.goal_score,          color: "#7c3aed", bg: "#ede9f5", tip: "هل وضّحت الهدف من المنشور؟" },
-                  { label: "💡 مُفْرَدَاتُ الْمَوْضُوعِ", value: result.vocabulary_score,     color: "#0c7490", bg: "#e0f7fa", tip: "استخدام كلمات مرتبطة بالموضوع" },
-                  { label: "🔗 تَرَابُطُ الْأَفْكَارِ",  value: result.coherence_score,      color: "#b45309", bg: "#fef3e2", tip: "تسلسل الأفكار بشكل منطقي" },
+                  { label: "🧠 فَهْمُ الْفِكْرَةِ",      value: result.understanding_score, color: "#075348", bg: "#e9f0df", tip: "هل فهمت فكرة المنشور الرئيسة؟" },
+                  { label: "🎯 تَوْضِيحُ الْهَدَفِ",     value: result.goal_score,          color: "#887247", bg: "#f2efdf", tip: "هل وضّحت الهدف من المنشور؟" },
+                  { label: "💡 مُفْرَدَاتُ الْمَوْضُوعِ", value: result.vocabulary_score,     color: "#537561", bg: "#eef2e3", tip: "استخدام كلمات مرتبطة بالموضوع" },
+                  { label: "🔗 تَرَابُطُ الْأَفْكَارِ",  value: result.coherence_score,      color: "#8a7247", bg: "#fef3e2", tip: "تسلسل الأفكار بشكل منطقي" },
                   { label: "🌱 رَأْيٌ/اقْتِرَاحٌ",       value: result.opinion_score,        color: "#dc2626", bg: "#fee2e2", tip: "هل قدّمت رأياً أو اقتراحاً مناسباً؟" },
                 ] : [
-                  { label: "🗣️ وُضُوحُ الْكَلَامِ",   value: result.pronunciation,                              color: "#1a5c2a", bg: "#dcf5e7",  tip: "مدى وضوح كلامك كما فهمه النظام" },
-                  { label: "📝 بِنَاءُ الْجُمَلِ",    value: result.sentence_structure,                         color: "#7c3aed", bg: "#ede9f5",  tip: "ترتيب الكلمات وتكوين الجمل" },
-                  { label: "💡 ثَرَاءُ الْمُفْرَدَاتِ", value: result.vocabulary ?? result.grammar ?? 0,          color: "#0c7490", bg: "#e0f7fa",  tip: "تنوع الكلمات المستخدمة" },
-                  { label: "🔗 تَرَابُطُ الْأَفْكَارِ", value: result.coherence ?? result.sentence_structure ?? 0, color: "#b45309", bg: "#fef3e2",  tip: "ترتيب الأفكار وتسلسلها" },
+                  { label: "🗣️ وُضُوحُ الْكَلَامِ",   value: result.pronunciation,                              color: "#075348", bg: "#e9f0df",  tip: "مدى وضوح كلامك كما فهمه النظام" },
+                  { label: "📝 بِنَاءُ الْجُمَلِ",    value: result.sentence_structure,                         color: "#887247", bg: "#f2efdf",  tip: "ترتيب الكلمات وتكوين الجمل" },
+                  { label: "💡 ثَرَاءُ الْمُفْرَدَاتِ", value: result.vocabulary ?? result.grammar ?? 0,          color: "#537561", bg: "#eef2e3",  tip: "تنوع الكلمات المستخدمة" },
+                  { label: "🔗 تَرَابُطُ الْأَفْكَارِ", value: result.coherence ?? result.sentence_structure ?? 0, color: "#8a7247", bg: "#fef3e2",  tip: "ترتيب الأفكار وتسلسلها" },
                 ]).map(({label,value,color,bg,tip}, i)=>(
                   <div
                     key={label}
@@ -601,8 +659,8 @@ export default function Speaking() {
               )}
               {/* اقتراحات التحسين */}
               {Array.isArray(result.suggestions) && result.suggestions.length > 0 && (
-                <div className="bg-amber-50 rounded-xl p-3 mb-3 border border-amber-100">
-                  <p className="font-bold text-amber-700 text-sm mb-2 text-right">💡 اقْتِرَاحَاتُ التَّحْسِينِ:</p>
+                <div className="bg-[#faf6e9] rounded-xl p-3 mb-3 border border-[#f3ecd5]">
+                  <p className="font-bold text-[#8a7247] text-sm mb-2 text-right">💡 اقْتِرَاحَاتُ التَّحْسِينِ:</p>
                   <ul className="text-right text-sm text-gray-700 space-y-1">
                     {result.suggestions.map((s: string, i: number) => <li key={i}>• {s}</li>)}
                   </ul>
@@ -610,7 +668,7 @@ export default function Speaking() {
               )}
               {/* Errors */}
               {result.errors?.length > 0 && (
-                <div className="bg-white rounded-xl p-3 mb-3 border border-red-100">
+                <div className="surface-card bg-white rounded-xl p-3 mb-3 border border-red-100">
                   <p className="font-bold text-red-700 text-sm mb-2">❌ أَخْطَاءٌ مُكْتَشَفَةٌ:</p>
                   {result.errors.map((e:any,i:number)=>(
                     <div key={i} className="flex justify-between items-center bg-red-50 rounded-lg px-3 py-2 mb-1 border border-red-100">
@@ -626,8 +684,8 @@ export default function Speaking() {
               )}
               {/* Suggestions */}
               {result.suggestions?.length > 0 && (
-                <div className="bg-amber-50 rounded-xl p-3 border border-amber-100">
-                  <p className="font-bold text-amber-700 text-sm mb-2">💡 اقْتِرَاحَاتٌ:</p>
+                <div className="bg-[#faf6e9] rounded-xl p-3 border border-[#f3ecd5]">
+                  <p className="font-bold text-[#8a7247] text-sm mb-2">💡 اقْتِرَاحَاتٌ:</p>
                   {result.suggestions.map((s:string,i:number)=>(
                     <p key={i} className="text-sm text-gray-700">• {s}</p>
                   ))}

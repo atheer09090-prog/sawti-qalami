@@ -1,0 +1,33 @@
+[
+  {
+    "case": "session HTTP 401",
+    "status": "PASS",
+    "meaning": "Expired session cleared; form usable"
+  },
+  {
+    "case": "session HTTP 503",
+    "status": "PASS",
+    "meaning": "Temporary service failure preserves session"
+  },
+  {
+    "case": "manual login while saved-session request stalled",
+    "status": "PASS",
+    "meaning": "Form remains interactive; background restoration cancelled; cached progress retained"
+  },
+  {
+    "case": "real saved audit guest → auth API → student record → dashboard",
+    "status": "PASS",
+    "elapsedMs": 3421,
+    "responses": [
+      {
+        "endpoint": "/auth/me",
+        "status": 200
+      },
+      {
+        "endpoint": "/students/me",
+        "status": 200
+      }
+    ],
+    "localFontLoaded": true
+  }
+]

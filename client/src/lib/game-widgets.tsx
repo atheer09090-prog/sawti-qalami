@@ -79,7 +79,7 @@ export function useCombo() {
   return { combo, maxCombo, bonus, pulseKey, registerAnswer, resetCombo };
 }
 
-export function ComboIndicator({ combo, pulseKey, accent = "#d97706" }: { combo: number; pulseKey: number; accent?: string }) {
+export function ComboIndicator({ combo, pulseKey, accent = "#a08b55" }: { combo: number; pulseKey: number; accent?: string }) {
   if (combo < 2) return null;
   return (
     <div key={pulseKey} className="combo-pop fixed top-20 left-1/2 z-40 px-4 py-1.5 rounded-full font-extrabold text-lg shadow-xl text-white whitespace-nowrap"
@@ -109,7 +109,7 @@ export function Confetti({ count = 60 }: { count?: number }) {
       left: Math.random() * 100,
       delay: Math.random() * 0.6,
       duration: 1.8 + Math.random() * 1,
-      color: ["#f59e0b", "#059669", "#0ea5e9", "#dc2626", "#a855f7", "#facc15"][i % 6],
+      color: ["#f59e0b", "#059669", "#88ae98", "#dc2626", "#a855f7", "#facc15"][i % 6],
       w: 5 + Math.random() * 5,
       h: 8 + Math.random() * 8,
       rotate: Math.random() * 360,
@@ -141,10 +141,10 @@ export type Achievement = { icon: string; title: string; desc: string };
 
 export function AchievementCard({ icon, title, desc }: Achievement) {
   return (
-    <div className="fade-in-up rounded-2xl p-3 text-center shadow-md" style={{ background: "linear-gradient(180deg, #fff7e6, #fde68a)", border: "2px solid #d97706", minWidth: 116 }}>
+    <div className="fade-in-up rounded-2xl p-3 text-center shadow-md" style={{ background: "linear-gradient(180deg, #fff7e6, #dfd0a5)", border: "2px solid #a08b55", minWidth: 116 }}>
       <div className="text-3xl mb-1 sparkle-pulse">{icon}</div>
-      <p className="font-bold text-sm" style={{ color: "#78350f" }}>{title}</p>
-      <p className="text-xs mt-0.5" style={{ color: "#92400e" }}>{desc}</p>
+      <p className="font-bold text-sm" style={{ color: "#5e5136" }}>{title}</p>
+      <p className="text-xs mt-0.5" style={{ color: "#73603b" }}>{desc}</p>
     </div>
   );
 }
@@ -153,7 +153,7 @@ export function AchievementsRow({ achievements }: { achievements: Achievement[] 
   if (!achievements.length) return null;
   return (
     <div className="mb-5">
-      <p className="font-bold text-lg mb-2" style={{ color: "#78350f" }}>🏅 إِنْجَازَاتُكَ</p>
+      <p className="font-bold text-lg mb-2" style={{ color: "#5e5136" }}>🏅 إِنْجَازَاتُكَ</p>
       <div className="flex flex-wrap justify-center gap-3">
         {achievements.map((a, i) => <AchievementCard key={i} {...a} />)}
       </div>
@@ -187,17 +187,17 @@ export function VictoryModal({
     <div className="text-center fade-in-up">
       <Confetti />
       <div className="text-6xl mb-2 sparkle-pulse">🎉</div>
-      <h2 className="text-3xl font-bold mb-1" style={{ color: "#78350f" }}>{title}</h2>
-      <p className="mb-5" style={{ color: "#92400e" }}>{subtitle}</p>
+      <h2 className="text-3xl font-bold mb-1" style={{ color: "#5e5136" }}>{title}</h2>
+      <p className="mb-5" style={{ color: "#73603b" }}>{subtitle}</p>
       <div className="flex justify-center gap-6 mb-5">
         <div className="text-center">
-          <p className="text-4xl font-bold" style={{ color: "#d97706" }}>{points}</p>
-          <p className="text-sm" style={{ color: "#92400e" }}>{pointsLabel}</p>
+          <p className="text-4xl font-bold" style={{ color: "#a08b55" }}>{points}</p>
+          <p className="text-sm" style={{ color: "#73603b" }}>{pointsLabel}</p>
         </div>
         {secondaryValue !== undefined && (
           <div className="text-center">
             <p className="text-4xl font-bold" style={{ color: "#059669" }}>{secondaryValue}</p>
-            <p className="text-sm" style={{ color: "#92400e" }}>{secondaryLabel}</p>
+            <p className="text-sm" style={{ color: "#73603b" }}>{secondaryLabel}</p>
           </div>
         )}
       </div>
@@ -220,9 +220,9 @@ export type MistakeRecord = {
 export function SmartReview({ mistakes }: { mistakes: MistakeRecord[] }) {
   return (
     <div className="mt-6 text-right fade-in-up">
-      <p className="font-bold text-xl mb-3 text-center" style={{ color: "#78350f" }}>📚 مُرَاجَعَةٌ سَرِيعَةٌ</p>
+      <p className="font-bold text-xl mb-3 text-center" style={{ color: "#5e5136" }}>📚 مُرَاجَعَةٌ سَرِيعَةٌ</p>
       {mistakes.length === 0 ? (
-        <div className="rounded-2xl p-5 text-center" style={{ background: "#ecfdf5", border: "2px solid #059669" }}>
+        <div className="rounded-2xl p-5 text-center" style={{ background: "#f0f4e7", border: "2px solid #059669" }}>
           <p className="font-bold text-lg" style={{ color: "#065f46" }}>🌟 مُمْتَازٌ!</p>
           <p className="text-sm mt-1" style={{ color: "#047857" }}>لَمْ تُخْطِئْ فِي أَيِّ كَلِمَةٍ، وَلَا تُوجَدُ مُرَاجَعَةٌ مَطْلُوبَةٌ.</p>
         </div>
@@ -230,13 +230,13 @@ export function SmartReview({ mistakes }: { mistakes: MistakeRecord[] }) {
         <div className="space-y-3">
           {mistakes.map(m => (
             <div key={m.id} className="rounded-2xl p-4" style={{ background: "#fff7ed", border: "2px solid #fdba74" }}>
-              <p className="font-semibold text-sm mb-2" style={{ color: "#78350f" }}>{m.question}</p>
+              <p className="font-semibold text-sm mb-2" style={{ color: "#5e5136" }}>{m.question}</p>
               <div className="flex flex-wrap gap-4 text-sm mb-2">
                 <span style={{ color: "#dc2626" }}>❌ {m.userAnswer}</span>
                 <span style={{ color: "#059669" }}>✅ {m.correctAnswer}</span>
               </div>
-              <p className="text-sm mb-1" style={{ color: "#92400e" }}><b>📖 القاعدة:</b> {m.rule}</p>
-              <p className="text-sm" style={{ color: "#92400e" }}><b>💡 السبب:</b> {m.explanation}</p>
+              <p className="text-sm mb-1" style={{ color: "#73603b" }}><b>📖 القاعدة:</b> {m.rule}</p>
+              <p className="text-sm" style={{ color: "#73603b" }}><b>💡 السبب:</b> {m.explanation}</p>
             </div>
           ))}
         </div>

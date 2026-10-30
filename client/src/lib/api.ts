@@ -1,4 +1,4 @@
-export const API_BASE = import.meta.env.VITE_API_URL || "https://sawti-0k3n.onrender.com/api";
+export const API_BASE = (import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "/api" : "https://sawti-0k3n.onrender.com/api")).replace(/\/+$/, "");
 
 /**
  * "إيقاظ" مبكر للخادم الخلفي. على خطة Render المجانية، يدخل الخادم في
@@ -85,8 +85,10 @@ export async function evaluateSpeech(
   audioBlob: Blob,
   referenceText?: string,
   studentId: number = 0,
-  lessonId: string = ""
+  lessonId: string = "",
+  signal?: AbortSignal
 ) {
+  if (!audioBlob.size) throw new ApiError(400, "التسجيل فارغ. سجّل مرة أخرى.");
   const formData = new FormData();
   // اسم الملف يجب أن يطابق الصيغة الحقيقية للـBlob (audio/webm من MediaRecorder
   // في Speaking.tsx). كان الاسم سابقاً "recording.wav" رغم أن المحتوى الفعلي
@@ -101,7 +103,7 @@ export async function evaluateSpeech(
   formData.append("student_id", String(studentId));
   formData.append("lesson_id", lessonId);
   if (referenceText) formData.append("reference_text", referenceText);
-  const res = await fetch(`${API_BASE}/eval/speech`, { method: "POST", headers: authHeaders(), body: formData });
+  const res = await fetch(`${API_BASE}/eval/speech`, { method: "POST", headers: authHeaders(), body: formData, signal });
   if (!res.ok) await throwApiError(res, "خطأ في تقييم التحدث");
   return res.json();
 }
@@ -137,7 +139,7 @@ export async function askSmartTeacher(question: string): Promise<AskResult> {
         ? { ...f, message: "تعذّر الاتصال بالمعلم الذكي الآن. حاول مرة أخرى بعد قليل." } : f;
     }
     const data = await res.json();
-    return data?.answer ? { ok: true, answer: data.answer } : toEvalFailure(0);
+    return typeof data?.answer === "string" && data.answer.trim() ? { ok: true, answer: data.answer.trim() } : toEvalFailure(0);
   } catch {
     return { ok: false, error: "service_unavailable", message: "تعذّر الاتصال بالمعلم الذكي الآن. تحقّق من اتصالك بالإنترنت." };
   }
@@ -265,29 +267,42 @@ export async function loginAccount(email: string, password: string): Promise<Aut
   }
 }
 
-export async function fetchMe(): Promise<AuthUser | null> {
+export async function fetchMe(signal?: AbortSignal): Promise<AuthUser | null> {
   const token = getToken();
   if (!token) return null;
   try {
-    const res = await fetch(`${AUTH_BASE}/me`, { headers: authHeaders() });
-    if (!res.ok) return null; // رمز منتهي أو غير صالح
+    const res = await fetch(`${AUTH_BASE}/me`, { headers: authHeaders(), signal });
+    if (res.status === 401 || res.status === 403) {
+      if (getToken() === token) clearToken();
+      return null;
+    }
+    if (!res.ok) await throwApiError(res, "تعذّر استعادة جلستك الآن. يمكنك محاولة تسجيل الدخول.");
     return res.json();
-  } catch { return null; }
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(0, "تعذّر استعادة جلستك الآن. تحقق من الاتصال أو سجّل الدخول.");
+  }
 }
 
 // ── سجلّ الطالب المرتبط بالحساب (بدل الاسم+الصف) ──
-export async function getMyStudentRecord(): Promise<any | null> {
+export async function getMyStudentRecord(signal?: AbortSignal): Promise<any | null> {
   try {
-    const res = await fetch(`${STUDENTS_BASE}/me`, { headers: authHeaders() });
-    return res.ok ? res.json() : null;
-  } catch { return null; }
+    const res = await fetch(`${STUDENTS_BASE}/me`, { headers: authHeaders(), signal });
+    if (!res.ok) await throwApiError(res, "تعذّر استعادة تقدمك المحفوظ. حاول مرة أخرى.");
+    return res.json();
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(0, "تعذّر الاتصال لاستعادة تقدمك. تحقق من الاتصال وحاول مرة أخرى.");
+  }
 }
-export async function saveMyStudentRecord(data: object): Promise<boolean> {
+export async function saveMyStudentRecord(data: object, signal?: AbortSignal): Promise<boolean> {
   try {
     const res = await fetch(`${STUDENTS_BASE}/me`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
+      signal,
     });
     return res.ok;
   } catch { return false; }
@@ -522,6 +537,7 @@ export async function addSpeakingLesson(lesson: object) {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify(lesson),
   });
+  if (!res.ok) await throwApiError(res, "تعذّر حفظ محتوى الدرس. حاول مرة أخرى.");
   return res.json();
 }
 
@@ -530,6 +546,7 @@ export async function addWritingTopic(topic: object) {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify(topic),
   });
+  if (!res.ok) await throwApiError(res, "تعذّر حفظ محتوى الدرس. حاول مرة أخرى.");
   return res.json();
 }
 
@@ -538,6 +555,7 @@ export async function updateSpeakingLesson(id: string, lesson: object) {
     method: "PUT", headers: { "Content-Type": "application/json" },
     body: JSON.stringify(lesson),
   });
+  if (!res.ok) await throwApiError(res, "تعذّر حفظ محتوى الدرس. حاول مرة أخرى.");
   return res.json();
 }
 
@@ -546,6 +564,7 @@ export async function updateWritingTopic(id: string, topic: object) {
     method: "PUT", headers: { "Content-Type": "application/json" },
     body: JSON.stringify(topic),
   });
+  if (!res.ok) await throwApiError(res, "تعذّر حفظ محتوى الدرس. حاول مرة أخرى.");
   return res.json();
 }
 

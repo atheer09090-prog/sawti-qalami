@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# Local deployment links and private operational screenshots
+.vercel/
+docs/performance/uptimerobot-active.png

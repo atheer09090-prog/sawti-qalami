@@ -1,0 +1,119 @@
+[
+  {
+    "id": "teacher-gate",
+    "status": "PASS",
+    "widths": [
+      390,
+      768,
+      1440
+    ]
+  },
+  {
+    "id": "teacher-overview",
+    "status": "PASS",
+    "widths": [
+      390,
+      768,
+      1440
+    ]
+  },
+  {
+    "id": "teacher-الطلاب",
+    "status": "PASS",
+    "widths": [
+      390,
+      768,
+      1440
+    ]
+  },
+  {
+    "id": "teacher-التقييمات",
+    "status": "PASS",
+    "widths": [
+      390,
+      768,
+      1440
+    ]
+  },
+  {
+    "id": "teacher-الدروس",
+    "status": "PASS",
+    "widths": [
+      390,
+      768,
+      1440
+    ]
+  },
+  {
+    "id": "teacher-edit-dialog",
+    "status": "PASS",
+    "widths": [
+      390,
+      768,
+      1440
+    ]
+  },
+  {
+    "id": "teacher-content-الكتابة",
+    "status": "PASS",
+    "widths": [
+      390,
+      768,
+      1440
+    ]
+  },
+  {
+    "id": "teacher-content-التعلم الذاتي",
+    "status": "PASS",
+    "widths": [
+      390,
+      768,
+      1440
+    ]
+  },
+  {
+    "id": "teacher-content-ألعاب الهمزة",
+    "status": "PASS",
+    "widths": [
+      390,
+      768,
+      1440
+    ]
+  },
+  {
+    "id": "teacher-content-رحلة الإملاء",
+    "status": "PASS",
+    "widths": [
+      390,
+      768,
+      1440
+    ]
+  },
+  {
+    "id": "teacher-gate-workspace-edit",
+    "status": "PASS"
+  },
+  {
+    "id": "login",
+    "status": "PASS",
+    "widths": [
+      390,
+      768,
+      1440
+    ]
+  },
+  {
+    "id": "registration",
+    "status": "PASS",
+    "widths": [
+      390,
+      768,
+      1440
+    ]
+  },
+  {
+    "id": "uncaught-JavaScript-errors",
+    "status": "PASS",
+    "errors": []
+  }
+]

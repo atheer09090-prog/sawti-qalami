@@ -1,0 +1,506 @@
+[
+  {
+    "route": "/dashboard",
+    "heading": "مرحبًا، طالب تجريبي",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/skills",
+    "heading": "المهارات اللغوية",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/skills/speaking",
+    "heading": "مَهَارَةُ التَّحَدُّثِ",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/skills/writing",
+    "heading": "مَهَارَةُ الْكِتَابَةِ",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/skills/self-learning",
+    "heading": "مَهَارَةُ التَّعَلُّمِ الذَّاتِيِّ",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/assessments",
+    "heading": "تقدمي ونتائجي",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/about",
+    "heading": "عَنِ الْبَرْنَامَجِ",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/teacher",
+    "heading": "مساحة المعلم",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/class-selection",
+    "heading": "تَحْدِيدُ الْفَصْلِ",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/writing-games",
+    "heading": "أَلْعَابُ الْهَمْزَةِ",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/writing-games/treasure-map",
+    "heading": "🗺️ رِحْلَةُ الْمُسْتَكْشِفِ",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/writing-games/diver-pearl",
+    "heading": "🤿 الْغَوَّاصُ وَصَائِدُ اللَّآلِئِ",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/writing-games/balloon",
+    "heading": "🎈 قَائِدُ الْمِنْطَادِ",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/",
+    "heading": "مساحة لصوتك، وأفق لقلمك",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "route": "/dashboard",
+    "heading": "مرحبًا، طالب تجريبي",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/skills",
+    "heading": "المهارات اللغوية",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/skills/speaking",
+    "heading": "مَهَارَةُ التَّحَدُّثِ",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/skills/writing",
+    "heading": "مَهَارَةُ الْكِتَابَةِ",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/skills/self-learning",
+    "heading": "مَهَارَةُ التَّعَلُّمِ الذَّاتِيِّ",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/assessments",
+    "heading": "تقدمي ونتائجي",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/about",
+    "heading": "عَنِ الْبَرْنَامَجِ",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/teacher",
+    "heading": "مساحة المعلم",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/class-selection",
+    "heading": "تَحْدِيدُ الْفَصْلِ",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/writing-games",
+    "heading": "أَلْعَابُ الْهَمْزَةِ",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/writing-games/treasure-map",
+    "heading": "🗺️ رِحْلَةُ الْمُسْتَكْشِفِ",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/writing-games/diver-pearl",
+    "heading": "🤿 الْغَوَّاصُ وَصَائِدُ اللَّآلِئِ",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/writing-games/balloon",
+    "heading": "🎈 قَائِدُ الْمِنْطَادِ",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/",
+    "heading": "مساحة لصوتك، وأفق لقلمك",
+    "scroll": 430,
+    "width": 430
+  },
+  {
+    "route": "/dashboard",
+    "heading": "مرحبًا، طالب تجريبي",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/skills",
+    "heading": "المهارات اللغوية",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/skills/speaking",
+    "heading": "مَهَارَةُ التَّحَدُّثِ",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/skills/writing",
+    "heading": "مَهَارَةُ الْكِتَابَةِ",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/skills/self-learning",
+    "heading": "مَهَارَةُ التَّعَلُّمِ الذَّاتِيِّ",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/assessments",
+    "heading": "تقدمي ونتائجي",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/about",
+    "heading": "عَنِ الْبَرْنَامَجِ",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/teacher",
+    "heading": "مساحة المعلم",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/class-selection",
+    "heading": "تَحْدِيدُ الْفَصْلِ",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/writing-games",
+    "heading": "أَلْعَابُ الْهَمْزَةِ",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/writing-games/treasure-map",
+    "heading": "🗺️ رِحْلَةُ الْمُسْتَكْشِفِ",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/writing-games/diver-pearl",
+    "heading": "🤿 الْغَوَّاصُ وَصَائِدُ اللَّآلِئِ",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/writing-games/balloon",
+    "heading": "🎈 قَائِدُ الْمِنْطَادِ",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/",
+    "heading": "مساحة لصوتك، وأفق لقلمك",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "route": "/dashboard",
+    "heading": "مرحبًا، طالب تجريبي",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/skills",
+    "heading": "المهارات اللغوية",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/skills/speaking",
+    "heading": "مَهَارَةُ التَّحَدُّثِ",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/skills/writing",
+    "heading": "مَهَارَةُ الْكِتَابَةِ",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/skills/self-learning",
+    "heading": "مَهَارَةُ التَّعَلُّمِ الذَّاتِيِّ",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/assessments",
+    "heading": "تقدمي ونتائجي",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/about",
+    "heading": "عَنِ الْبَرْنَامَجِ",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/teacher",
+    "heading": "مساحة المعلم",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/class-selection",
+    "heading": "تَحْدِيدُ الْفَصْلِ",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/writing-games",
+    "heading": "أَلْعَابُ الْهَمْزَةِ",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/writing-games/treasure-map",
+    "heading": "🗺️ رِحْلَةُ الْمُسْتَكْشِفِ",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/writing-games/diver-pearl",
+    "heading": "🤿 الْغَوَّاصُ وَصَائِدُ اللَّآلِئِ",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/writing-games/balloon",
+    "heading": "🎈 قَائِدُ الْمِنْطَادِ",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/",
+    "heading": "مساحة لصوتك، وأفق لقلمك",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "route": "/dashboard",
+    "heading": "مرحبًا، طالب تجريبي",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/skills",
+    "heading": "المهارات اللغوية",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/skills/speaking",
+    "heading": "مَهَارَةُ التَّحَدُّثِ",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/skills/writing",
+    "heading": "مَهَارَةُ الْكِتَابَةِ",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/skills/self-learning",
+    "heading": "مَهَارَةُ التَّعَلُّمِ الذَّاتِيِّ",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/assessments",
+    "heading": "تقدمي ونتائجي",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/about",
+    "heading": "عَنِ الْبَرْنَامَجِ",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/teacher",
+    "heading": "مساحة المعلم",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/class-selection",
+    "heading": "تَحْدِيدُ الْفَصْلِ",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/writing-games",
+    "heading": "أَلْعَابُ الْهَمْزَةِ",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/writing-games/treasure-map",
+    "heading": "🗺️ رِحْلَةُ الْمُسْتَكْشِفِ",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/writing-games/diver-pearl",
+    "heading": "🤿 الْغَوَّاصُ وَصَائِدُ اللَّآلِئِ",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/writing-games/balloon",
+    "heading": "🎈 قَائِدُ الْمِنْطَادِ",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/",
+    "heading": "مساحة لصوتك، وأفق لقلمك",
+    "scroll": 1280,
+    "width": 1280
+  },
+  {
+    "route": "/dashboard",
+    "heading": "مرحبًا، طالب تجريبي",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/skills",
+    "heading": "المهارات اللغوية",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/skills/speaking",
+    "heading": "مَهَارَةُ التَّحَدُّثِ",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/skills/writing",
+    "heading": "مَهَارَةُ الْكِتَابَةِ",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/skills/self-learning",
+    "heading": "مَهَارَةُ التَّعَلُّمِ الذَّاتِيِّ",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/assessments",
+    "heading": "تقدمي ونتائجي",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/about",
+    "heading": "عَنِ الْبَرْنَامَجِ",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/teacher",
+    "heading": "مساحة المعلم",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/class-selection",
+    "heading": "تَحْدِيدُ الْفَصْلِ",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/writing-games",
+    "heading": "أَلْعَابُ الْهَمْزَةِ",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/writing-games/treasure-map",
+    "heading": "🗺️ رِحْلَةُ الْمُسْتَكْشِفِ",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/writing-games/diver-pearl",
+    "heading": "🤿 الْغَوَّاصُ وَصَائِدُ اللَّآلِئِ",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/writing-games/balloon",
+    "heading": "🎈 قَائِدُ الْمِنْطَادِ",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "route": "/",
+    "heading": "مساحة لصوتك، وأفق لقلمك",
+    "scroll": 1440,
+    "width": 1440
+  }
+]
